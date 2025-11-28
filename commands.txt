@@ -1,0 +1,1 @@
+Create a new html application based on a code-style-guide.md. Put lorem impsum text into main page and create two items in the menu the first item will be "Main Page", the second item will be "Hot Zone".
