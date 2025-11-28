@@ -1,5 +1,7 @@
 Project overview
-Project name is SubMOAMOA. It is an enhanced object tracker that can point a parabolic or stick microphone to a predefined location. It runs on Raspberry PI, Windows, Linux and Mac OS. The application uses Python FastAPI in the backend and HTML5 + React in the frontend. Everything should be packed as one Python package. Python source code root is in the folder ./package/submoamoa. WWW root folder is in ./package/submoamoa/wwwroot.
+Project name is SubMOAMOA. It is an enhanced object tracker that can point a parabolic or stick microphone to a predefined location. It runs on Raspberry PI, Windows, Linux and Mac OS.
+
+The application uses Python FastAPI in the backend and HTML5 + React in the frontend. Everything should be packed as one Python package. Python source code root is in the folder ./package/submoamoa. WWW root folder is in ./package/submoamoa/wwwroot.
 
 Project rules
 Code must be clear and well-documented. Every method in Python must use explicit parameters policy (each method of every class will be written as: “def method(self, *, param1, param2, …)”).

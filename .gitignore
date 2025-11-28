@@ -1,0 +1,17 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+.agent/
+.vscode/
+*.egg-info
+.bat
+*.bat.txt
+uv.lock
+pyproject.toml
+.python-version
+
+# Virtual environments
+.venv
