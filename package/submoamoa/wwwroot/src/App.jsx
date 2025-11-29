@@ -11,6 +11,7 @@ import AIAgent from './AIAgent';
 import ImportExport from './ImportExport';
 import Motors from './Motors';
 import AIBehavior from './AIBehavior';
+import ComponentsDemo from './ComponentsDemo';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="hot-zone" element={<HotZone />} />
           </Route>
           <Route path="tutorials" element={<Tutorials />} />
+          <Route path="components-demo" element={<ComponentsDemo />} />
           <Route path="about" element={<About />} />
         </Route>
       </Routes>

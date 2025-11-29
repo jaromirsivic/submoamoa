@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 
 const Settings = () => {
     return (
-        <div className="container">
+        <div className="page-container">
             <p>Settings page content.</p>
             <Outlet />
         </div>

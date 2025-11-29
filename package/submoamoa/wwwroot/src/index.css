@@ -113,3 +113,9 @@ h3 {
     padding: 2rem;
   }
 }
+
+.page-container {
+  background-color: var(--color-bg);
+  min-height: 100%;
+  width: 100%;
+}

@@ -2,7 +2,7 @@ import React from 'react';
 
 const ManualControl = () => {
     return (
-        <div className="container">
+        <div className="page-container">
             <p>Manual Control page content goes here.</p>
         </div>
     );

@@ -1,1 +1,20 @@
 Create a new html application based on a code-style-guide.md. Put lorem impsum text into main page and create two items in the menu the first item will be "Main Page", the second item will be "Hot Zone".
+
+Let's build a library of essential React GUI components with props. All Components listed below can be enabled or disabled. All have slightly rounded corners. All components are responsive (Mobile First Strategy).
+1.	There is a panel into which all components mentioned below can be inserted. Panel casts a light shadow to the bottom right of itself. Panel can have predefined background color. And text color. If color is not specified the default background color is white. All components placed into the panel should follow the color theme of the panel.
+2.	There is a button that can have different colors. When the button is disabled, the colors are dimmed.
+3.	There is a static text component displayingtext.
+4.	There is a yes-no switch. It can have a label, which is displayed either above the yes-no switch or on the left side of the yes-no switch. The hand-drawn sketch of the yes-no switch can be found in wwwroot/src/assets/switch.png
+5.	There is the checkbox implemented in a similar way like yes no switch but the graphical representation is different.
+6.	There is a textbox component that has a label above the or on the left side, defined by props setting. The textbox component can display a hint inside that disappears as soon as the component receives focus and user starts to type.
+7.	There is a numeric input with up and down arrows and it can have predefined minimum, maximum value end step.
+8.	The slider component has a minimum and maximum value and the step. Users can slide a circle over a line, and the number above the slider changes dynamically while the user is sliding with the circle.
+9.	There is a combo box which displays a list of items some items might be disabled that means user cannot select them and they are displayed with a light gray background and the text is crossed out. Each item can have different background color if specified.
+10.	There is a carousel component that can Display picture in the full screen if a user clicks on the maximize icon in the top right corner of the carousel. The maximize icon is available only if enabled in props.
+11.	There is an image component.
+Create a page called “Components demo” in the menu. Create a demo of all components and display them in various situations.
+
+upravit vsechny komponenty aby byly responsive, tzn. aby se zalamovaly pod sebe, kdyz neni dostatek mista na obrazovce. Pod sebe se zalomi i label a komponenta.
+Vytvorit column ma se zalamovat pod sebe, kdyz neni dostatek mista na obrazovce
+vytvorit row
+Upravit carousel aby nevyplnoval prazdny prostor za obrazkem cernou barvou ale barvou pozadi panelu. Obrazky by mely pomalu prejizdet ve slide show kazde 3 vteřiny.

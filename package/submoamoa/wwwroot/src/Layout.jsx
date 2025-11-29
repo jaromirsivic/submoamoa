@@ -11,6 +11,7 @@ const Layout = () => {
     if (location.pathname === '/ai-agent') return 'AI Agent';
     if (location.pathname.startsWith('/settings')) return 'Settings';
     if (location.pathname === '/tutorials') return 'Tutorials';
+    if (location.pathname === '/components-demo') return 'Components Demo';
     if (location.pathname === '/about') return 'About';
     return 'Submoamoa';
   };
@@ -46,7 +47,9 @@ const Layout = () => {
           padding: '1rem',
           borderLeft: '1px solid var(--color-border)',
           borderBottom: '1px solid var(--color-border)',
-          zIndex: 49
+          zIndex: 49,
+          maxHeight: 'calc(100vh - var(--header-height))',
+          overflowY: 'auto'
         }}>
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <li><Link to="/" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Main Page</Link></li>
@@ -62,6 +65,7 @@ const Layout = () => {
               </ul>
             </li>
             <li><Link to="/tutorials" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Tutorials</Link></li>
+            <li><Link to="/components-demo" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Components Demo</Link></li>
             <li><Link to="/about" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>About</Link></li>
           </ul>
         </nav>

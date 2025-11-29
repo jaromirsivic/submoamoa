@@ -1,0 +1,52 @@
+import React from 'react';
+
+const ComboBox = ({
+    items = [],
+    value,
+    onChange,
+    disabled = false,
+    style = {}
+}) => {
+    const containerStyle = {
+        opacity: disabled ? 0.5 : 1,
+        ...style
+    };
+
+    const selectStyle = {
+        padding: '0.5rem',
+        borderRadius: '0.375rem',
+        border: '1px solid #cbd5e1',
+        backgroundColor: disabled ? '#f1f5f9' : '#ffffff',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        width: '100%',
+        outline: 'none'
+    };
+
+    return (
+        <div className="custom-combobox" style={containerStyle}>
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                disabled={disabled}
+                style={selectStyle}
+            >
+                {items.map((item, index) => (
+                    <option
+                        key={index}
+                        value={item.value}
+                        disabled={item.disabled}
+                        style={{
+                            backgroundColor: item.color || (item.disabled ? '#f1f5f9' : '#ffffff'),
+                            textDecoration: item.disabled ? 'line-through' : 'none',
+                            color: item.disabled ? '#94a3b8' : 'inherit'
+                        }}
+                    >
+                        {item.label}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+};
+
+export default ComboBox;
