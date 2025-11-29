@@ -11,15 +11,6 @@ const Textbox = ({
 }) => {
     const [isFocused, setIsFocused] = useState(false);
 
-    const containerStyle = {
-        display: 'flex',
-        flexDirection: labelPosition === 'top' ? 'column' : 'row',
-        alignItems: labelPosition === 'top' ? 'flex-start' : 'center',
-        gap: '0.5rem',
-        opacity: disabled ? 0.5 : 1,
-        ...style
-    };
-
     const inputStyle = {
         padding: '0.5rem',
         borderRadius: '0.375rem',
@@ -31,9 +22,11 @@ const Textbox = ({
         borderColor: isFocused ? '#3b82f6' : '#cbd5e1'
     };
 
+    const containerClass = `responsive-input-container ${labelPosition === 'top' ? 'top-label' : ''}`;
+
     return (
-        <div className="custom-textbox-container" style={containerStyle}>
-            {label && <label className="textbox-label">{label}</label>}
+        <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, width: '100%', ...style }}>
+            {label && <label className="textbox-label" style={{ whiteSpace: 'nowrap' }}>{label}</label>}
             <input
                 type="text"
                 value={value}

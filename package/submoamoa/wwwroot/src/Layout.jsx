@@ -24,16 +24,12 @@ const Layout = () => {
         </div>
         <div className="header-right">
           <button
-            className="btn"
+            className="btn menu-btn"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Menu"
           >
             <span style={{ marginRight: '0.5rem', display: 'none' }} className="menu-text">Menu</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
+            <img src="/src/assets/menu-icon.svg" alt="Menu" width="24" height="24" />
           </button>
         </div>
       </header>

@@ -10,8 +10,11 @@ import Slider from './components/Slider';
 import ComboBox from './components/ComboBox';
 import Carousel from './components/Carousel';
 import ImageComponent from './components/ImageComponent';
+import ColumnLayout from './components/ColumnLayout';
+import RowLayout from './components/RowLayout';
+import ModalWindow from './components/ModalWindow';
 
-// Import assets (assuming they exist or using placeholders)
+// Import assets
 import switchImg from './assets/switch.png';
 import sliderImg from './assets/slider.png';
 
@@ -22,6 +25,7 @@ const ComponentsDemo = () => {
     const [numValue, setNumValue] = useState(10);
     const [sliderValue, setSliderValue] = useState(50);
     const [comboValue, setComboValue] = useState('option1');
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const comboItems = [
         { label: 'Option 1', value: 'option1' },
@@ -39,7 +43,18 @@ const ComponentsDemo = () => {
 
     return (
         <div className="page-container">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <ColumnLayout gap="2rem">
+
+                <Panel>
+                    <h2>Layout Components</h2>
+                    <RowLayout gap="1rem">
+                        <div style={{ padding: '1rem', border: '1px dashed gray', flex: 1 }}>Column 1 (Row Layout)</div>
+                        <div style={{ padding: '1rem', border: '1px dashed gray', flex: 1 }}>Column 2 (Row Layout)</div>
+                        <div style={{ padding: '1rem', border: '1px dashed gray', flex: 1 }}>Column 3 (Row Layout)</div>
+                    </RowLayout>
+                    <br />
+                    <Button label="Open Modal" onClick={() => setIsModalOpen(true)} />
+                </Panel>
 
                 <Panel>
                     <h2>Panel Component</h2>
@@ -53,11 +68,11 @@ const ComponentsDemo = () => {
 
                 <Panel>
                     <h2>Buttons</h2>
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <RowLayout>
                         <Button label="Primary Button" onClick={() => alert('Clicked!')} />
                         <Button label="Red Button" color="#ef4444" onClick={() => alert('Red Clicked!')} />
                         <Button label="Disabled Button" disabled onClick={() => { }} />
-                    </div>
+                    </RowLayout>
                 </Panel>
 
                 <Panel>
@@ -68,8 +83,8 @@ const ComponentsDemo = () => {
                 </Panel>
 
                 <Panel>
-                    <h2>Switches & Checkboxes</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <h2>Switches & Checkboxes (Responsive)</h2>
+                    <ColumnLayout gap="1rem">
                         <Switch
                             label="Enable Feature (Left Label)"
                             value={switchValue}
@@ -95,12 +110,12 @@ const ComponentsDemo = () => {
                             onChange={setCheckboxValue}
                         />
                         <Checkbox label="Disabled Checkbox" value={true} disabled onChange={() => { }} />
-                    </div>
+                    </ColumnLayout>
                 </Panel>
 
                 <Panel>
-                    <h2>Inputs</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '400px' }}>
+                    <h2>Inputs (Responsive)</h2>
+                    <ColumnLayout gap="1rem" style={{ maxWidth: '400px' }}>
                         <Textbox
                             label="Username"
                             hint="Enter your username..."
@@ -114,7 +129,7 @@ const ComponentsDemo = () => {
                             onChange={() => { }}
                         />
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div className="responsive-input-container">
                             <span>Numeric Input:</span>
                             <NumericInput
                                 value={numValue}
@@ -142,24 +157,34 @@ const ComponentsDemo = () => {
                             onChange={setComboValue}
                         />
                         <ComboBox items={comboItems} value="option1" disabled onChange={() => { }} />
-                    </div>
+                    </ColumnLayout>
                 </Panel>
 
                 <Panel>
-                    <h2>Media</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                        <div>
+                    <h2>Media (Carousel Auto-play)</h2>
+                    <div className="row">
+                        <div className="col">
                             <h3>Carousel (Maximize Enabled)</h3>
                             <Carousel images={carouselImages} allowMaximize />
                         </div>
-                        <div>
+                        <div className="col">
                             <h3>Single Image</h3>
                             <ImageComponent src={switchImg} alt="Switch Sketch" />
                         </div>
                     </div>
                 </Panel>
 
-            </div>
+            </ColumnLayout>
+
+            <ModalWindow
+                isOpen={isModalOpen}
+                title="Example Modal"
+                onOk={() => setIsModalOpen(false)}
+                onCancel={() => setIsModalOpen(false)}
+            >
+                <p>This is a modal window content.</p>
+                <p>You can put any components here.</p>
+            </ModalWindow>
         </div>
     );
 };

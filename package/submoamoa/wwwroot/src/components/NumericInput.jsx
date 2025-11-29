@@ -21,14 +21,6 @@ const NumericInput = ({
         onChange(newValue);
     };
 
-    const containerStyle = {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        opacity: disabled ? 0.5 : 1,
-        ...style
-    };
-
     const buttonStyle = {
         width: '24px',
         height: '24px',
@@ -53,7 +45,7 @@ const NumericInput = ({
     };
 
     return (
-        <div className="custom-numeric-input" style={containerStyle}>
+        <div className="custom-numeric-input responsive-input-container" style={{ opacity: disabled ? 0.5 : 1, ...style }}>
             <button onClick={handleDecrement} style={buttonStyle} disabled={disabled}>-</button>
             <input
                 type="number"

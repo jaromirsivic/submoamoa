@@ -59,17 +59,6 @@ const Slider = ({
         };
     }, [isDragging, min, max, step, onChange]);
 
-    const containerStyle = {
-        position: 'relative',
-        width: '100%',
-        height: '40px',
-        display: 'flex',
-        alignItems: 'center',
-        opacity: disabled ? 0.5 : 1,
-        pointerEvents: disabled ? 'none' : 'auto',
-        ...style
-    };
-
     const trackStyle = {
         position: 'relative',
         width: '100%',
@@ -117,15 +106,17 @@ const Slider = ({
     };
 
     return (
-        <div className="custom-slider" style={containerStyle}>
-            {isDragging && <div style={valueLabelStyle}>{value}</div>}
-            <div
-                ref={trackRef}
-                style={trackStyle}
-                onMouseDown={handleMouseDown}
-            >
-                <div style={fillStyle} />
-                <div style={thumbStyle} />
+        <div className="custom-slider responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', ...style }}>
+            <div style={{ position: 'relative', width: '100%', height: '40px', display: 'flex', alignItems: 'center' }}>
+                {isDragging && <div style={valueLabelStyle}>{value}</div>}
+                <div
+                    ref={trackRef}
+                    style={trackStyle}
+                    onMouseDown={handleMouseDown}
+                >
+                    <div style={fillStyle} />
+                    <div style={thumbStyle} />
+                </div>
             </div>
         </div>
     );

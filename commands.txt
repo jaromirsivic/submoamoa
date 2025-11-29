@@ -18,3 +18,14 @@ upravit vsechny komponenty aby byly responsive, tzn. aby se zalamovaly pod sebe,
 Vytvorit column ma se zalamovat pod sebe, kdyz neni dostatek mista na obrazovce
 vytvorit row
 Upravit carousel aby nevyplnoval prazdny prostor za obrazkem cernou barvou ale barvou pozadi panelu. Obrazky by mely pomalu prejizdet ve slide show kazde 3 vteřiny.
+
+
+
+1.	All components should follow bootstrap sizing methodology and bootstrap breakpoints.
+2.	Create a “ColumnLayout” component which will be usually placed into the panel or directly into the main content. “ColumnLayout” is transparent it does not have any background. “ColumnLayout” is only a container of other components.
+3.	Create a “RowLayout” component which will be usually placed into the panel or directly into the main content. “RowLayout” is transparent it does not have any background. “RowLayout” is only a container of other components.
+4.	Update a carousel component to automatically start slideshow. Images should change every 4 seconds using fade in a fade out transition. Transition should be 0.25 second. Maintain aspect ratio of images. Background of the carousel should be transparent.
+5.	Create a “ModalWindow” component. Modal Window is a container which pops up on top of main content area and usually there are two buttons on the bottom OK and Cancel.
+6.	Change background of the main content to #90b0c0.
+7.	Modify a background of Menu button. It should have yellow color #887700 and on hover change the color to #885500.
+8.	Download the SVG icon displayed in the menu button and put it into assets. Reference the SVG from the assets directory.

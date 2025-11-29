@@ -7,11 +7,6 @@ const ComboBox = ({
     disabled = false,
     style = {}
 }) => {
-    const containerStyle = {
-        opacity: disabled ? 0.5 : 1,
-        ...style
-    };
-
     const selectStyle = {
         padding: '0.5rem',
         borderRadius: '0.375rem',
@@ -23,7 +18,7 @@ const ComboBox = ({
     };
 
     return (
-        <div className="custom-combobox" style={containerStyle}>
+        <div className="custom-combobox responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, ...style }}>
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}

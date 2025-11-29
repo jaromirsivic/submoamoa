@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Carousel = ({
     images = [],
@@ -8,6 +8,16 @@ const Carousel = ({
 }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isMaximized, setIsMaximized] = useState(false);
+
+    useEffect(() => {
+        if (disabled || images.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 4000);
+
+        return () => clearInterval(interval);
+    }, [images.length, disabled]);
 
     const handleNext = (e) => {
         e.stopPropagation();
@@ -30,7 +40,7 @@ const Carousel = ({
         position: 'relative',
         width: '100%',
         height: isMaximized ? '100vh' : '300px',
-        backgroundColor: '#000000',
+        backgroundColor: 'transparent', // Transparent background
         borderRadius: isMaximized ? 0 : '0.5rem',
         overflow: 'hidden',
         opacity: disabled ? 0.6 : 1,
@@ -44,7 +54,11 @@ const Carousel = ({
     const imageStyle = {
         width: '100%',
         height: '100%',
-        objectFit: 'contain'
+        objectFit: 'contain',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        transition: 'opacity 0.25s ease-in-out' // Fade transition
     };
 
     const buttonStyle = {
@@ -84,7 +98,18 @@ const Carousel = ({
 
     return (
         <div className="custom-carousel" style={containerStyle}>
-            <img src={images[currentIndex]} alt={`Slide ${currentIndex}`} style={imageStyle} />
+            {images.map((img, index) => (
+                <img
+                    key={index}
+                    src={img}
+                    alt={`Slide ${index}`}
+                    style={{
+                        ...imageStyle,
+                        opacity: index === currentIndex ? 1 : 0,
+                        zIndex: index === currentIndex ? 1 : 0
+                    }}
+                />
+            ))}
 
             {images.length > 1 && (
                 <>

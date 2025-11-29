@@ -8,16 +8,6 @@ const Checkbox = ({
     disabled = false,
     style = {}
 }) => {
-    const containerStyle = {
-        display: 'flex',
-        flexDirection: labelPosition === 'top' ? 'column' : 'row',
-        alignItems: labelPosition === 'top' ? 'flex-start' : 'center',
-        gap: '0.5rem',
-        opacity: disabled ? 0.5 : 1,
-        pointerEvents: disabled ? 'none' : 'auto',
-        ...style
-    };
-
     const checkboxStyle = {
         width: '20px',
         height: '20px',
@@ -32,8 +22,10 @@ const Checkbox = ({
         flexShrink: 0
     };
 
+    const containerClass = `responsive-input-container ${labelPosition === 'top' ? 'top-label' : ''}`;
+
     return (
-        <div className="custom-checkbox-container" style={containerStyle}>
+        <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', ...style }}>
             {label && <span className="checkbox-label">{label}</span>}
             <div
                 className="custom-checkbox"

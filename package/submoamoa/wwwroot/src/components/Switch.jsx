@@ -8,16 +8,6 @@ const Switch = ({
     disabled = false,
     style = {}
 }) => {
-    const containerStyle = {
-        display: 'flex',
-        flexDirection: labelPosition === 'top' ? 'column' : 'row',
-        alignItems: labelPosition === 'top' ? 'flex-start' : 'center',
-        gap: '0.5rem',
-        opacity: disabled ? 0.5 : 1,
-        pointerEvents: disabled ? 'none' : 'auto',
-        ...style
-    };
-
     const switchStyle = {
         position: 'relative',
         width: '40px',
@@ -41,8 +31,10 @@ const Switch = ({
         boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
     };
 
+    const containerClass = `responsive-input-container ${labelPosition === 'top' ? 'top-label' : ''}`;
+
     return (
-        <div className="custom-switch-container" style={containerStyle}>
+        <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', ...style }}>
             {label && <span className="switch-label">{label}</span>}
             <div
                 className="custom-switch"

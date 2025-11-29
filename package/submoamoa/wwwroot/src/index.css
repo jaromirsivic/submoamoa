@@ -119,3 +119,53 @@ h3 {
   min-height: 100%;
   width: 100%;
 }
+
+/* New Styles for Responsive Layout */
+.main-content {
+  background-color: #90b0c0;
+  /* New background color */
+}
+
+/* Menu Button Style */
+.menu-btn {
+  background-color: #887700 !important;
+  color: white !important;
+  transition: background-color 0.2s;
+}
+
+.menu-btn:hover {
+  background-color: #885500 !important;
+}
+
+/* Grid System */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -0.5rem;
+}
+
+.col {
+  flex: 1;
+  padding: 0.5rem;
+  min-width: 300px;
+  /* Responsive wrapping */
+}
+
+/* Utility for components to wrap on small screens */
+.responsive-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 576px) {
+  .responsive-input-container {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .responsive-input-container.top-label {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
