@@ -1,0 +1,148 @@
+{
+    "motors": [
+        {
+            "enabled": true,
+            "name": "linearMotor0",
+            "type": "linearActuator",
+            "role": "leftArm",
+            "forwardPin": 12,
+            "reversePin": 32,
+            "mcp3008ForwardPin": 1,
+            "mcp3008ReversePin": 2,
+            "dutyCycle": {
+                "enabled": true,
+                "maxRunningTimeSeconds": 90,
+                "minRestTimeSeconds": 810
+            },
+            "softness": 0.1,
+            "forwardSpeedHistogram": [
+                {
+                    "speed": 0,
+                    "pwmMultiplier": 0
+                },
+                {
+                    "speed": 1,
+                    "pwmMultiplier": 1
+                }
+            ],
+            "reverseSpeedHistogram": [
+                {
+                    "speed": 0,
+                    "pwmMultiplier": 0
+                },
+                {
+                    "speed": 1,
+                    "pwmMultiplier": 1
+                }
+            ]
+        },
+        {
+            "enabled": true,
+            "name": "linearMotor1",
+            "type": "linearActuator",
+            "role": "rightArm",
+            "forwardPin": 33,
+            "reversePin": 35,
+            "mcp3008ForwardPin": 3,
+            "mcp3008ReversePin": 4,
+            "dutyCycle": {
+                "enabled": true,
+                "maxRunningTimeSeconds": 90,
+                "minRestTimeSeconds": 810
+            },
+            "softness": 0.1,
+            "forwardSpeedHistogram": [
+                {
+                    "speed": 0,
+                    "pwmMultiplier": 0
+                },
+                {
+                    "speed": 1,
+                    "pwmMultiplier": 1
+                }
+            ],
+            "reverseSpeedHistogram": [
+                {
+                    "speed": 0,
+                    "pwmMultiplier": 0
+                },
+                {
+                    "speed": 1,
+                    "pwmMultiplier": 1
+                }
+            ]
+        },
+        {
+            "enabled": false,
+            "name": "linearMotor3",
+            "type": "linearActuator",
+            "role": "general",
+            "forwardPin": 11,
+            "reversePin": 13,
+            "mcp3008ForwardPin": 0,
+            "mcp3008ReversePin": 0,
+            "dutyCycle": {
+                "enabled": false,
+                "maxRunningTimeSeconds": 0,
+                "minRestTimeSeconds": 0
+            },
+            "softness": 0.1,
+            "forwardSpeedHistogram": [
+                {
+                    "speed": 0,
+                    "pwmMultiplier": 0
+                },
+                {
+                    "speed": 1,
+                    "pwmMultiplier": 1
+                }
+            ],
+            "reverseSpeedHistogram": [
+                {
+                    "speed": 0,
+                    "pwmMultiplier": 0
+                },
+                {
+                    "speed": 1,
+                    "pwmMultiplier": 1
+                }
+            ]
+        },
+        {
+            "enabled": false,
+            "name": "linearMotor3",
+            "type": "linearActuator",
+            "role": "general",
+            "forwardPin": 16,
+            "reversePin": 18,
+            "mcp3008ForwardPin": 0,
+            "mcp3008ReversePin": 0,
+            "dutyCycle": {
+                "enabled": false,
+                "maxRunningTimeSeconds": 0,
+                "minRestTimeSeconds": 0
+            },
+            "softness": 0.1,
+            "forwardSpeedHistogram": [
+                {
+                    "speed": 0,
+                    "pwmMultiplier": 0
+                },
+                {
+                    "speed": 1,
+                    "pwmMultiplier": 1
+                }
+            ],
+            "reverseSpeedHistogram": [
+                {
+                    "speed": 0,
+                    "pwmMultiplier": 0
+                },
+                {
+                    "speed": 1,
+                    "pwmMultiplier": 1
+                }
+            ]
+        }
+    ]
+}

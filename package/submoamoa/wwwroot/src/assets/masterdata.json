@@ -1,5 +1,23 @@
 {
+  "motors": {
+    "motorTypes": [
+      "linearActuator",
+      "stepperMotor"
+    ],
+    "motorRoles": [
+      "leftArm",
+      "rightArm",
+      "general",
+      "notImplemented"
+    ]
+  },
   "pins": [
+    {
+      "index": 0,
+      "name": "No Pin",
+      "isGPIO": false,
+      "isSPI": false
+    },
     {
       "index": 1,
       "name": "3v3 Power",
