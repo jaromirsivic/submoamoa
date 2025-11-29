@@ -6,11 +6,13 @@ const Layout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const getPageTitle = () => {
-    switch (location.pathname) {
-      case '/': return 'Main Page';
-      case '/hot-zone': return 'Hot Zone';
-      default: return 'Submoamoa';
-    }
+    if (location.pathname === '/') return 'Main Page';
+    if (location.pathname === '/manual-control') return 'Manual Control';
+    if (location.pathname === '/ai-agent') return 'AI Agent';
+    if (location.pathname.startsWith('/settings')) return 'Settings';
+    if (location.pathname === '/tutorials') return 'Tutorials';
+    if (location.pathname === '/about') return 'About';
+    return 'Submoamoa';
   };
 
   return (
@@ -20,8 +22,8 @@ const Layout = () => {
           <span>{getPageTitle()}</span>
         </div>
         <div className="header-right">
-          <button 
-            className="btn" 
+          <button
+            className="btn"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Menu"
           >
@@ -34,7 +36,7 @@ const Layout = () => {
           </button>
         </div>
       </header>
-      
+
       {isMenuOpen && (
         <nav className="mobile-menu glass" style={{
           position: 'fixed',
@@ -46,9 +48,21 @@ const Layout = () => {
           borderBottom: '1px solid var(--color-border)',
           zIndex: 49
         }}>
-          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <li><Link to="/" className="btn" style={{justifyContent: 'flex-start', width: '100%'}} onClick={() => setIsMenuOpen(false)}>Main Page</Link></li>
-            <li><Link to="/hot-zone" className="btn" style={{justifyContent: 'flex-start', width: '100%'}} onClick={() => setIsMenuOpen(false)}>Hot Zone</Link></li>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <li><Link to="/" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Main Page</Link></li>
+            <li><Link to="/manual-control" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Manual Control</Link></li>
+            <li><Link to="/ai-agent" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>AI Agent</Link></li>
+            <li>
+              <div className="btn" style={{ justifyContent: 'flex-start', width: '100%', cursor: 'default', opacity: 0.8 }}>Settings</div>
+              <ul style={{ listStyle: 'none', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <li><Link to="/settings/import-export" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Import / Export</Link></li>
+                <li><Link to="/settings/motors" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Motors</Link></li>
+                <li><Link to="/settings/ai-behavior" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>AI Behavior</Link></li>
+                <li><Link to="/settings/hot-zone" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Hot Zone</Link></li>
+              </ul>
+            </li>
+            <li><Link to="/tutorials" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>Tutorials</Link></li>
+            <li><Link to="/about" className="btn" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setIsMenuOpen(false)}>About</Link></li>
           </ul>
         </nav>
       )}
@@ -56,7 +70,7 @@ const Layout = () => {
       <main className="main-content">
         <Outlet />
       </main>
-      
+
       <style>{`
         @media (min-width: 640px) {
           .menu-text {

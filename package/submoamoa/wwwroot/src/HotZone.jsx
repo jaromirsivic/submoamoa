@@ -3,7 +3,6 @@ import React from 'react';
 const HotZone = () => {
     return (
         <div className="page-container">
-            <h1 style={{ marginBottom: '1rem', color: 'var(--color-accent)' }}>Hot Zone</h1>
             <div className="content-card glass" style={{ padding: '2rem', borderRadius: '1rem', borderLeft: '4px solid var(--color-accent)' }}>
                 <p>
                     Welcome to the Hot Zone. This area is restricted or special.

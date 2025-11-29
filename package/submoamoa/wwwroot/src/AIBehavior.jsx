@@ -1,0 +1,11 @@
+import React from 'react';
+
+const AIBehavior = () => {
+    return (
+        <div className="container">
+            <p>AI Behavior settings content goes here.</p>
+        </div>
+    );
+};
+
+export default AIBehavior;
