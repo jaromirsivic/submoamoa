@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
+import menuIcon from './assets/menu-icon.svg';
 
 const Layout = () => {
   const location = useLocation();
@@ -29,7 +30,7 @@ const Layout = () => {
             aria-label="Menu"
           >
             <span style={{ marginRight: '0.5rem', display: 'none' }} className="menu-text">Menu</span>
-            <img src="/src/assets/menu-icon.svg" alt="Menu" width="24" height="24" />
+            <img src={menuIcon} alt="Menu" width="24" height="24" />
           </button>
         </div>
       </header>

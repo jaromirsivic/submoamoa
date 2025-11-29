@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import NumericInput from './NumericInput';
 
 const Slider = ({
     value,
@@ -7,6 +8,7 @@ const Slider = ({
     max = 100,
     step = 1,
     disabled = false,
+    allowManualInput = false,
     style = {}
 }) => {
     const [isDragging, setIsDragging] = useState(false);
@@ -65,7 +67,8 @@ const Slider = ({
         height: '4px',
         backgroundColor: '#cbd5e1',
         borderRadius: '2px',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        flex: 1
     };
 
     const fillStyle = {
@@ -107,8 +110,8 @@ const Slider = ({
 
     return (
         <div className="custom-slider responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', ...style }}>
-            <div style={{ position: 'relative', width: '100%', height: '40px', display: 'flex', alignItems: 'center' }}>
-                {isDragging && <div style={valueLabelStyle}>{value}</div>}
+            <div style={{ position: 'relative', width: '100%', height: '40px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                {isDragging && !allowManualInput && <div style={valueLabelStyle}>{value}</div>}
                 <div
                     ref={trackRef}
                     style={trackStyle}
@@ -117,6 +120,19 @@ const Slider = ({
                     <div style={fillStyle} />
                     <div style={thumbStyle} />
                 </div>
+
+                {allowManualInput && (
+                    <div style={{ width: '80px' }}>
+                        <NumericInput
+                            value={value}
+                            onChange={onChange}
+                            min={min}
+                            max={max}
+                            step={step}
+                            disabled={disabled}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

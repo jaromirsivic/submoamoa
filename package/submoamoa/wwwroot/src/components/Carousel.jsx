@@ -40,7 +40,7 @@ const Carousel = ({
         position: 'relative',
         width: '100%',
         height: isMaximized ? '100vh' : '300px',
-        backgroundColor: 'transparent', // Transparent background
+        backgroundColor: 'white', // White background
         borderRadius: isMaximized ? 0 : '0.5rem',
         overflow: 'hidden',
         opacity: disabled ? 0.6 : 1,
@@ -48,6 +48,7 @@ const Carousel = ({
         position: isMaximized ? 'fixed' : 'relative',
         top: isMaximized ? 0 : 'auto',
         left: isMaximized ? 0 : 'auto',
+        border: isMaximized ? 'none' : '1px dotted #ccc',
         ...style
     };
 
@@ -58,7 +59,7 @@ const Carousel = ({
         position: 'absolute',
         top: 0,
         left: 0,
-        transition: 'opacity 0.25s ease-in-out' // Fade transition
+        transition: 'opacity 0.25s ease-in-out'
     };
 
     const buttonStyle = {
@@ -88,9 +89,19 @@ const Carousel = ({
         zIndex: 3
     };
 
+    const dotsContainerStyle = {
+        position: 'absolute',
+        bottom: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex',
+        gap: '0.5rem',
+        zIndex: 2
+    };
+
     if (images.length === 0) {
         return (
-            <div style={{ ...containerStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+            <div style={{ ...containerStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black' }}>
                 No Images
             </div>
         );
@@ -113,13 +124,42 @@ const Carousel = ({
 
             {images.length > 1 && (
                 <>
-                    <button style={{ ...buttonStyle, left: '10px' }} onClick={handlePrev}>&lt;</button>
-                    <button style={{ ...buttonStyle, right: '10px' }} onClick={handleNext}>&gt;</button>
+                    <button
+                        className="carousel-btn"
+                        style={{ ...buttonStyle, left: '10px' }}
+                        onClick={handlePrev}
+                    >
+                        &lt;
+                    </button>
+                    <button
+                        className="carousel-btn"
+                        style={{ ...buttonStyle, right: '10px' }}
+                        onClick={handleNext}
+                    >
+                        &gt;
+                    </button>
+
+                    <div style={dotsContainerStyle}>
+                        {images.map((_, index) => (
+                            <div
+                                key={index}
+                                className={`carousel-dot ${index === currentIndex ? 'active' : ''}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!disabled) setCurrentIndex(index);
+                                }}
+                            />
+                        ))}
+                    </div>
                 </>
             )}
 
             {allowMaximize && !disabled && (
-                <button style={maximizeButtonStyle} onClick={toggleMaximize}>
+                <button
+                    className="carousel-btn"
+                    style={maximizeButtonStyle}
+                    onClick={toggleMaximize}
+                >
                     {isMaximized ? 'Minimize' : 'Maximize'}
                 </button>
             )}

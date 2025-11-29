@@ -9,52 +9,32 @@ const NumericInput = ({
     disabled = false,
     style = {}
 }) => {
-    const handleIncrement = () => {
-        if (disabled) return;
-        const newValue = Math.min(value + step, max !== undefined ? max : Infinity);
-        onChange(newValue);
-    };
-
-    const handleDecrement = () => {
-        if (disabled) return;
-        const newValue = Math.max(value - step, min !== undefined ? min : -Infinity);
-        onChange(newValue);
-    };
-
-    const buttonStyle = {
-        width: '24px',
-        height: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#cbd5e1',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        fontSize: '1rem',
-        lineHeight: 1
-    };
-
     const inputStyle = {
-        width: '60px',
-        textAlign: 'center',
+        width: '80px',
         padding: '0.25rem',
         border: '1px solid #cbd5e1',
         borderRadius: '4px',
-        backgroundColor: disabled ? '#f1f5f9' : '#ffffff'
+        backgroundColor: disabled ? '#f1f5f9' : '#ffffff',
+        textAlign: 'center'
     };
 
     return (
         <div className="custom-numeric-input responsive-input-container" style={{ opacity: disabled ? 0.5 : 1, ...style }}>
-            <button onClick={handleDecrement} style={buttonStyle} disabled={disabled}>-</button>
             <input
                 type="number"
                 value={value}
-                readOnly
+                onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val)) {
+                        onChange(val);
+                    }
+                }}
+                min={min}
+                max={max}
+                step={step}
                 disabled={disabled}
                 style={inputStyle}
             />
-            <button onClick={handleIncrement} style={buttonStyle} disabled={disabled}>+</button>
         </div>
     );
 };

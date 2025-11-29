@@ -12,7 +12,7 @@ const Switch = ({
         position: 'relative',
         width: '40px',
         height: '24px',
-        backgroundColor: value ? '#3b82f6' : '#cbd5e1',
+        backgroundColor: value ? '#009900ff' : '#ef4444',
         borderRadius: '24px',
         transition: 'background-color 0.2s',
         cursor: 'pointer',

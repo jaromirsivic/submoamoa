@@ -141,12 +141,13 @@ const ComponentsDemo = () => {
                         <NumericInput value={5} disabled onChange={() => { }} />
 
                         <div style={{ marginTop: '1rem' }}>
-                            <span>Slider (Value: {sliderValue})</span>
+                            <span>Slider</span>
                             <Slider
                                 value={sliderValue}
                                 onChange={setSliderValue}
                                 min={0}
                                 max={100}
+                                allowManualInput
                             />
                         </div>
                         <Slider value={30} disabled onChange={() => { }} />

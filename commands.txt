@@ -29,3 +29,8 @@ Upravit carousel aby nevyplnoval prazdny prostor za obrazkem cernou barvou ale b
 6.	Change background of the main content to #90b0c0.
 7.	Modify a background of Menu button. It should have yellow color #887700 and on hover change the color to #885500.
 8.	Download the SVG icon displayed in the menu button and put it into assets. Reference the SVG from the assets directory.
+
+1.	The carousel should be outlined by a dotted border. The buttons forward backward and maximize should Have alpha set to 50% and they are highlighted after mouse hover. On the bottom of the carousel there should be dots displaying which image is just shown and how many images there are so user can click on a specific dot and the slideshow will jump to that image.
+2.	There is still missing a menu icon something is wrong when displaying SVG fix the issue.
+3.	The page content background color should be transparent.
+4.	There should be a props for the slider component to allow developer to enable manual insertion of value. If such props is active then Instead of a text value displayed above the slider there is a NumericInput.
