@@ -151,7 +151,7 @@ const Motors = () => {
                     onOk={handleSave}
                     onCancel={handleCloseModal}
                 >
-                    <ColumnLayout gap="1rem" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                    <ColumnLayout gap="1rem">
                         <Switch
                             label="Enabled"
                             value={editingMotor.enabled}

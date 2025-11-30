@@ -69,7 +69,7 @@ const ModalWindow = ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: showTopShadow ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none',
+        boxShadow: showTopShadow ? '0 16px 24px -4px rgba(0, 0, 0, 0.2)' : 'none',
         zIndex: 10,
         transition: 'box-shadow 0.2s ease'
     };
@@ -86,7 +86,7 @@ const ModalWindow = ({
         display: 'flex',
         justifyContent: 'flex-end',
         gap: '1rem',
-        boxShadow: showBottomShadow ? '0 -4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none',
+        boxShadow: showBottomShadow ? '0 -16px 24px -4px rgba(0, 0, 0, 0.2)' : 'none',
         zIndex: 10,
         transition: 'box-shadow 0.2s ease'
     };
@@ -96,14 +96,15 @@ const ModalWindow = ({
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        backgroundColor: '#fff',
+        backgroundColor: '#900000',
         padding: '2rem',
         borderRadius: '0.5rem',
         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         zIndex: 20,
         width: '80%',
         maxWidth: '400px',
-        border: '1px solid #fee2e2'
+        border: '1px solid #fee2e2',
+        color: '#ffffff'
     };
 
     const warningOverlayStyle = {
@@ -124,25 +125,6 @@ const ModalWindow = ({
             <div style={modalStyle}>
                 <div style={headerStyle}>
                     <span>{title}</span>
-                    {hasErrors && (
-                        <button
-                            onClick={() => setShowWarningPopup(true)}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '4px',
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundColor: '#fee2e2'
-                            }}
-                            title="Show validation errors"
-                        >
-                            <img src={warningIcon} alt="Warning" width="24" height="24" />
-                        </button>
-                    )}
                 </div>
 
                 <div
@@ -154,6 +136,18 @@ const ModalWindow = ({
                 </div>
 
                 <div style={footerStyle}>
+                    {hasErrors && (
+                        <Button
+                            label={
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <img src={warningIcon} alt="Warning" width="20" height="20" />
+                                    <span>Warning</span>
+                                </div>
+                            }
+                            onClick={() => setShowWarningPopup(true)}
+                            color="#900000"
+                        />
+                    )}
                     {onCancel && (
                         <Button
                             label={cancelLabel}
@@ -175,8 +169,8 @@ const ModalWindow = ({
                     <>
                         <div style={warningOverlayStyle} onClick={() => setShowWarningPopup(false)} />
                         <div style={warningPopupStyle}>
-                            <h3 style={{ color: '#ef4444', marginTop: 0, marginBottom: '1rem' }}>Validation Errors</h3>
-                            <ul style={{ color: '#b91c1c', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                            <h3 style={{ color: '#ffffff', marginTop: 0, marginBottom: '1rem' }}>Validation Errors</h3>
+                            <ul style={{ color: '#ffffff', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                                 {validationErrors.map((error, index) => (
                                     <li key={index}>{error}</li>
                                 ))}
@@ -185,7 +179,7 @@ const ModalWindow = ({
                                 <Button
                                     label="OK"
                                     onClick={() => setShowWarningPopup(false)}
-                                    color="#ef4444"
+                                    color="#3b82f6"
                                 />
                             </div>
                         </div>
