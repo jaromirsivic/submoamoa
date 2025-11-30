@@ -12,6 +12,8 @@ import ImportExport from './ImportExport';
 import Motors from './Motors';
 import AIBehavior from './AIBehavior';
 import ComponentsDemo from './ComponentsDemo';
+import Sandbox from './Sandbox';
+import ModalWindowsDemo from './ModalWindowsDemo';
 
 function App() {
   return (
@@ -28,7 +30,10 @@ function App() {
             <Route path="hot-zone" element={<HotZone />} />
           </Route>
           <Route path="tutorials" element={<Tutorials />} />
-          <Route path="components-demo" element={<ComponentsDemo />} />
+          <Route path="sandbox" element={<Sandbox />}>
+            <Route path="components-demo" element={<ComponentsDemo />} />
+            <Route path="modal-windows-demo" element={<ModalWindowsDemo />} />
+          </Route>
           <Route path="about" element={<About />} />
         </Route>
       </Routes>

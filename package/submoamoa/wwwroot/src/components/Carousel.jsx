@@ -37,7 +37,6 @@ const Carousel = ({
     };
 
     const containerStyle = {
-        position: 'relative',
         width: '100%',
         height: isMaximized ? '100vh' : '300px',
         backgroundColor: 'white', // White background

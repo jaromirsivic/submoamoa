@@ -1,6 +1,7 @@
 import React from 'react';
 
 const NumericInput = ({
+    label,
     value,
     onChange,
     min,
@@ -20,6 +21,7 @@ const NumericInput = ({
 
     return (
         <div className="custom-numeric-input responsive-input-container" style={{ opacity: disabled ? 0.5 : 1, ...style }}>
+            {label && <label className="numeric-input-label" style={{ display: 'block', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>{label}</label>}
             <input
                 type="number"
                 value={value}

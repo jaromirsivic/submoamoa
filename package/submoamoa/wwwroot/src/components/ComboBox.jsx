@@ -1,6 +1,7 @@
 import React from 'react';
 
 const ComboBox = ({
+    label,
     items = [],
     value,
     onChange,
@@ -19,6 +20,7 @@ const ComboBox = ({
 
     return (
         <div className="custom-combobox responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, ...style }}>
+            {label && <label className="combobox-label" style={{ display: 'block', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>{label}</label>}
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}

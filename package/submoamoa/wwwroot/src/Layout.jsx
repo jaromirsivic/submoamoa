@@ -4,7 +4,7 @@ import menuIcon from './assets/menu-icon.svg';
 
 // Import icons
 import mainPageIcon from './assets/icons/mainPage.svg';
-import manualControlIcon from './assets/icons/touch_app_24dp_E3E3E3_FILL1_wght400_GRAD0_opsz24.svg'; // Best guess for Manual Control
+import manualControlIcon from './assets/icons/manualControl.svg';
 import aiAgentIcon from './assets/icons/aiAgent.svg';
 import settingsIcon from './assets/icons/settings.svg';
 import importExportIcon from './assets/icons/importExport.svg';
@@ -12,8 +12,9 @@ import motorsIcon from './assets/icons/motors.svg';
 import aiBehaviorIcon from './assets/icons/aiBehavior.svg';
 import hotZoneIcon from './assets/icons/hotZone.svg';
 import tutorialsIcon from './assets/icons/tutorials.svg';
-import componentsDemoIcon from './assets/icons/stairs_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg'; // Best guess for Components Demo
+import componentsDemoIcon from './assets/icons/mainPage.svg'; // Using mainPage icon as fallback for Components Demo
 import aboutIcon from './assets/icons/about.svg';
+import modalWindowsIcon from './assets/icons/tip.svg';
 
 const Layout = () => {
   const location = useLocation();
@@ -31,8 +32,12 @@ const Layout = () => {
       if (path === '/settings/hot-zone') return { title: 'Hot Zone', icon: hotZoneIcon };
       return { title: 'Settings', icon: settingsIcon };
     }
+    if (path.startsWith('/sandbox')) {
+      if (path === '/sandbox/components-demo') return { title: 'Components Demo', icon: componentsDemoIcon };
+      if (path === '/sandbox/modal-windows-demo') return { title: 'Modal Windows Demo', icon: modalWindowsIcon };
+      return { title: 'Developers Sandbox', icon: manualControlIcon };
+    }
     if (path === '/tutorials') return { title: 'Tutorials', icon: tutorialsIcon };
-    if (path === '/components-demo') return { title: 'Components Demo', icon: componentsDemoIcon };
     if (path === '/about') return { title: 'About', icon: aboutIcon };
     return { title: 'Submoamoa', icon: null };
   };
@@ -100,7 +105,16 @@ const Layout = () => {
               </ul>
             </li>
             <li><MenuLink to="/tutorials" icon={tutorialsIcon} label="Tutorials" onClick={() => setIsMenuOpen(false)} /></li>
-            <li><MenuLink to="/components-demo" icon={componentsDemoIcon} label="Components Demo" onClick={() => setIsMenuOpen(false)} /></li>
+            <li>
+              <div className="btn" style={{ justifyContent: 'flex-start', width: '100%', cursor: 'default', opacity: 0.8, gap: '0.75rem' }}>
+                <img src={manualControlIcon} alt="" width="24" height="24" />
+                Developers Sandbox
+              </div>
+              <ul style={{ listStyle: 'none', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <li><MenuLink to="/sandbox/components-demo" icon={componentsDemoIcon} label="Components Demo" onClick={() => setIsMenuOpen(false)} /></li>
+                <li><MenuLink to="/sandbox/modal-windows-demo" icon={modalWindowsIcon} label="Modal Windows Demo" onClick={() => setIsMenuOpen(false)} /></li>
+              </ul>
+            </li>
             <li><MenuLink to="/about" icon={aboutIcon} label="About" onClick={() => setIsMenuOpen(false)} /></li>
           </ul>
         </nav>
