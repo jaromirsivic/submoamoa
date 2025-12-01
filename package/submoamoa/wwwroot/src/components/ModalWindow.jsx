@@ -10,7 +10,8 @@ const ModalWindow = ({
     onCancel,
     okLabel = 'OK',
     cancelLabel = 'Cancel',
-    validationErrors = []
+    validationErrors = [],
+    validationWarnings = []
 }) => {
     const [showTopShadow, setShowTopShadow] = useState(false);
     const [showBottomShadow, setShowBottomShadow] = useState(false);
@@ -119,6 +120,8 @@ const ModalWindow = ({
     };
 
     const hasErrors = validationErrors.length > 0;
+    const hasWarnings = validationWarnings.length > 0;
+    const hasIssues = hasErrors || hasWarnings;
 
     return (
         <div style={overlayStyle}>
@@ -136,16 +139,16 @@ const ModalWindow = ({
                 </div>
 
                 <div style={footerStyle}>
-                    {hasErrors && (
+                    {hasIssues && (
                         <Button
                             label={
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <img src={warningIcon} alt="Warning" width="20" height="20" />
-                                    <span>Warning</span>
+                                    <span>{hasErrors ? 'Error' : 'Warning'}</span>
                                 </div>
                             }
                             onClick={() => setShowWarningPopup(true)}
-                            color="#900000"
+                            color={hasErrors ? "#900000" : "#f59e0b"}
                         />
                     )}
                     {onCancel && (
@@ -168,11 +171,20 @@ const ModalWindow = ({
                 {showWarningPopup && (
                     <>
                         <div style={warningOverlayStyle} onClick={() => setShowWarningPopup(false)} />
-                        <div style={warningPopupStyle}>
-                            <h3 style={{ color: '#ffffff', marginTop: 0, marginBottom: '1rem' }}>Validation Errors</h3>
+                        <div style={{
+                            ...warningPopupStyle,
+                            backgroundColor: hasErrors ? '#900000' : '#f59e0b',
+                            border: hasErrors ? '1px solid #fee2e2' : '1px solid #fcd34d'
+                        }}>
+                            <h3 style={{ color: '#ffffff', marginTop: 0, marginBottom: '1rem' }}>
+                                {hasErrors ? 'Validation Errors' : 'Warnings'}
+                            </h3>
                             <ul style={{ color: '#ffffff', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                                 {validationErrors.map((error, index) => (
-                                    <li key={index}>{error}</li>
+                                    <li key={`err-${index}`}>{error}</li>
+                                ))}
+                                {validationWarnings.map((warning, index) => (
+                                    <li key={`warn-${index}`}>{warning}</li>
                                 ))}
                             </ul>
                             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

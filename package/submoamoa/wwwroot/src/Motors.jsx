@@ -127,12 +127,19 @@ const Motors = () => {
             errors.push('Forward Pin and Reverse Pin must be different');
         }
 
+        return errors;
+    };
+
+    const getValidationWarnings = () => {
+        if (!editingMotor) return [];
+        const warnings = [];
+
         // Check if Forward Pin is used by another motor
         const forwardPinConflict = motors.find((m, index) =>
             index !== editingMotorIndex && (m.forwardPin === editingMotor.forwardPin || m.reversePin === editingMotor.forwardPin)
         );
         if (forwardPinConflict) {
-            errors.push(`Forward Pin ${editingMotor.forwardPin} is already used by motor '${forwardPinConflict.name}'`);
+            warnings.push(`Forward Pin ${editingMotor.forwardPin} is already used by motor '${forwardPinConflict.name}'`);
         }
 
         // Check if Reverse Pin is used by another motor
@@ -140,10 +147,10 @@ const Motors = () => {
             index !== editingMotorIndex && (m.forwardPin === editingMotor.reversePin || m.reversePin === editingMotor.reversePin)
         );
         if (reversePinConflict) {
-            errors.push(`Reverse Pin ${editingMotor.reversePin} is already used by motor '${reversePinConflict.name}'`);
+            warnings.push(`Reverse Pin ${editingMotor.reversePin} is already used by motor '${reversePinConflict.name}'`);
         }
 
-        return errors;
+        return warnings;
     };
 
     const getNameValidationError = () => {
@@ -229,6 +236,7 @@ const Motors = () => {
                     onOk={handleSave}
                     onCancel={handleCloseModal}
                     validationErrors={getValidationErrors()}
+                    validationWarnings={getValidationWarnings()}
                 >
                     <ColumnLayout gap="1rem">
                         <Switch
