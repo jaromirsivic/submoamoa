@@ -72,12 +72,17 @@ const Motors = () => {
     };
 
     const updateMotorField = (field, value) => {
+        let newValue = value;
+        if (['forwardPin', 'reversePin', 'mcp3008ForwardPin', 'mcp3008ReversePin'].includes(field)) {
+            newValue = parseInt(value, 10);
+        }
+
         if (field === 'name') {
             // Validation: Max 128 chars, alphanumeric + space + underscore + hyphen
             if (value.length > 128) return;
             if (!/^[a-zA-Z0-9 _-]*$/.test(value)) return;
         }
-        setEditingMotor(prev => ({ ...prev, [field]: value }));
+        setEditingMotor(prev => ({ ...prev, [field]: newValue }));
     };
 
     const updateDutyCycleField = (field, value) => {
