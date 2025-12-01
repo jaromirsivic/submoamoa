@@ -148,7 +148,7 @@ const ModalWindow = ({
                                 </div>
                             }
                             onClick={() => setShowWarningPopup(true)}
-                            color={hasErrors ? "#900000" : "#f59e0b"}
+                            color={hasErrors ? "#900000" : "#d07000"}
                         />
                     )}
                     {onCancel && (
@@ -173,7 +173,7 @@ const ModalWindow = ({
                         <div style={warningOverlayStyle} onClick={() => setShowWarningPopup(false)} />
                         <div style={{
                             ...warningPopupStyle,
-                            backgroundColor: hasErrors ? '#900000' : '#f59e0b',
+                            backgroundColor: hasErrors ? '#900000' : '#d07000',
                             border: hasErrors ? '1px solid #fee2e2' : '1px solid #fcd34d'
                         }}>
                             <h3 style={{ color: '#ffffff', marginTop: 0, marginBottom: '1rem' }}>

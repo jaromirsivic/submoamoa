@@ -122,9 +122,29 @@ const Motors = () => {
             errors.push('A motor with this name already exists');
         }
 
-        // Pin validation
-        if (editingMotor.forwardPin === editingMotor.reversePin) {
+        // Pin validation - Pin 0 (Dummy GPIO) is exempt from this check
+        if (editingMotor.forwardPin !== 0 && editingMotor.forwardPin === editingMotor.reversePin) {
             errors.push('Forward Pin and Reverse Pin must be different');
+        }
+
+        // Check if Forward Pin is used by another motor (Pin 0 is exempt)
+        if (editingMotor.forwardPin !== 0) {
+            const forwardPinConflict = motors.find((m, index) =>
+                index !== editingMotorIndex && (m.forwardPin === editingMotor.forwardPin || m.reversePin === editingMotor.forwardPin)
+            );
+            if (forwardPinConflict) {
+                errors.push(`Forward Pin ${editingMotor.forwardPin} is already used by motor '${forwardPinConflict.name}'`);
+            }
+        }
+
+        // Check if Reverse Pin is used by another motor (Pin 0 is exempt)
+        if (editingMotor.reversePin !== 0) {
+            const reversePinConflict = motors.find((m, index) =>
+                index !== editingMotorIndex && (m.forwardPin === editingMotor.reversePin || m.reversePin === editingMotor.reversePin)
+            );
+            if (reversePinConflict) {
+                errors.push(`Reverse Pin ${editingMotor.reversePin} is already used by motor '${reversePinConflict.name}'`);
+            }
         }
 
         return errors;
@@ -134,21 +154,7 @@ const Motors = () => {
         if (!editingMotor) return [];
         const warnings = [];
 
-        // Check if Forward Pin is used by another motor
-        const forwardPinConflict = motors.find((m, index) =>
-            index !== editingMotorIndex && (m.forwardPin === editingMotor.forwardPin || m.reversePin === editingMotor.forwardPin)
-        );
-        if (forwardPinConflict) {
-            warnings.push(`Forward Pin ${editingMotor.forwardPin} is already used by motor '${forwardPinConflict.name}'`);
-        }
-
-        // Check if Reverse Pin is used by another motor
-        const reversePinConflict = motors.find((m, index) =>
-            index !== editingMotorIndex && (m.forwardPin === editingMotor.reversePin || m.reversePin === editingMotor.reversePin)
-        );
-        if (reversePinConflict) {
-            warnings.push(`Reverse Pin ${editingMotor.reversePin} is already used by motor '${reversePinConflict.name}'`);
-        }
+        // No warnings needed - pin conflicts are now errors
 
         return warnings;
     };
@@ -175,6 +181,40 @@ const Motors = () => {
         if (type === 'linearActuator') return linearIcon;
         if (type === 'stepperMotor') return stepperIcon;
         return null;
+    };
+
+    const getForwardPinError = () => {
+        if (!editingMotor) return false;
+
+        // Pin 0 is exempt from all validation
+        if (editingMotor.forwardPin === 0) return false;
+
+        // Check if same as reverse pin
+        if (editingMotor.forwardPin === editingMotor.reversePin) return true;
+
+        // Check if used by another motor
+        const forwardPinConflict = motors.find((m, index) =>
+            index !== editingMotorIndex && (m.forwardPin === editingMotor.forwardPin || m.reversePin === editingMotor.forwardPin)
+        );
+
+        return !!forwardPinConflict;
+    };
+
+    const getReversePinError = () => {
+        if (!editingMotor) return false;
+
+        // Pin 0 is exempt from all validation
+        if (editingMotor.reversePin === 0) return false;
+
+        // Check if same as forward pin
+        if (editingMotor.forwardPin === editingMotor.reversePin) return true;
+
+        // Check if used by another motor
+        const reversePinConflict = motors.find((m, index) =>
+            index !== editingMotorIndex && (m.forwardPin === editingMotor.reversePin || m.reversePin === editingMotor.reversePin)
+        );
+
+        return !!reversePinConflict;
     };
 
     return (
@@ -290,8 +330,8 @@ const Motors = () => {
                             <ColumnLayout gap="0.5rem">
                                 <div style={{
                                     padding: '0.5rem',
-                                    border: editingMotor.forwardPin === editingMotor.reversePin ? '2px solid #ef4444' : '1px solid transparent',
-                                    boxShadow: editingMotor.forwardPin === editingMotor.reversePin ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
+                                    border: getForwardPinError() ? '2px solid #ef4444' : '1px solid transparent',
+                                    boxShadow: getForwardPinError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
                                     borderRadius: '4px',
                                     transition: 'all 0.2s ease'
                                 }}>
@@ -304,8 +344,8 @@ const Motors = () => {
                                 </div>
                                 <div style={{
                                     padding: '0.5rem',
-                                    border: editingMotor.forwardPin === editingMotor.reversePin ? '2px solid #ef4444' : '1px solid transparent',
-                                    boxShadow: editingMotor.forwardPin === editingMotor.reversePin ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
+                                    border: getReversePinError() ? '2px solid #ef4444' : '1px solid transparent',
+                                    boxShadow: getReversePinError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
                                     borderRadius: '4px',
                                     transition: 'all 0.2s ease'
                                 }}>

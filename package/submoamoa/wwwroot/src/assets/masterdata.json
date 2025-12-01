@@ -14,8 +14,8 @@
   "pins": [
     {
       "index": 0,
-      "name": "No Pin",
-      "isGPIO": false,
+      "name": "Dummy GPIO",
+      "isGPIO": true,
       "isSPI": false,
       "isPWM": false
     },
