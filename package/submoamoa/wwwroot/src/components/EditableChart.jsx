@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const EditableChart = ({
     xMin = 0,
@@ -14,6 +14,7 @@ const EditableChart = ({
     onChange = () => { }
 }) => {
     const [draggingIndex, setDraggingIndex] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(null);
     const svgRef = useRef(null);
 
     const width = 600;
@@ -21,6 +22,20 @@ const EditableChart = ({
     const padding = 60;
     const chartWidth = width - 2 * padding;
     const chartHeight = height - 2 * padding;
+
+    // Handle keyboard events for deletion
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Delete' && selectedIndex !== null) {
+                const newPoints = points.filter((_, i) => i !== selectedIndex);
+                onChange(newPoints);
+                setSelectedIndex(null);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedIndex, points, onChange]);
 
     // Convert data coordinates to SVG coordinates
     const toSVGX = (x) => padding + ((x - xMin) / (xMax - xMin)) * chartWidth;
@@ -58,11 +73,13 @@ const EditableChart = ({
         const clampedY = Math.max(yMin, Math.min(yMax, dataY));
 
         onChange([...points, { x: clampedX, y: clampedY }]);
+        setSelectedIndex(null);
     };
 
-    // Handle point drag start
+    // Handle point click/drag start
     const handlePointMouseDown = (index, e) => {
         e.stopPropagation();
+        setSelectedIndex(index);
         setDraggingIndex(index);
     };
 
@@ -97,6 +114,7 @@ const EditableChart = ({
         e.stopPropagation();
         const newPoints = points.filter((_, i) => i !== index);
         onChange(newPoints);
+        setSelectedIndex(null);
     };
 
     // Generate grid lines
@@ -258,14 +276,14 @@ const EditableChart = ({
                     strokeWidth="2"
                 />
 
-                {/* User points (editable) */}
+                {/* User points (editable) - black, smaller, blue when selected */}
                 {points.map((point, index) => (
                     <circle
                         key={index}
                         cx={toSVGX(point.x)}
                         cy={toSVGY(point.y)}
-                        r="8"
-                        fill="#ef4444"
+                        r="6"
+                        fill={selectedIndex === index ? "#3b82f6" : "#000"}
                         stroke="#fff"
                         strokeWidth="2"
                         style={{ cursor: 'move' }}
@@ -276,7 +294,7 @@ const EditableChart = ({
             </svg>
             <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
                 <div>Click to add points ({points.length}/{maxNumberOfUserPoints})</div>
-                <div>Drag points to move • Double-click to delete</div>
+                <div>Drag points to move • Double-click or press Del to delete</div>
             </div>
         </div>
     );
