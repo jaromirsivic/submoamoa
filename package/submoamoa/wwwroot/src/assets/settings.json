@@ -110,7 +110,7 @@
         },
         {
             "enabled": false,
-            "name": "linearMotor3",
+            "name": "linearMotor4",
             "type": "linearActuator",
             "role": "general",
             "forwardPin": 16,

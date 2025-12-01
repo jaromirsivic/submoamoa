@@ -20,6 +20,7 @@ const Motors = () => {
     const [motors, setMotors] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingMotor, setEditingMotor] = useState(null);
+    const [editingMotorIndex, setEditingMotorIndex] = useState(-1);
 
     // Load initial data
     useEffect(() => {
@@ -44,14 +45,21 @@ const Motors = () => {
         color: pin.isSPI ? '#ffffe0' : (pin.isPWM ? '#90ee90' : undefined)
     }));
 
-    const handleEdit = (motor) => {
-        setEditingMotor(JSON.parse(JSON.stringify(motor))); // Deep copy
+    const handleEdit = (motor, index) => {
+        const motorCopy = JSON.parse(JSON.stringify(motor)); // Deep copy
+        // Initialize automaticCalibrationEnabled if not present (backward compatibility)
+        if (motorCopy.automaticCalibrationEnabled === undefined) {
+            motorCopy.automaticCalibrationEnabled = true;
+        }
+        setEditingMotor(motorCopy);
+        setEditingMotorIndex(index);
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingMotor(null);
+        setEditingMotorIndex(-1);
     };
 
     const handleSave = () => {
@@ -65,9 +73,9 @@ const Motors = () => {
 
     const updateMotorField = (field, value) => {
         if (field === 'name') {
-            // Validation: Max 128 chars, alphanumeric + space + underscore
+            // Validation: Max 128 chars, alphanumeric + space + underscore + hyphen
             if (value.length > 128) return;
-            if (!/^[a-zA-Z0-9 _]*$/.test(value)) return;
+            if (!/^[a-zA-Z0-9 _-]*$/.test(value)) return;
         }
         setEditingMotor(prev => ({ ...prev, [field]: value }));
     };
@@ -80,6 +88,70 @@ const Motors = () => {
                 [field]: value
             }
         }));
+    };
+
+    const getValidationErrors = () => {
+        if (!editingMotor) return [];
+
+        const errors = [];
+
+        // Name validation
+        if (!editingMotor.name || editingMotor.name.trim() === '') {
+            errors.push('Name cannot be empty');
+        }
+
+        if (editingMotor.name && editingMotor.name.length > 128) {
+            errors.push('Name cannot exceed 128 characters');
+        }
+
+        if (editingMotor.name && editingMotor.name.trim() && !/^[a-zA-Z0-9 _-]+$/.test(editingMotor.name)) {
+            errors.push('Name can only contain letters, numbers, spaces, underscores, and hyphens');
+        }
+
+        // Name uniqueness validation
+        const duplicateMotor = motors.find((m, index) =>
+            m.name === editingMotor.name && index !== editingMotorIndex
+        );
+
+        if (duplicateMotor) {
+            errors.push('A motor with this name already exists');
+        }
+
+        // Pin validation
+        if (editingMotor.forwardPin === editingMotor.reversePin) {
+            errors.push('Forward Pin and Reverse Pin must be different');
+        }
+
+        // Check if Forward Pin is used by another motor
+        const forwardPinConflict = motors.find((m, index) =>
+            index !== editingMotorIndex && (m.forwardPin === editingMotor.forwardPin || m.reversePin === editingMotor.forwardPin)
+        );
+        if (forwardPinConflict) {
+            errors.push(`Forward Pin ${editingMotor.forwardPin} is already used by motor '${forwardPinConflict.name}'`);
+        }
+
+        // Check if Reverse Pin is used by another motor
+        const reversePinConflict = motors.find((m, index) =>
+            index !== editingMotorIndex && (m.forwardPin === editingMotor.reversePin || m.reversePin === editingMotor.reversePin)
+        );
+        if (reversePinConflict) {
+            errors.push(`Reverse Pin ${editingMotor.reversePin} is already used by motor '${reversePinConflict.name}'`);
+        }
+
+        return errors;
+    };
+
+    const getNameValidationError = () => {
+        if (!editingMotor) return false;
+        if (!editingMotor.name || editingMotor.name.trim() === '') return true;
+        if (editingMotor.name.length > 128) return true;
+        if (!/^[a-zA-Z0-9 _-]+$/.test(editingMotor.name)) return true;
+
+        const duplicateMotor = motors.find((m, index) =>
+            m.name === editingMotor.name && index !== editingMotorIndex
+        );
+
+        return !!duplicateMotor;
     };
 
     const getPinDisplayName = (pinIndex) => {
@@ -103,14 +175,15 @@ const Motors = () => {
                         style={{
                             flex: '1 1 400px',
                             minWidth: '300px'
-                        }}
+                        }
+                        }
                     >
                         <div style={{ borderBottom: '1px solid #ccc', paddingBottom: '0.5rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {getMotorIcon(motor.type) && <img src={getMotorIcon(motor.type)} alt="" width="24" height="24" />}
                                 <h3 style={{ margin: 0, color: '#333' }}>{motor.name} {motor.enabled ? '' : '(Disabled)'}</h3>
                             </div>
-                            <Button label="Edit" onClick={() => handleEdit(motor)} />
+                            <Button label="Edit" onClick={() => handleEdit(motor, index)} />
                         </div>
 
                         <div style={{ opacity: motor.enabled ? 1 : 0.5 }}>
@@ -140,9 +213,9 @@ const Motors = () => {
                                 </div>
                             </ColumnLayout>
                         </div>
-                    </Panel>
+                    </Panel >
                 ))}
-            </div>
+            </div >
 
             {editingMotor && (
                 <ModalWindow
@@ -150,6 +223,7 @@ const Motors = () => {
                     title={`Edit ${editingMotor.name}`}
                     onOk={handleSave}
                     onCancel={handleCloseModal}
+                    validationErrors={getValidationErrors()}
                 >
                     <ColumnLayout gap="1rem">
                         <Switch
@@ -158,12 +232,20 @@ const Motors = () => {
                             onChange={(val) => updateMotorField('enabled', val)}
                         />
 
-                        <Textbox
-                            label="Name"
-                            value={editingMotor.name}
-                            onChange={(val) => updateMotorField('name', val)}
-                            disabled={editingMotor.role !== 'general'}
-                        />
+                        <div style={{
+                            padding: '0.5rem',
+                            border: getNameValidationError() ? '2px solid #ef4444' : '1px solid transparent',
+                            boxShadow: getNameValidationError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
+                            borderRadius: '4px',
+                            transition: 'all 0.2s ease'
+                        }}>
+                            <Textbox
+                                label="Name"
+                                value={editingMotor.name}
+                                onChange={(val) => updateMotorField('name', val)}
+                                disabled={editingMotor.role !== 'general'}
+                            />
+                        </div>
 
                         <ComboBox
                             label="Type"
@@ -193,24 +275,48 @@ const Motors = () => {
                         <fieldset style={{ border: '1px solid #e5e7eb', padding: '0.5rem', borderRadius: '4px' }}>
                             <legend>Pins</legend>
                             <ColumnLayout gap="0.5rem">
-                                <ComboBox
-                                    label="Forward Pin"
-                                    items={pinOptions}
-                                    value={editingMotor.forwardPin}
-                                    onChange={(val) => updateMotorField('forwardPin', val)}
+                                <div style={{
+                                    padding: '0.5rem',
+                                    border: editingMotor.forwardPin === editingMotor.reversePin ? '2px solid #ef4444' : '1px solid transparent',
+                                    boxShadow: editingMotor.forwardPin === editingMotor.reversePin ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
+                                    borderRadius: '4px',
+                                    transition: 'all 0.2s ease'
+                                }}>
+                                    <ComboBox
+                                        label="Forward Pin"
+                                        items={pinOptions}
+                                        value={editingMotor.forwardPin}
+                                        onChange={(val) => updateMotorField('forwardPin', val)}
+                                    />
+                                </div>
+                                <div style={{
+                                    padding: '0.5rem',
+                                    border: editingMotor.forwardPin === editingMotor.reversePin ? '2px solid #ef4444' : '1px solid transparent',
+                                    boxShadow: editingMotor.forwardPin === editingMotor.reversePin ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
+                                    borderRadius: '4px',
+                                    transition: 'all 0.2s ease'
+                                }}>
+                                    <ComboBox
+                                        label="Reverse Pin"
+                                        items={pinOptions}
+                                        value={editingMotor.reversePin}
+                                        onChange={(val) => updateMotorField('reversePin', val)}
+                                    />
+                                </div>
+
+                                <Switch
+                                    label="Automatic Calibration Enabled"
+                                    value={editingMotor.automaticCalibrationEnabled ?? true}
+                                    onChange={(val) => updateMotorField('automaticCalibrationEnabled', val)}
                                 />
-                                <ComboBox
-                                    label="Reverse Pin"
-                                    items={pinOptions}
-                                    value={editingMotor.reversePin}
-                                    onChange={(val) => updateMotorField('reversePin', val)}
-                                />
+
                                 <NumericInput
-                                    label="MCP3008 Forward Pin" // Assuming these are just indices 0-7
+                                    label="MCP3008 Forward Pin"
                                     value={editingMotor.mcp3008ForwardPin}
                                     onChange={(val) => updateMotorField('mcp3008ForwardPin', val)}
                                     min={0}
                                     max={7}
+                                    disabled={!editingMotor.automaticCalibrationEnabled}
                                 />
                                 <NumericInput
                                     label="MCP3008 Reverse Pin"
@@ -218,6 +324,7 @@ const Motors = () => {
                                     onChange={(val) => updateMotorField('mcp3008ReversePin', val)}
                                     min={0}
                                     max={7}
+                                    disabled={!editingMotor.automaticCalibrationEnabled}
                                 />
                             </ColumnLayout>
                         </fieldset>
@@ -235,19 +342,21 @@ const Motors = () => {
                                     value={editingMotor.dutyCycle.maxRunningTimeSeconds}
                                     onChange={(val) => updateDutyCycleField('maxRunningTimeSeconds', val)}
                                     min={0}
+                                    disabled={!editingMotor.dutyCycle.enabled}
                                 />
                                 <NumericInput
                                     label="Min Rest Time (s)"
                                     value={editingMotor.dutyCycle.minRestTimeSeconds}
                                     onChange={(val) => updateDutyCycleField('minRestTimeSeconds', val)}
                                     min={0}
+                                    disabled={!editingMotor.dutyCycle.enabled}
                                 />
                             </ColumnLayout>
                         </fieldset>
                     </ColumnLayout>
                 </ModalWindow>
             )}
-        </div>
+        </div >
     );
 };
 

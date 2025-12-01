@@ -34,3 +34,9 @@ Upravit carousel aby nevyplnoval prazdny prostor za obrazkem cernou barvou ale b
 2.	There is still missing a menu icon something is wrong when displaying SVG fix the issue.
 3.	The page content background color should be transparent.
 4.	There should be a props for the slider component to allow developer to enable manual insertion of value. If such props is active then Instead of a text value displayed above the slider there is a NumericInput.
+
+Update modals shown after user clicks on an Edit button on a Motors page the following way:
+1. Add Switch component before "MCP3008 Forward Pin". The switch label will be "Automatic Calibration Enabled". If the switch is in off position the MCP3008 NumericInputs are disabled as well
+2. Update behavior in the section Duty Cycle. If the Enabled switch is off then Max Running Time (s) and Min Rest Time (s) are disabled as well.
+3. Add business validation that Forward Pin must be different than Reverse Pin. If they are the same the warning is displayed.
+4. Add business validation that the Name is not Empty, Name is no longer than 128 characters. Name is composed only with alphanumeric characters, numbers, spaces, underscore and -. The name must be unique there must be no other motor with the same name.
