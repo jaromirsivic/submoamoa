@@ -34,8 +34,7 @@
                     "speed": 1,
                     "pwmMultiplier": 1
                 }
-            ],
-            "automaticCalibrationEnabled": true
+            ]
         },
         {
             "enabled": true,

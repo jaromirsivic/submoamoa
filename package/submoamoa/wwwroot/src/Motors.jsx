@@ -62,13 +62,42 @@ const Motors = () => {
         setEditingMotorIndex(-1);
     };
 
-    const handleSave = () => {
-        // Update the motors list with the edited motor
-        // Note: This only updates local state, does not persist to file
-        setMotors(prevMotors => prevMotors.map(m =>
-            m.name === editingMotor.name ? editingMotor : m
-        ));
-        handleCloseModal();
+    const handleSave = async () => {
+        try {
+            // Update the motors list with the edited motor
+            const updatedMotors = motors.map((m, index) =>
+                index === editingMotorIndex ? editingMotor : m
+            );
+
+            // Prepare the full settings object
+            const updatedSettings = {
+                ...settingsData,
+                motors: updatedMotors
+            };
+
+            // Call the backend API to save settings
+            const response = await fetch('http://localhost:8000/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedSettings),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save settings');
+            }
+
+            const result = await response.json();
+            console.log('Settings saved:', result.message);
+
+            // Update local state
+            setMotors(updatedMotors);
+            handleCloseModal();
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            alert('Failed to save settings. Please try again.');
+        }
     };
 
     const updateMotorField = (field, value) => {
