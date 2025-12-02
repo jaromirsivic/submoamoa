@@ -3,10 +3,27 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from typing import Any
-
+from contextlib import asynccontextmanager
 from . import settingscontroller
+from .camera import CameraController
 
-app = FastAPI()
+async def onload():
+    print("Server loaded")
+    cameras = CameraController().list_cameras()
+    print(cameras)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic goes here
+    print("Server starting up...")
+    # You can call your onload function here
+    await onload()
+    yield
+    # Shutdown logic goes here
+    print("Server shutting down...")
+
+app = FastAPI(lifespan=lifespan)
 
 # Enable CORS for all origins
 app.add_middleware(
