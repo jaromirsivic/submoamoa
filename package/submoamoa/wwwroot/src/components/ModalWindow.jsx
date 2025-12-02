@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Button from './Button';
-import warningIcon from '../assets/icons/warning_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+import warningIcon from '../assets/icons/warning.svg';
 
 const ModalWindow = ({
     isOpen,

@@ -11,6 +11,7 @@ import AIAgent from './AIAgent';
 import ImportExport from './ImportExport';
 import Motors from './Motors';
 import AIBehavior from './AIBehavior';
+import Camera from './Camera';
 import ComponentsDemo from './ComponentsDemo';
 import Sandbox from './Sandbox';
 import ModalWindowsDemo from './ModalWindowsDemo';
@@ -29,6 +30,7 @@ function App() {
             <Route path="motors" element={<Motors />} />
             <Route path="ai-behavior" element={<AIBehavior />} />
             <Route path="hot-zone" element={<HotZone />} />
+            <Route path="camera" element={<Camera />} />
           </Route>
           <Route path="tutorials" element={<Tutorials />} />
           <Route path="sandbox" element={<Sandbox />}>
