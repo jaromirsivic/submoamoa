@@ -14,7 +14,12 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "softness": 0.1,
+            "movementSmoothness": 0.1,
+            "strokeConfiguration": {
+                "enabled": true,
+                "fullExtensionTime": 10,
+                "strokeLength": 250
+            },
             "forwardSpeedHistogram": [
                 {
                     "speed": 0,
@@ -51,7 +56,12 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "softness": 0.1,
+            "movementSmoothness": 0.1,
+            "strokeConfiguration": {
+                "enabled": true,
+                "fullExtensionTime": 10,
+                "strokeLength": 250
+            },
             "forwardSpeedHistogram": [
                 {
                     "speed": 0,
@@ -87,7 +97,12 @@
                 "maxRunningTimeSeconds": 0,
                 "minRestTimeSeconds": 0
             },
-            "softness": 0.1,
+            "movementSmoothness": 0.1,
+            "strokeConfiguration": {
+                "enabled": false,
+                "fullExtensionTime": 0,
+                "strokeLength": 0
+            },
             "forwardSpeedHistogram": [
                 {
                     "speed": 0,
@@ -123,7 +138,12 @@
                 "maxRunningTimeSeconds": 0,
                 "minRestTimeSeconds": 0
             },
-            "softness": 0.1,
+            "movementSmoothness": 0.1,
+            "strokeConfiguration": {
+                "enabled": false,
+                "fullExtensionTime": 0,
+                "strokeLength": 0
+            },
             "forwardSpeedHistogram": [
                 {
                     "speed": 0,

@@ -76,27 +76,45 @@ const Motors = () => {
             };
 
             // Call the backend API to save settings
-            const response = await fetch('http://localhost:8000/api/settings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedSettings),
-            });
+            // Use dynamic URL based on current hostname to support access from any IP
+            const apiUrl = `http://${window.location.hostname}:8000/api/settings`;
 
-            if (!response.ok) {
-                throw new Error('Failed to save settings');
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedSettings),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error('Failed to save settings');
+                }
+
+                const result = await response.json();
+                console.log('Settings saved:', result.message);
+
+                // Update local state
+                setMotors(updatedMotors);
+                handleCloseModal();
+            } catch (fetchError) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('Server did not respond within 2 seconds');
+                }
+                throw fetchError;
             }
-
-            const result = await response.json();
-            console.log('Settings saved:', result.message);
-
-            // Update local state
-            setMotors(updatedMotors);
-            handleCloseModal();
         } catch (error) {
             console.error('Error saving settings:', error);
-            alert('Failed to save settings. Please try again.');
+            alert(`Failed to save settings: ${error.message}`);
         }
     };
 
@@ -272,7 +290,7 @@ const Motors = () => {
                                 <StaticText text={`Enabled: ${motor.enabled ? 'Yes' : 'No'}`} />
                                 <StaticText text={`Type: ${motor.type}`} />
                                 <StaticText text={`Role: ${motor.role}`} />
-                                <StaticText text={`Softness: ${motor.softness}`} />
+                                <StaticText text={`Movement Smoothness: ${motor.movementSmoothness}`} />
 
                                 <div style={{ marginTop: '0.5rem' }}>
                                     <strong>Pins:</strong>
@@ -304,6 +322,7 @@ const Motors = () => {
                     title={`Edit ${editingMotor.name}`}
                     onOk={handleSave}
                     onCancel={handleCloseModal}
+                    okLabel="Save"
                     validationErrors={getValidationErrors()}
                     validationWarnings={getValidationWarnings()}
                 >
@@ -346,9 +365,9 @@ const Motors = () => {
                         />
 
                         <NumericInput
-                            label="Softness"
-                            value={editingMotor.softness}
-                            onChange={(val) => updateMotorField('softness', val)}
+                            label="Movement Smoothness"
+                            value={editingMotor.movementSmoothness}
+                            onChange={(val) => updateMotorField('movementSmoothness', val)}
                             step={0.1}
                             min={0}
                             max={1}
