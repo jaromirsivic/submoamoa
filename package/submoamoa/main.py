@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from pydantic import BaseModel
 from typing import Any
-import json
+
+from . import settingscontroller
 
 app = FastAPI()
 
@@ -19,33 +19,17 @@ app.add_middleware(
 
 # Get the directory of the current file
 BASE_DIR = Path(__file__).resolve().parent
-SETTINGS_FILE = BASE_DIR / "wwwroot/src/assets/settings.json"
-
-class Settings(BaseModel):
-    motors: list[dict[str, Any]]
-    # Add other fields as needed
 
 @app.post("/api/settings")
-async def save_settings(settings: dict[str, Any]):
+async def save_settings_endpoint(settings: dict[str, Any]):
     """Save settings to settings.json file"""
-    try:
-        # Write to settings.json
-        with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(settings, f, indent=4, ensure_ascii=False)
-        
-        return {"success": True, "message": "Settings saved successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save settings: {str(e)}")
+    return await settingscontroller.save_settings(settings)
 
 @app.get("/api/settings")
-async def get_settings():
+async def get_settings_endpoint():
     """Get current settings from settings.json file"""
-    try:
-        with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
-            settings = json.load(f)
-        return settings
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load settings: {str(e)}")
+    return await settingscontroller.get_settings()
 
 app.mount("/", StaticFiles(directory=BASE_DIR / "wwwroot/dist", html=True), name="static")
+
 
