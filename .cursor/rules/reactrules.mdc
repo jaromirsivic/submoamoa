@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+Front-end application is written in React as a responsive, “Mobile First” application. It uses bootstrap policy and braking in case there is not enough space on the page. The app is multilingual, but English en-US will be the default language.s

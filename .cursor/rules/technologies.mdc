@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+The application uses Python FastAPI in the backend and HTML5 + React in the frontend. Everything should be packed as one Python package. Python source code root is in the folder ./package/submoamoa. WWW root folder is in ./package/submoamoa/wwwroot. React Components are in the folder ./package/submoamoa/wwwroot/src/components. Assets are in the folder ./package/submoamoa/wwwroot/src/assets.
