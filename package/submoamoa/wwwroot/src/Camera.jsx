@@ -7,6 +7,7 @@ import NumericInput from './components/NumericInput';
 import Switch from './components/Switch';
 import ColumnLayout from './components/ColumnLayout';
 import RowLayout from './components/RowLayout';
+import editIcon from './assets/icons/edit.svg';
 
 const Camera = () => {
     // Mock data for source options
@@ -22,10 +23,13 @@ const Camera = () => {
 
     return (
         <div className="page-container">
-            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
-                {/* Panel 1: General Settings */}
+            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
+                {/* Panel 1: General Setup */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel title="Camera Setup - General">
+                    <Panel
+                        title="General Setup"
+                        headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={() => handleApply('General')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
+                    >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <ColumnLayout gap="1rem">
                                 <ComboBox
@@ -38,16 +42,16 @@ const Camera = () => {
                                 <StaticText text="Height (px): 1080" />
                                 <StaticText text="FPS: 30" />
                             </ColumnLayout>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                                <Button label="Apply" onClick={() => handleApply('General')} />
-                            </div>
                         </div>
                     </Panel>
                 </div>
 
-                {/* Panel 2: Manual Controls */}
+                {/* Panel 2: Crop and Size */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel title="Camera Setup - Manual Control">
+                    <Panel
+                        title="Crop and Size"
+                        headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={() => handleApply('Crop and Size')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
+                    >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <ColumnLayout gap="1.5rem">
                                 {/* Crop Controls Section */}
@@ -55,10 +59,10 @@ const Camera = () => {
                                     <legend style={{ padding: '0 0.5rem', color: '#666', fontWeight: '500' }}>Crop Controls</legend>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
                                         <ColumnLayout gap="1rem">
-                                            <NumericInput label="Crop Top (px)" value={0} onChange={() => { }} />
-                                            <NumericInput label="Crop Bottom (px)" value={0} onChange={() => { }} />
-                                            <NumericInput label="Crop Left (px)" value={0} onChange={() => { }} />
-                                            <NumericInput label="Crop Right (px)" value={0} onChange={() => { }} />
+                                            <StaticText text="Crop Top (px): 0" />
+                                            <StaticText text="Crop Bottom (px): 0" />
+                                            <StaticText text="Crop Left (px): 0" />
+                                            <StaticText text="Crop Right (px): 0" />
                                         </ColumnLayout>
                                     </div>
                                 </fieldset>
@@ -68,22 +72,22 @@ const Camera = () => {
                                     <legend style={{ padding: '0 0.5rem', color: '#666', fontWeight: '500' }}>New Dimensions</legend>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
                                         <ColumnLayout gap="1rem">
-                                            <NumericInput label="New Width (px)" value={1920} onChange={() => { }} />
-                                            <NumericInput label="New Height (px)" value={1080} onChange={() => { }} />
+                                            <StaticText text="New Width (px): 1920" />
+                                            <StaticText text="New Height (px): 1080" />
                                         </ColumnLayout>
                                     </div>
                                 </fieldset>
                             </ColumnLayout>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                                <Button label="Apply" onClick={() => handleApply('Manual Control')} />
-                            </div>
                         </div>
                     </Panel>
                 </div>
 
-                {/* Panel 3: AI Detection */}
+                {/* Panel 3: AI Attention Area */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel title="Camera Setup - AI Detection">
+                    <Panel
+                        title="AI Attention Area"
+                        headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={() => handleApply('AI Attention Area')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
+                    >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <ColumnLayout gap="1rem">
                                 <Switch
@@ -92,9 +96,6 @@ const Camera = () => {
                                     onChange={() => { }}
                                 />
                             </ColumnLayout>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                                <Button label="Apply" onClick={() => handleApply('AI Detection')} />
-                            </div>
                         </div>
                     </Panel>
                 </div>

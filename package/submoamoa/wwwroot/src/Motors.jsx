@@ -15,6 +15,7 @@ import masterData from './assets/masterdata.json';
 
 import linearIcon from './assets/icons/linear.svg';
 import stepperIcon from './assets/icons/stepperMotor.svg';
+import editIcon from './assets/icons/edit.svg';
 
 const Motors = () => {
     const [motors, setMotors] = useState([]);
@@ -274,16 +275,21 @@ const Motors = () => {
                         style={{
                             flex: '1 1 400px',
                             minWidth: '300px'
-                        }
-                        }
-                    >
-                        <div style={{ borderBottom: '1px solid #ccc', paddingBottom: '0.5rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        }}
+                        title={
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {getMotorIcon(motor.type) && <img src={getMotorIcon(motor.type)} alt="" width="24" height="24" />}
-                                <h3 style={{ margin: 0, color: '#333' }}>{motor.name} {motor.enabled ? '' : '(Disabled)'}</h3>
+                                <span style={{ color: '#333' }}>{motor.name} {motor.enabled ? '' : '(Disabled)'}</span>
                             </div>
-                            <Button label="Edit" onClick={() => handleEdit(motor, index)} />
-                        </div>
+                        }
+                        headerAction={
+                            <Button
+                                label={<img src={editIcon} alt="Edit" width="24" height="24" />}
+                                onClick={() => handleEdit(motor, index)}
+                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                            />
+                        }
+                    >
 
                         <div style={{ opacity: motor.enabled ? 1 : 0.5 }}>
                             <ColumnLayout gap="0.5rem">
