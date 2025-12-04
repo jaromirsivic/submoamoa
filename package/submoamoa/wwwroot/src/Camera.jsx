@@ -7,6 +7,7 @@ import NumericInput from './components/NumericInput';
 import Switch from './components/Switch';
 import ColumnLayout from './components/ColumnLayout';
 import RowLayout from './components/RowLayout';
+import HorizontalSeparator from './components/HorizontalSeparator';
 import editIcon from './assets/icons/edit.svg';
 
 const Camera = () => {
@@ -55,28 +56,52 @@ const Camera = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <ColumnLayout gap="1.5rem">
                                 {/* Crop Controls Section */}
-                                <fieldset style={{ border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '4px' }}>
-                                    <legend style={{ padding: '0 0.5rem', color: '#666', fontWeight: '500' }}>Crop Controls</legend>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                    <HorizontalSeparator label="Crop Controls" fullWidth={true} />
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
-                                        <ColumnLayout gap="1rem">
+                                        <ColumnLayout gap="0.25rem">
                                             <StaticText text="Crop Top (px): 0" />
                                             <StaticText text="Crop Bottom (px): 0" />
                                             <StaticText text="Crop Left (px): 0" />
                                             <StaticText text="Crop Right (px): 0" />
                                         </ColumnLayout>
                                     </div>
-                                </fieldset>
+                                </div>
 
                                 {/* New Dimensions Section */}
-                                <fieldset style={{ border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '4px' }}>
-                                    <legend style={{ padding: '0 0.5rem', color: '#666', fontWeight: '500' }}>New Dimensions</legend>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <HorizontalSeparator label="New Dimensions" fullWidth={true} />
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
                                         <ColumnLayout gap="1rem">
                                             <StaticText text="New Width (px): 1920" />
                                             <StaticText text="New Height (px): 1080" />
                                         </ColumnLayout>
                                     </div>
-                                </fieldset>
+                                </div>
+
+                                {/* Center Point Section */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <HorizontalSeparator label="Center Point" fullWidth={true} />
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
+                                        <ColumnLayout gap="1rem">
+                                            <Switch
+                                                label="Enabled"
+                                                value={true}
+                                                onChange={() => { }}
+                                            />
+                                            <NumericInput
+                                                label="Position X"
+                                                value={320}
+                                                onChange={() => { }}
+                                            />
+                                            <NumericInput
+                                                label="Position Y"
+                                                value={240}
+                                                onChange={() => { }}
+                                            />
+                                        </ColumnLayout>
+                                    </div>
+                                </div>
                             </ColumnLayout>
                         </div>
                     </Panel>
