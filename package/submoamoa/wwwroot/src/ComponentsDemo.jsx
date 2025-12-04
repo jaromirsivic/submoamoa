@@ -3,6 +3,7 @@ import Panel from './components/Panel';
 import Button from './components/Button';
 import StaticText from './components/StaticText';
 import Switch from './components/Switch';
+import MultiSwitch from './components/MultiSwitch';
 import Checkbox from './components/Checkbox';
 import Textbox from './components/Textbox';
 import NumericInput from './components/NumericInput';
@@ -28,9 +29,31 @@ const ComponentsDemo = () => {
     const [sliderValue, setSliderValue] = useState(50);
     const [comboValue, setComboValue] = useState('option1');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [multiSwitchValue1, setMultiSwitchValue1] = useState('option1');
+    const [multiSwitchValue2, setMultiSwitchValue2] = useState('medium');
+    const [multiSwitchValue3, setMultiSwitchValue3] = useState('left');
     const [polygons1, setPolygons1] = useState([]);
     const [polygons2, setPolygons2] = useState([]);
-    const [polygons3, setPolygons3] = useState([]);
+    const [polygons3, setPolygons3] = useState([
+        [
+            { "x": 0.17985610554627954, "y": 0.40345979394505405 },
+            { "x": 0.2045220862731593, "y": 0.7315847715933138 },
+            { "x": 0.35097634683900786, "y": 0.5976562092879016 },
+            { "x": 0.26927028568121864, "y": 0.31640622844653615 }
+        ],
+        [
+            { "x": 0.39568343690647745, "y": 0.47042407509776013 },
+            { "x": 0.44501539836023696, "y": 0.6646204904406077 },
+            { "x": 0.4727646266779767, "y": 0.5039062156741132 },
+            { "x": 0.45118189354195687, "y": 0.31640622844653615 },
+            { "x": 0.38335044654303757, "y": 0.31640622844653615 }
+        ],
+        [
+            { "x": 0.534429578495176, "y": 0.5172990719046544 },
+            { "x": 0.5760534209717857, "y": 0.6914062029016902 },
+            { "x": 0.6145940158575353, "y": 0.4369419345214071 }
+        ]
+    ]);
 
     const comboItems = [
         { label: 'Option 1', value: 'option1' },
@@ -115,6 +138,85 @@ const ComponentsDemo = () => {
                             onChange={setCheckboxValue}
                         />
                         <Checkbox label="Disabled Checkbox" value={true} disabled onChange={() => { }} />
+                    </ColumnLayout>
+                </Panel>
+
+                <Panel>
+                    <h2>MultiSwitch</h2>
+                    <ColumnLayout gap="1.5rem">
+                        <div>
+                            <h3>Horizontal Orientation (Default)</h3>
+                            <MultiSwitch
+                                options={[
+                                    { label: 'Option 1', value: 'option1' },
+                                    { label: 'Option 2', value: 'option2' },
+                                    { label: 'Option 3', value: 'option3' }
+                                ]}
+                                value={multiSwitchValue1}
+                                onChange={setMultiSwitchValue1}
+                            />
+                            <StaticText text={`Selected: ${multiSwitchValue1}`} style={{ marginTop: '0.5rem' }} />
+                        </div>
+
+                        <div>
+                            <h3>Vertical Orientation</h3>
+                            <MultiSwitch
+                                options={[
+                                    { label: 'Small', value: 'small' },
+                                    { label: 'Medium', value: 'medium' },
+                                    { label: 'Large', value: 'large' },
+                                    { label: 'Extra Large', value: 'xlarge' }
+                                ]}
+                                value={multiSwitchValue2}
+                                onChange={setMultiSwitchValue2}
+                                orientation="vertical"
+                                style={{ width: '150px' }}
+                            />
+                            <StaticText text={`Selected: ${multiSwitchValue2}`} style={{ marginTop: '0.5rem' }} />
+                        </div>
+
+                        <div>
+                            <h3>Custom Colors</h3>
+                            <MultiSwitch
+                                options={[
+                                    { label: 'Left', value: 'left' },
+                                    { label: 'Center', value: 'center' },
+                                    { label: 'Right', value: 'right' }
+                                ]}
+                                value={multiSwitchValue3}
+                                onChange={setMultiSwitchValue3}
+                                selectedColor="#3b82f6"
+                                unselectedColor="#e2e8f0"
+                                selectedTextColor="#ffffff"
+                                textColor="#475569"
+                            />
+                        </div>
+
+                        <div>
+                            <h3>With Disabled Option</h3>
+                            <MultiSwitch
+                                options={[
+                                    { label: 'Active', value: 'active' },
+                                    { label: 'Disabled', value: 'disabled', disabled: true },
+                                    { label: 'Pending', value: 'pending' }
+                                ]}
+                                value="active"
+                                onChange={() => {}}
+                            />
+                        </div>
+
+                        <div>
+                            <h3>Disabled MultiSwitch</h3>
+                            <MultiSwitch
+                                options={[
+                                    { label: 'On', value: 'on' },
+                                    { label: 'Off', value: 'off' }
+                                ]}
+                                value="on"
+                                onChange={() => {}}
+                                disabled
+                            />
+                        </div>
                     </ColumnLayout>
                 </Panel>
 
