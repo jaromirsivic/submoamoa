@@ -31,10 +31,10 @@ const Panel = ({
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     borderBottom: '1px solid #e5e7eb',
-                    padding: '1rem 1.5rem',
+                    padding: '0.5rem 1.0rem',
                     backgroundColor: '#E9E9E9'
                 }}>
-                    {title && <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{title}</h2>}
+                    {title && <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700 }}>{title}</h2>}
                     {headerAction && <div>{headerAction}</div>}
                 </div>
             )}
