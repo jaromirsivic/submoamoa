@@ -31,8 +31,8 @@ const Camera = () => {
                         title="General Setup"
                         headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={() => handleApply('General')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
                     >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <ColumnLayout gap="1rem">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <ColumnLayout gap="0.25rem">
                                 <ComboBox
                                     label="Source (Device)"
                                     items={sourceOptions}
@@ -53,8 +53,8 @@ const Camera = () => {
                         title="Crop and Size"
                         headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={() => handleApply('Crop and Size')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
                     >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <ColumnLayout gap="1.5rem">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <ColumnLayout gap="0.25rem">
                                 {/* Crop Controls Section */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                     <HorizontalSeparator label="Crop Controls" fullWidth={true} />
@@ -69,10 +69,10 @@ const Camera = () => {
                                 </div>
 
                                 {/* New Dimensions Section */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                     <HorizontalSeparator label="New Dimensions" fullWidth={true} />
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
-                                        <ColumnLayout gap="1rem">
+                                        <ColumnLayout gap="0.25rem">
                                             <StaticText text="New Width (px): 1920" />
                                             <StaticText text="New Height (px): 1080" />
                                         </ColumnLayout>
@@ -80,10 +80,10 @@ const Camera = () => {
                                 </div>
 
                                 {/* Center Point Section */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                     <HorizontalSeparator label="Center Point" fullWidth={true} />
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
-                                        <ColumnLayout gap="1rem">
+                                        <ColumnLayout gap="0.25rem">
                                             <Switch
                                                 label="Enabled"
                                                 value={true}
@@ -113,8 +113,8 @@ const Camera = () => {
                         title="AI Attention Area"
                         headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={() => handleApply('AI Attention Area')} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
                     >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <ColumnLayout gap="1rem">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <ColumnLayout gap="0.25rem">
                                 <Switch
                                     label="Use masked area for AI object detection"
                                     value={false}

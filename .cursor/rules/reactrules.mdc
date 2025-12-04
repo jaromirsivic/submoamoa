@@ -23,6 +23,15 @@ Coding Standards:
 - Use descriptive names with auxiliary verbs (e.g., isLoading). Prefix event handlers with handle (e.g., handleClick).
 - Wrap client components in <Suspense> with lightweight fallbacks.
 
+Quick GUI Description
+- Incremental approach to quickly add already existing GUI components to may use following meta language:
+Label: ComponentName(attributes)
+- Example:
+Custom Text: Panel()
+    Write text here: Text()
+    File name: Text()
+    Save as: Button(enabled=false, behavior="enable this button after user writes some "text" and fills in the "File name")
+
 Feedback: Adapt suggestions based on user feedback, tracked in status.md or code comments. Address recurring issues with simpler or alternative solutions. Clarify ambiguous feedback via @ references.Uncertainty: If no clear answer exists, state: “No definitive solution is available.” If unknown, say: “I lack sufficient information. Please provide details.
 
 Important: try to fix things at the cause, not the symptom!

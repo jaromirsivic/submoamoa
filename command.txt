@@ -1,0 +1,45 @@
+Camera 1: Panel()
+	Camera Source: ComboBox()
+	Flip, Rotate and Crop: HorizontalSeparator()
+		Flip Horizontally: Switch(value=no)
+		Flip Vertically: Switch(value=no)
+		Rotate: ComboBos()
+		Crop Left (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+		Crop Top (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+		Crop Right (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+		Crop Bottom (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+	Resize: HorizontalSeparator()
+		Enabled: switch(value=false)
+		Width (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+		Height (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+	Sight Zero: HorizontalSeparator()
+		X (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+		Y (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+	Attention Zones: HorizontalSeparator()
+		X (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+		Y (px): NumericInput(minValue=0, decimalPlaces=0, step=1)
+
+Create a new component called “Polygon”. 
+
+
+Fix (or completely rewrite) the polygon component.
+The user will be able to draw a closed polygon using this component. Whenever a user clicks he adds a new point. If a user is in the adding mode and he clicks on the very first point,
+the polygon is closed, there will be no more points added to the polygon from this point. User can only move existing points or delete entire polygon and start drawing new one from scratch.
+The component is based on the "Image" component with the same set of props (so it can display image behind the polygon) plus following props:
+- borderColor: color – color of the polygon line, default value #009900ff
+- fillColor: color – color of the inside of the polygon, default value #00ee0055
+- lineWidth: number – width of the line in pixels, default value 1px
+- maxPoints: identifies how many points can the polygon have, default value is 32.
+- polygons: gets or sets an array of polygons, each polygon is identified by array of points. Entire structure is in json format.
+
+Demonstrate the usage of the component in Sandbox -> ComponentDemo page
+
+Update the behavior of the "Polygon". Whenever a polygon is closed by clicking on the first point or by
+exhausting all points available the polygon should not disapear (current behavior). It must stay where it is
+and be infilled with the fillColor. The size of the initial point will be the same as the size of all other
+points (currently during drawing mode the size of the very first point is bigger than those of other points
+that is OK, but after the polygon is closed the size should be set to the size of other point).
+Update Sandbox -> ComponentDemo add a button under each polygon. After clicking the button
+the alert message will pop up displaying polygons json. That way I will be able to check if the json is OK.
+
+

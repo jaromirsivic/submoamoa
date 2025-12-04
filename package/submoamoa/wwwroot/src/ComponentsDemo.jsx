@@ -10,6 +10,8 @@ import Slider from './components/Slider';
 import ComboBox from './components/ComboBox';
 import Carousel from './components/Carousel';
 import ImageComponent from './components/ImageComponent';
+import Image from './components/Image';
+import Polygon from './components/Polygon';
 import ColumnLayout from './components/ColumnLayout';
 import RowLayout from './components/RowLayout';
 import ModalWindow from './components/ModalWindow';
@@ -26,6 +28,9 @@ const ComponentsDemo = () => {
     const [sliderValue, setSliderValue] = useState(50);
     const [comboValue, setComboValue] = useState('option1');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [polygons1, setPolygons1] = useState([]);
+    const [polygons2, setPolygons2] = useState([]);
+    const [polygons3, setPolygons3] = useState([]);
 
     const comboItems = [
         { label: 'Option 1', value: 'option1' },
@@ -173,6 +178,223 @@ const ComponentsDemo = () => {
                             <ImageComponent src={switchImg} alt="Switch Sketch" />
                         </div>
                     </div>
+                </Panel>
+
+                <Panel>
+                    <h2>Image Component</h2>
+                    <ColumnLayout gap="2rem">
+                        <div>
+                            <h3>Stretch Modes</h3>
+                            <RowLayout gap="1rem">
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Fit (default)</h4>
+                                    <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/300x200?text=Fit+Mode" 
+                                            stretchMode="fit"
+                                            background="#f0f0f0"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Stretch</h4>
+                                    <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/300x200?text=Stretch+Mode" 
+                                            stretchMode="stretch"
+                                            background="#f0f0f0"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Original Size</h4>
+                                    <div style={{ width: '100%', height: '200px', border: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/150x100?text=Original" 
+                                            stretchMode="originalSize"
+                                            background="#f0f0f0"
+                                        />
+                                    </div>
+                                </div>
+                            </RowLayout>
+                        </div>
+
+                        <div>
+                            <h3>Border Examples</h3>
+                            <RowLayout gap="1rem">
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>No Border (default)</h4>
+                                    <div style={{ width: '100%', height: '150px', border: '1px solid #ccc' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/200x150?text=No+Border" 
+                                            border={0}
+                                            stretchMode="fit"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>2px Border</h4>
+                                    <div style={{ width: '100%', height: '150px' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/200x150?text=2px+Border" 
+                                            border={2}
+                                            stretchMode="fit"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>4px Border</h4>
+                                    <div style={{ width: '100%', height: '150px' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/200x150?text=4px+Border" 
+                                            border={4}
+                                            stretchMode="fit"
+                                        />
+                                    </div>
+                                </div>
+                            </RowLayout>
+                        </div>
+
+                        <div>
+                            <h3>Background Color Examples</h3>
+                            <RowLayout gap="1rem">
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Transparent (default)</h4>
+                                    <div style={{ width: '100%', height: '150px', border: '1px solid #ccc', background: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0), linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0)', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/100x100?text=Small" 
+                                            stretchMode="fit"
+                                            background="transparent"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Light Blue Background</h4>
+                                    <div style={{ width: '100%', height: '150px', border: '1px solid #ccc' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/100x100?text=Small" 
+                                            stretchMode="fit"
+                                            background="#e0f2fe"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Light Yellow Background</h4>
+                                    <div style={{ width: '100%', height: '150px', border: '1px solid #ccc' }}>
+                                        <Image 
+                                            src="https://via.placeholder.com/100x100?text=Small" 
+                                            stretchMode="fit"
+                                            background="#fef3c7"
+                                        />
+                                    </div>
+                                </div>
+                            </RowLayout>
+                        </div>
+
+                        <div>
+                            <h3>Combined Example</h3>
+                            <div style={{ width: '100%', maxWidth: '400px' }}>
+                                <Image 
+                                    src="https://via.placeholder.com/300x200?text=Combined+Example" 
+                                    border={3}
+                                    stretchMode="fit"
+                                    background="#f0f9ff"
+                                />
+                            </div>
+                        </div>
+                    </ColumnLayout>
+                </Panel>
+
+                <Panel>
+                    <h2>Polygon Component</h2>
+                    <ColumnLayout gap="2rem">
+                        <div>
+                            <h3>Basic Usage</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                <strong>Drawing:</strong> Click to add points. Click on the first point (orange) to close the polygon.<br />
+                                <strong>Editing:</strong> Drag points to move them. Double-click on polygon to delete it.
+                            </p>
+                            <div style={{ width: '100%', height: '400px', border: '1px solid #ccc' }}>
+                                <Polygon
+                                    src="https://via.placeholder.com/600x400?text=Draw+Polygon+Here"
+                                    stretchMode="fit"
+                                    background="#f0f0f0"
+                                    borderColor="#009900ff"
+                                    fillColor="#00ee0055"
+                                    lineWidth={2}
+                                    maxPoints={32}
+                                    polygons={polygons1}
+                                    onChange={setPolygons1}
+                                />
+                            </div>
+                            <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <Button 
+                                    label="Show JSON" 
+                                    onClick={() => alert(JSON.stringify(polygons1, null, 2))} 
+                                />
+                                <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                                    {polygons1.length} polygon(s)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Multiple Polygons</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                After closing a polygon, click outside to start drawing a new one.
+                            </p>
+                            <div style={{ width: '100%', height: '400px', border: '1px solid #ccc' }}>
+                                <Polygon
+                                    src="https://via.placeholder.com/600x400?text=Multiple+Polygons"
+                                    stretchMode="fit"
+                                    background="#e0f2fe"
+                                    borderColor="#0066ccff"
+                                    fillColor="#0066cc44"
+                                    lineWidth={3}
+                                    maxPoints={16}
+                                    polygons={polygons2}
+                                    onChange={setPolygons2}
+                                />
+                            </div>
+                            <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <Button 
+                                    label="Show JSON" 
+                                    onClick={() => alert(JSON.stringify(polygons2, null, 2))} 
+                                />
+                                <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                                    {polygons2.length} polygon(s)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Without Background Image</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Polygon component can work without a background image.
+                            </p>
+                            <div style={{ width: '100%', height: '300px', border: '1px solid #ccc', background: '#f9fafb' }}>
+                                <Polygon
+                                    stretchMode="fit"
+                                    background="#f9fafb"
+                                    borderColor="#ff6600ff"
+                                    fillColor="#ff660033"
+                                    lineWidth={2}
+                                    maxPoints={32}
+                                    polygons={polygons3}
+                                    onChange={setPolygons3}
+                                />
+                            </div>
+                            <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <Button 
+                                    label="Show JSON" 
+                                    onClick={() => alert(JSON.stringify(polygons3, null, 2))} 
+                                />
+                                <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                                    {polygons3.length} polygon(s)
+                                </span>
+                            </div>
+                        </div>
+                    </ColumnLayout>
                 </Panel>
 
             </ColumnLayout>
