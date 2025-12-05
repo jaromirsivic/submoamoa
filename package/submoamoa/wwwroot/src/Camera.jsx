@@ -4,6 +4,7 @@ import Button from './components/Button';
 import ComboBox from './components/ComboBox';
 import StaticText from './components/StaticText';
 import NumericInput from './components/NumericInput';
+import Slider from './components/Slider';
 import Switch from './components/Switch';
 import ColumnLayout from './components/ColumnLayout';
 import HorizontalSeparator from './components/HorizontalSeparator';
@@ -97,33 +98,33 @@ const Camera = () => {
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             <ColumnLayout gap="0.5rem">
-                                <StaticText text={<><span style={boldLabelStyle}>Camera Source:</span> {getSourceLabel(cameraSettings.source)}</>} />
+                                <StaticText text={<>Camera Source: <span style={boldLabelStyle}>{getSourceLabel(cameraSettings.source)}</span></>} />
 
                                 <HorizontalSeparator label="Flip, Rotate and Crop" fullWidth={true} />
-                                <StaticText text={<><span style={boldLabelStyle}>Flip Horizontally:</span> {cameraSettings.flipHorizontally ? 'Yes' : 'No'}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Flip Vertically:</span> {cameraSettings.flipVertically ? 'Yes' : 'No'}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Rotate:</span> {getRotateLabel(cameraSettings.rotate)}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Crop Left (px):</span> {cameraSettings.cropLeft}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Crop Top (px):</span> {cameraSettings.cropTop}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Crop Right (px):</span> {cameraSettings.cropRight}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Crop Bottom (px):</span> {cameraSettings.cropBottom}</>} />
+                                <StaticText text={<>Flip Horizontally: <span style={boldLabelStyle}>{cameraSettings.flipHorizontally ? 'Yes' : 'No'}</span></>} />
+                                <StaticText text={<>Flip Vertically: <span style={boldLabelStyle}>{cameraSettings.flipVertically ? 'Yes' : 'No'}</span></>} />
+                                <StaticText text={<>Rotate: <span style={boldLabelStyle}>{getRotateLabel(cameraSettings.rotate)}</span></>} />
+                                <StaticText text={<>Crop Left (%): <span style={boldLabelStyle}>{cameraSettings.cropLeft}</span></>} />
+                                <StaticText text={<>Crop Top (%): <span style={boldLabelStyle}>{cameraSettings.cropTop}</span></>} />
+                                <StaticText text={<>Crop Right (%): <span style={boldLabelStyle}>{cameraSettings.cropRight}</span></>} />
+                                <StaticText text={<>Crop Bottom (%): <span style={boldLabelStyle}>{cameraSettings.cropBottom}</span></>} />
 
                                 <HorizontalSeparator label="Resize" fullWidth={true} />
-                                <StaticText text={<><span style={boldLabelStyle}>Enabled:</span> {cameraSettings.resizeEnabled ? 'Yes' : 'No'}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Width (px):</span> {cameraSettings.resizeWidth}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Height (px):</span> {cameraSettings.resizeHeight}</>} />
+                                <StaticText text={<>Enabled: <span style={boldLabelStyle}>{cameraSettings.resizeEnabled ? 'Yes' : 'No'}</span></>} />
+                                <StaticText text={<>Width (px): <span style={boldLabelStyle}>{cameraSettings.resizeWidth}</span></>} />
+                                <StaticText text={<>Height (px): <span style={boldLabelStyle}>{cameraSettings.resizeHeight}</span></>} />
 
                                 <HorizontalSeparator label="Reticle" fullWidth={true} />
-                                <StaticText text={<><span style={boldLabelStyle}>Show Reticle:</span> {cameraSettings.showReticle ? 'Yes' : 'No'}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>X (%):</span> {cameraSettings.reticleX}</>} />
-                                <StaticText text={<><span style={boldLabelStyle}>Y (%):</span> {cameraSettings.reticleY}</>} />
+                                <StaticText text={<>Show Reticle: <span style={boldLabelStyle}>{cameraSettings.showReticle ? 'Yes' : 'No'}</span></>} />
+                                <StaticText text={<>X (%): <span style={boldLabelStyle}>{cameraSettings.reticleX}</span></>} />
+                                <StaticText text={<>Y (%): <span style={boldLabelStyle}>{cameraSettings.reticleY}</span></>} />
                                 <ColorPicker
-                                    label={<span style={boldLabelStyle}>Color:</span>}
+                                    label="Color:"
                                     color={cameraSettings.reticleColor}
                                     disabled={true}
                                     showAlpha={true}
                                 />
-                                <StaticText text={<><span style={boldLabelStyle}>Size:</span> {cameraSettings.reticleSize}</>} />
+                                <StaticText text={<>Size: <span style={boldLabelStyle}>{cameraSettings.reticleSize}</span></>} />
                             </ColumnLayout>
                         </div>
                     </Panel>
@@ -211,11 +212,12 @@ const Camera = () => {
             {/* Modal Window for editing Camera settings */}
             <ModalWindow
                 isOpen={isModalOpen}
-                title="Camera 1"
+                title="Camera"
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
+                okLabel="Save"
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <ComboBox
                         label="Camera Source"
                         items={sourceOptions}
@@ -240,37 +242,41 @@ const Camera = () => {
                         value={tempSettings.rotate}
                         onChange={(value) => updateTempSetting('rotate', value)}
                     />
-                    <NumericInput
-                        label="Crop Left (px)"
+                    <Slider
+                        label="Crop Left (%)"
                         value={tempSettings.cropLeft}
                         onChange={(value) => updateTempSetting('cropLeft', value)}
                         min={0}
-                        decimalPlaces={0}
-                        step={1}
+                        max={100}
+                        step={0.5}
+                        allowManualInput={true}
                     />
-                    <NumericInput
-                        label="Crop Top (px)"
+                    <Slider
+                        label="Crop Top (%)"
                         value={tempSettings.cropTop}
                         onChange={(value) => updateTempSetting('cropTop', value)}
                         min={0}
-                        decimalPlaces={0}
-                        step={1}
+                        max={100}
+                        step={0.5}
+                        allowManualInput={true}
                     />
-                    <NumericInput
-                        label="Crop Right (px)"
+                    <Slider
+                        label="Crop Right (%)"
                         value={tempSettings.cropRight}
                         onChange={(value) => updateTempSetting('cropRight', value)}
                         min={0}
-                        decimalPlaces={0}
-                        step={1}
+                        max={100}
+                        step={0.5}
+                        allowManualInput={true}
                     />
-                    <NumericInput
-                        label="Crop Bottom (px)"
+                    <Slider
+                        label="Crop Bottom (%)"
                         value={tempSettings.cropBottom}
                         onChange={(value) => updateTempSetting('cropBottom', value)}
                         min={0}
-                        decimalPlaces={0}
-                        step={1}
+                        max={100}
+                        step={0.5}
+                        allowManualInput={true}
                     />
 
                     <HorizontalSeparator label="Resize" fullWidth={true} />
@@ -279,21 +285,23 @@ const Camera = () => {
                         value={tempSettings.resizeEnabled}
                         onChange={(value) => updateTempSetting('resizeEnabled', value)}
                     />
-                    <NumericInput
+                    <Slider
                         label="Width (px)"
                         value={tempSettings.resizeWidth}
                         onChange={(value) => updateTempSetting('resizeWidth', value)}
                         min={0}
-                        decimalPlaces={0}
+                        max={3840}
                         step={1}
+                        allowManualInput={true}
                     />
-                    <NumericInput
+                    <Slider
                         label="Height (px)"
                         value={tempSettings.resizeHeight}
                         onChange={(value) => updateTempSetting('resizeHeight', value)}
                         min={0}
-                        decimalPlaces={0}
+                        max={2160}
                         step={1}
+                        allowManualInput={true}
                     />
 
                     <HorizontalSeparator label="Reticle" fullWidth={true} />
@@ -302,23 +310,23 @@ const Camera = () => {
                         value={tempSettings.showReticle}
                         onChange={(value) => updateTempSetting('showReticle', value)}
                     />
-                    <NumericInput
+                    <Slider
                         label="X (%)"
                         value={tempSettings.reticleX}
                         onChange={(value) => updateTempSetting('reticleX', value)}
                         min={0}
                         max={100}
-                        decimalPlaces={3}
                         step={0.5}
+                        allowManualInput={true}
                     />
-                    <NumericInput
+                    <Slider
                         label="Y (%)"
                         value={tempSettings.reticleY}
                         onChange={(value) => updateTempSetting('reticleY', value)}
                         min={0}
                         max={100}
-                        decimalPlaces={3}
                         step={0.5}
+                        allowManualInput={true}
                     />
                     <ColorPicker
                         label="Color"
@@ -326,14 +334,14 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('reticleColor', value)}
                         showAlpha={true}
                     />
-                    <NumericInput
+                    <Slider
                         label="Size"
                         value={tempSettings.reticleSize}
                         onChange={(value) => updateTempSetting('reticleSize', value)}
                         min={0.25}
                         max={5}
-                        decimalPlaces={2}
                         step={0.25}
+                        allowManualInput={true}
                     />
                 </div>
             </ModalWindow>

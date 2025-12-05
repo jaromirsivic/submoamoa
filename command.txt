@@ -167,7 +167,7 @@ Make all labels of Text component and ColorPicker component bold.
 There is an edit button in the header of the panel which displays
 a modal window with the following components:
 
-Camera 1: Panel()
+Camera: Panel()
 	Camera Source: ComboBox()
 	Flip, Rotate and Crop: HorizontalSeparator()
 		Flip Horizontally: Switch(value=no)
@@ -189,3 +189,32 @@ Camera 1: Panel()
 		Size: NumericInput(minValue=0.25, maxValue=5, decimalPlaces=2, step=0.25)
 
 There is no interaction with the backend at the moment.
+
+Update Settings -> Camera page
+First Panel.
+Do not make labels bold. Make bold the values after the ":".
+On the model window after the edit button is clicked make the vertical spacing
+between the components 0.5rem.
+Update modal window using following setup:
+
+Camera: ModalWindow()
+	Camera Source: ComboBox()
+	Flip, Rotate and Crop: HorizontalSeparator()
+		Flip Horizontally: Switch(value=no)
+		Flip Vertically: Switch(value=no)
+		Rotate: ComboBox(values=["0", "90", "180", "270"])
+		Crop Left (%): Slider(minValue=0, maxValue=100, decimalPlaces=2, step=0.5)
+		Crop Top (%): Slider(minValue=0, maxValue=100, decimalPlaces=2, step=0.5)
+		Crop Right (%): Slider(minValue=0, maxValue=100, decimalPlaces=2, step=0.5)
+		Crop Bottom (%): Slider(minValue=0, maxValue=100, decimalPlaces=2, step=0.5)
+	Resize: HorizontalSeparator()
+		Enabled: switch(value=true)
+		Width (px): Slider(value=640, minValue=0, decimalPlaces=0, step=1)
+		Height (px): Slider(value=480, minValue=0, decimalPlaces=0, step=1)
+	Reticle: HorizontalSeparator()
+		Show Reticle: Switch(value=true)
+		X (%): Slider(value=50, minValue=0, maxValue=100, decimalPlaces=2, step=0.5)
+		Y (%): Slider(value=50, minValue=0, maxValue=100, decimalPlaces=2, step=0.5)
+		Color: ColorPicker()
+		Size: Slider(minValue=0.25, maxValue=5, decimalPlaces=2, step=0.25)
+Rename OK button to "Save".
