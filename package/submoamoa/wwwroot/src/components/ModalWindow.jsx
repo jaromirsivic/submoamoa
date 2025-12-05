@@ -150,6 +150,7 @@ const ModalWindow = ({
                             }
                             onClick={() => setShowWarningPopup(true)}
                             color={hasErrors ? "#900000" : "#d07000"}
+                            style={{ height: '40px', display: 'flex', alignItems: 'center' }}
                         />
                     )}
                     {onCancel && (
@@ -157,6 +158,7 @@ const ModalWindow = ({
                             label={cancelLabel}
                             onClick={onCancel}
                             color="#64748b"
+                            style={{ height: '40px', display: 'flex', alignItems: 'center' }}
                         />
                     )}
                     {onOk && (
@@ -165,6 +167,7 @@ const ModalWindow = ({
                             onClick={onOk}
                             color={hasErrors || okDisabled ? '#94a3b8' : '#3b82f6'}
                             disabled={hasErrors || okDisabled}
+                            style={{ height: '40px', display: 'flex', alignItems: 'center' }}
                         />
                     )}
                 </div>

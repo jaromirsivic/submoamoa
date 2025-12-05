@@ -28,7 +28,6 @@ const defaultHotZoneSettings = {
 const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
     const [settings, setSettings] = useState(defaultHotZoneSettings);
     const [tempSettings, setTempSettings] = useState(defaultHotZoneSettings);
-    const [validationErrors, setValidationErrors] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -66,7 +65,7 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
         }
     };
 
-    const validateSettings = () => {
+    const getValidationErrors = () => {
         const errors = [];
         if (tempSettings.arms.leftArmMinLength >= tempSettings.arms.leftArmMaxLength) {
             errors.push('Left Arm Min Length must be less than Left Arm Max Length');
@@ -77,10 +76,14 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
         return errors;
     };
 
+    const getValidationWarnings = () => {
+        const warnings = [];
+        return warnings;
+    };
+
     const handleSave = async () => {
-        const errors = validateSettings();
+        const errors = getValidationErrors();
         if (errors.length > 0) {
-            setValidationErrors(errors);
             return;
         }
 
@@ -94,7 +97,7 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
             onClose();
         } catch (error) {
             console.error('Failed to save hot zone settings:', error);
-            setValidationErrors([error.message || 'Failed to save settings. Please try again.']);
+            alert(error.message || 'Failed to save settings. Please try again.');
         } finally {
             setIsSaving(false);
         }
@@ -102,15 +105,11 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
 
     const handleCancel = () => {
         setTempSettings({ ...settings });
-        setValidationErrors([]);
         onClose();
     };
 
     const updateUnits = (value) => {
         setTempSettings(prev => ({ ...prev, units: value }));
-        if (validationErrors.length > 0) {
-            setValidationErrors([]);
-        }
     };
 
     const updateCenterPole = (field, value) => {
@@ -118,9 +117,6 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
             ...prev,
             centerPole: { ...prev.centerPole, [field]: value }
         }));
-        if (validationErrors.length > 0) {
-            setValidationErrors([]);
-        }
     };
 
     const updateArmPoles = (field, value) => {
@@ -128,9 +124,6 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
             ...prev,
             armPoles: { ...prev.armPoles, [field]: value }
         }));
-        if (validationErrors.length > 0) {
-            setValidationErrors([]);
-        }
     };
 
     const updateArms = (field, value) => {
@@ -138,9 +131,6 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
             ...prev,
             arms: { ...prev.arms, [field]: value }
         }));
-        if (validationErrors.length > 0) {
-            setValidationErrors([]);
-        }
     };
 
     const unit = tempSettings.units;
@@ -153,7 +143,8 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
             onCancel={handleCancel}
             okLabel={isSaving ? "Saving..." : "Save"}
             okDisabled={isSaving || isLoading}
-            validationErrors={validationErrors}
+            validationErrors={getValidationErrors()}
+            validationWarnings={getValidationWarnings()}
         >
             {isLoading ? (
                 <div style={{ padding: '1rem', textAlign: 'center' }}>

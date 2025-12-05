@@ -274,3 +274,54 @@ Business validations:
 Add a section into the settings.json to store the hot zone settings.
 Update backend rest api to store the hot zone settings.
 Update backend rest api to get the hot zone settings.
+
+Add following business validations to HotZoneEditModal:
+1. Left Arm Min Length < Left Arm Max Length
+2. Right Arm Min Length < Right Arm Max Length
+Use the same style of warning button and warning logic as it is used on Motors Page.
+
+Create a new file "HotZoneCloudPointsGenerator" with a logic to compute
+x, y, z coordinates of cloud points of hot zone. The logic works like this:
+1. Create a function to compute intersection of three spheres.
+2. Compute a spheres center points:
+2a. Left Sphere Center Point is calculated as follows: {
+	X = - (armPoles.xDistance / 2)
+	Y = 0
+	Z = armPoles.height
+}
+2b. Right Sphere Center Point is calculated as follows: {
+	X = (armPoles.xDistance / 2)
+	Y = 0
+	Z = armPoles.height
+}
+2c. Top Sphere Center Point is calculated as follows: {
+	X = 0
+	Y = centerPole.yDistanceFromArmPoles
+	Z = centerPole.height
+}
+
+In a loop do this:
+cloud_points =[]
+for i1 in range(0, calculationQuality):
+	for i2 in range(0, calculationQuality):
+		sphereLeftRadius = arms.leftArmMinLength + (arms.leftArmMaxLength - arms.leftArmMinLength) * i1 / calculationQuality
+		sphereRightRadius = arms.rightArmMinLength + (arms.rightArmMaxLength - arms.rightArmMinLength) * i2 / calculationQuality
+		sphereCenterRadius = centerPole.micStickRadius
+		cloud_points.append(computeIntersectionOfThreeSpheres(leftSphereCenterPoint, rightSphereCenterPoint, centerSphereCenterPoint, sphereLeftRadius, sphereRightRadius, sphereCenterRadius))
+
+When a save button is clicked, the cloud points should be displayed in the Scene3D using blue color.
+Previous Scene3D should be cleared.
+
+There should be as well displayed:
+- leftPole as a black line of width 4 from:
+	(leftSphereCenterPoint.x, leftSphereCenterPoint.y, 0) to (leftSphereCenterPoint.x, leftSphereCenterPoint.y, leftSphereCenterPoint.z)
+- rightPole as a black line of width 4 from:
+	(rightSphereCenterPoint.x, rightSphereCenterPoint.y, 0) to (rightSphereCenterPoint.x, rightSphereCenterPoint.y, rightSphereCenterPoint.z)
+- centerPole as a black line of width 4 from:
+	(centerSphereCenterPoint.x, centerSphereCenterPoint.y, 0) to (centerSphereCenterPoint.x, centerSphereCenterPoint.y, centerSphereCenterPoint.z)
+
+On top of each pole there should be displayed an anchor sphere.
+Color of left anchor sphere should be red.
+Color of right anchor sphere should be green.
+Color of center anchor sphere should be blue.
+			

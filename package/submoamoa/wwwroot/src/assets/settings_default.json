@@ -183,5 +183,23 @@
         "reticleY": 50,
         "reticleColor": "#ff0000cc",
         "reticleSize": 1
+    },
+    "hotZone": {
+        "units": "cm",
+        "centerPole": {
+            "micStickRadius": 50,
+            "height": 150,
+            "yDistanceFromArmPoles": 100
+        },
+        "armPoles": {
+            "height": 150,
+            "xDistance": 100
+        },
+        "arms": {
+            "leftArmMinLength": 50,
+            "leftArmMaxLength": 150,
+            "rightArmMinLength": 50,
+            "rightArmMaxLength": 150
+        }
     }
 }
