@@ -93,6 +93,17 @@ const Polygon = ({
         return () => window.removeEventListener('resize', updateSize);
     }, []);
 
+    // Get clientX/Y from either mouse or touch event
+    const getClientCoords = useCallback((e) => {
+        if (e.touches && e.touches.length > 0) {
+            return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+        }
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            return { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
+        }
+        return { clientX: e.clientX, clientY: e.clientY };
+    }, []);
+
     // Convert screen coordinates to normalized coordinates (0-1 range relative to container)
     const screenToNormalized = useCallback((screenX, screenY) => {
         if (!containerRef.current) return { x: 0, y: 0 };
@@ -421,8 +432,10 @@ const Polygon = ({
         }
     };
 
-    // Handle mouse down (for dragging in designer mode, or joystick start)
-    const handleMouseDown = (e) => {
+    // Handle mouse/touch down (for dragging in designer mode, or joystick start)
+    const handlePointerDown = (e, isTouch = false) => {
+        const { clientX, clientY } = getClientCoords(e);
+
         if (mode === 'joystick') {
             // Cancel any ongoing animation
             if (joystickAnimationRef.current) {
@@ -430,7 +443,7 @@ const Polygon = ({
                 joystickAnimationRef.current = null;
             }
 
-            const normCoords = screenToNormalized(e.clientX, e.clientY);
+            const normCoords = screenToNormalized(clientX, clientY);
             setJoystickStatic(normCoords);
             setJoystickDynamic(normCoords);
             setIsJoystickActive(true);
@@ -442,17 +455,23 @@ const Polygon = ({
         if (src && !imageLoaded) return;
         if (currentPolygon) return; // Don't drag while drawing
 
-        const pointAt = findPointAt(e.clientX, e.clientY);
+        const pointAt = findPointAt(clientX, clientY);
         if (pointAt && pointAt.polyIndex >= 0) {
             setDraggingPoint(pointAt);
             e.preventDefault();
         }
     };
 
-    // Handle mouse move
-    const handleMouseMove = (e) => {
+    const handleMouseDown = (e) => handlePointerDown(e, false);
+    const handleTouchStart = (e) => handlePointerDown(e, true);
+
+    // Handle mouse/touch move
+    const handlePointerMove = (e, isTouch = false) => {
+        const { clientX, clientY } = getClientCoords(e);
+
         if (mode === 'joystick' && isJoystickActive && joystickStatic) {
-            const normCoords = screenToNormalized(e.clientX, e.clientY);
+            if (isTouch) e.preventDefault(); // Prevent scrolling while using joystick
+            const normCoords = screenToNormalized(clientX, clientY);
 
             // Calculate max length in normalized coordinates based on smaller dimension
             const smallerDim = Math.min(containerSize.width, containerSize.height);
@@ -501,7 +520,8 @@ const Polygon = ({
         if (src && !imageLoaded) return;
 
         if (draggingPoint) {
-            const normCoords = screenToNormalized(e.clientX, e.clientY);
+            if (isTouch) e.preventDefault(); // Prevent scrolling while dragging points
+            const normCoords = screenToNormalized(clientX, clientY);
             const newPolygons = [...polygons];
             newPolygons[draggingPoint.polyIndex] = [...newPolygons[draggingPoint.polyIndex]];
             newPolygons[draggingPoint.polyIndex][draggingPoint.pointIndex] = normCoords;
@@ -512,8 +532,11 @@ const Polygon = ({
         }
     };
 
-    // Handle mouse up
-    const handleMouseUp = () => {
+    const handleMouseMove = (e) => handlePointerMove(e, false);
+    const handleTouchMove = (e) => handlePointerMove(e, true);
+
+    // Handle mouse/touch up
+    const handlePointerUp = () => {
         if (mode === 'joystick' && isJoystickActive && joystickStatic && joystickDynamic) {
             // Animate snap back
             const startTime = performance.now();
@@ -556,6 +579,9 @@ const Polygon = ({
 
         setDraggingPoint(null);
     };
+
+    const handleMouseUp = () => handlePointerUp();
+    const handleTouchEnd = () => handlePointerUp();
 
     // Handle double click (delete polygon)
     const handleDoubleClick = (e) => {
@@ -601,6 +627,7 @@ const Polygon = ({
         backgroundColor: background,
         position: 'relative',
         cursor: mode === 'designer' && currentPolygon ? 'crosshair' : (mode === 'joystick' ? 'pointer' : 'default'),
+        touchAction: (mode === 'designer' || mode === 'joystick') ? 'none' : 'auto', // Prevent browser scroll on touch
         ...style
     };
 
@@ -624,6 +651,9 @@ const Polygon = ({
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onDoubleClick={handleDoubleClick}
         >
             {src && (

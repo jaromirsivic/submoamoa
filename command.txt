@@ -109,5 +109,17 @@ called but the x, y parameters are 0.
 Default value is 0.03.
 
 There is a problem with the Slider component on a mobile devices.
-I have tried to use the Slider component from the chrome web browser and it does
-not allow me to move slider. I can only click on it. Fix the issue.
+I have tried to use the Slider component from the chrome web browser on the mobile phone and it does
+not allow me to move slider. I can only click on it. Apparently when i press and hold finger in the browser
+(above the slider), the browser thinks I want to scroll the
+page and it blocks my attempts to move the slider. Fix the issue.
+
+
+There is a problem with the Polygon component on a mobile devices.
+I have tried to use the Polygon component from the chrome web browser on the mobile phone and it does
+not allow me to move move points of polygon. I can only click on it to add a new point.
+Apparently when i press and hold finger in the browser
+(above the polygon), the browser thinks I want to scroll the
+page and it blocks my attempts to move the points of the polygon.
+The same applies in the joystick mode.
+Fix the issue.
