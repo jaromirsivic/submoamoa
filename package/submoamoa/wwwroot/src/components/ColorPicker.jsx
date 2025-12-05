@@ -5,10 +5,12 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
  * Displays as a ComboBox-style dropdown with color swatch trigger.
  */
 const ColorPicker = ({
+    label,
     color = '#ff0000',
     onChange,
     showHex = true,
-    showAlpha = false
+    showAlpha = false,
+    disabled = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [openAbove, setOpenAbove] = useState(false);
@@ -215,10 +217,12 @@ const ColorPicker = ({
     const pureHueHex = hsvToHex(hsv.h, 1, 1, 1);
 
     return (
-        <div className="custom-color-picker" ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
+        <div className="custom-color-picker responsive-input-container" ref={containerRef} style={{ position: 'relative', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
+            {label && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
             {/* Trigger button (ComboBox style) */}
             <div
                 onClick={() => {
+                    if (disabled) return;
                     if (!isOpen && containerRef.current) {
                         const rect = containerRef.current.getBoundingClientRect();
                         const dropdownHeight = showAlpha ? 260 : 220; // Approximate height
@@ -234,7 +238,7 @@ const ColorPicker = ({
                     padding: '6px 10px',
                     border: '1px solid #ccc',
                     borderRadius: '4px',
-                    cursor: 'pointer',
+                    cursor: disabled ? 'not-allowed' : 'pointer',
                     backgroundColor: '#fff',
                     minWidth: '140px'
                 }}
@@ -258,7 +262,7 @@ const ColorPicker = ({
                     }} />
                 </div>
                 <span style={{ fontSize: '0.9rem', fontFamily: 'monospace', flex: 1 }}>{currentHex}</span>
-                <span style={{ fontSize: '0.7rem', color: '#666' }}>▼</span>
+                {!disabled && <span style={{ fontSize: '0.7rem', color: '#666' }}>▼</span>}
             </div>
 
             {/* Dropdown panel */}
