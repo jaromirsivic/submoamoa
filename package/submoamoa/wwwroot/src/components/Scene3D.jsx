@@ -12,15 +12,17 @@ const Scene3D = ({
     const containerRef = useRef(null);
     const rendererRef = useRef(null);
     const sceneRef = useRef(null);
+    const updateGridRef = useRef(null);
     const cameraRef = useRef(null);
     const objectsGroupRef = useRef(null);
     const lightRef = useRef(null);
     const animationFrameRef = useRef(null);
-    
+    const currentGridScaleRef = useRef(1);
+
     const [controlMode, setControlMode] = useState('move');
     const isDraggingRef = useRef(false);
     const lastMouseRef = useRef({ x: 0, y: 0 });
-    
+
     // Camera orbit controls state
     const cameraStateRef = useRef({
         distance: 10,
@@ -32,20 +34,20 @@ const Scene3D = ({
     // Parse color with alpha
     const parseColor = (colorString) => {
         if (!colorString) return { color: 0xffffff, opacity: 1 };
-        
+
         let hex = colorString.replace('#', '');
         let opacity = 1;
-        
+
         if (hex.length === 8) {
             opacity = parseInt(hex.slice(6, 8), 16) / 255;
             hex = hex.slice(0, 6);
         }
-        
+
         return { color: parseInt(hex, 16), opacity };
     };
 
     // Update camera position based on orbit state
-    const updateCameraPosition = useCallback(() => {
+    const updateCameraPosition = useCallback((shouldUpdateGrid = true) => {
         const camera = cameraRef.current;
         const state = cameraStateRef.current;
         if (!camera) return;
@@ -62,6 +64,11 @@ const Scene3D = ({
         // Update light to follow camera
         if (lightRef.current) {
             lightRef.current.position.copy(camera.position);
+        }
+
+        // Update grid based on new camera distance
+        if (shouldUpdateGrid && updateGridRef.current) {
+            updateGridRef.current();
         }
     }, []);
 
@@ -120,7 +127,7 @@ const Scene3D = ({
                 case 'point': {
                     const { color: hexColor, opacity } = parseColor(obj.color || '#ff0000ff');
                     const pointSize = obj.width || 0.2; // Width controls point size
-                    const spriteMaterial = new THREE.SpriteMaterial({ 
+                    const spriteMaterial = new THREE.SpriteMaterial({
                         color: hexColor,
                         opacity: opacity,
                         transparent: opacity < 1,
@@ -137,27 +144,27 @@ const Scene3D = ({
                     const lineWidth = obj.width || 0.02; // Width controls line thickness
                     const start = new THREE.Vector3(obj.x1 || 0, obj.y1 || 0, obj.z1 || 0);
                     const end = new THREE.Vector3(obj.x2 || 0, obj.y2 || 0, obj.z2 || 0);
-                    
+
                     // Use cylinder geometry to create thick lines
                     const direction = new THREE.Vector3().subVectors(end, start);
                     const length = direction.length();
                     const center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-                    
+
                     const geometry = new THREE.CylinderGeometry(lineWidth / 2, lineWidth / 2, length, 8, 1);
-                    const material = new THREE.MeshBasicMaterial({ 
+                    const material = new THREE.MeshBasicMaterial({
                         color: hexColor,
                         opacity: opacity,
                         transparent: opacity < 1
                     });
                     const cylinder = new THREE.Mesh(geometry, material);
-                    
+
                     // Position and rotate cylinder to align with line
                     cylinder.position.copy(center);
                     cylinder.quaternion.setFromUnitVectors(
                         new THREE.Vector3(0, 1, 0),
                         direction.clone().normalize()
                     );
-                    
+
                     group.add(cylinder);
                     break;
                 }
@@ -165,7 +172,7 @@ const Scene3D = ({
                     const { color: hexColor, opacity } = parseColor(obj.color || '#0000ffff');
                     const size = obj.width || 1;
                     const geometry = new THREE.BoxGeometry(size, size, size);
-                    const material = new THREE.MeshStandardMaterial({ 
+                    const material = new THREE.MeshStandardMaterial({
                         color: hexColor,
                         opacity: opacity,
                         transparent: opacity < 1
@@ -180,7 +187,7 @@ const Scene3D = ({
                     const radius = obj.radius || 0.5;
                     // Low poly sphere (8 segments)
                     const geometry = new THREE.SphereGeometry(radius, 8, 6);
-                    const material = new THREE.MeshStandardMaterial({ 
+                    const material = new THREE.MeshStandardMaterial({
                         color: hexColor,
                         opacity: opacity,
                         transparent: opacity < 1,
@@ -281,24 +288,73 @@ const Scene3D = ({
         scene.background = new THREE.Color(color);
     }, [background]);
 
-    // Update grid
-    useEffect(() => {
+    // Update grid based on camera distance (Blender-style dynamic scaling)
+    const updateGrid = useCallback(() => {
         const scene = sceneRef.current;
         if (!scene) return;
 
-        // Remove existing grid
+        const distance = cameraStateRef.current.distance;
+
+        // Calculate grid scale based on distance
+        // Use powers of 10 for scale jumps (like Blender)
+        // Each scale level is 10x the previous
+        const logDistance = Math.log10(distance);
+        const scaleLevel = Math.floor(logDistance);
+        const gridScale = Math.pow(10, scaleLevel - 1);
+
+        // Only update if scale has changed
+        if (gridScale === currentGridScaleRef.current) return;
+        currentGridScaleRef.current = gridScale;
+
+        // Remove existing grids
         const existingGrid = scene.getObjectByName('grid');
         if (existingGrid) {
+            existingGrid.geometry.dispose();
+            existingGrid.material.dispose();
             scene.remove(existingGrid);
         }
+        const existingSubGrid = scene.getObjectByName('subgrid');
+        if (existingSubGrid) {
+            existingSubGrid.geometry.dispose();
+            existingSubGrid.material.dispose();
+            scene.remove(existingSubGrid);
+        }
 
-        // Create new grid on XY plane (Blender style with Z up)
         const { color } = parseColor(gridColor);
-        const gridHelper = new THREE.GridHelper(20, 20, color, color);
-        gridHelper.rotation.x = Math.PI / 2; // Rotate to XY plane
-        gridHelper.name = 'grid';
-        scene.add(gridHelper);
+
+        // Main grid: larger divisions
+        const mainGridSize = gridScale * 100;
+        const mainDivisions = 10;
+        const mainGrid = new THREE.GridHelper(mainGridSize, mainDivisions, color, color);
+        mainGrid.rotation.x = Math.PI / 2;
+        mainGrid.name = 'grid';
+        scene.add(mainGrid);
+
+        // Sub-grid: finer divisions (10x more detailed)
+        const subGridColor = parseColor(gridColor).color;
+        const subGridMaterial = new THREE.LineBasicMaterial({
+            color: subGridColor,
+            opacity: 0.3,
+            transparent: true
+        });
+        const subGrid = new THREE.GridHelper(mainGridSize, mainDivisions * 10);
+        subGrid.rotation.x = Math.PI / 2;
+        subGrid.material = subGridMaterial;
+        subGrid.name = 'subgrid';
+        scene.add(subGrid);
     }, [gridColor]);
+
+    // Store updateGrid reference for use in updateCameraPosition
+    useEffect(() => {
+        updateGridRef.current = updateGrid;
+    }, [updateGrid]);
+
+    // Initial grid setup
+    useEffect(() => {
+        // Force initial grid creation by resetting scale ref
+        currentGridScaleRef.current = -1;
+        updateGrid();
+    }, [gridColor, updateGrid]);
 
     // Update objects and reset camera when objects prop changes
     useEffect(() => {
@@ -356,10 +412,10 @@ const Scene3D = ({
                 const up = new THREE.Vector3(0, 0, 1);
                 camera.getWorldDirection(right);
                 right.cross(up).normalize();
-                
+
                 const moveSpeed = state.distance * 0.002;
                 state.target.add(right.multiplyScalar(-deltaX * moveSpeed));
-                
+
                 const forward = new THREE.Vector3();
                 camera.getWorldDirection(forward);
                 forward.z = 0;
@@ -413,8 +469,8 @@ const Scene3D = ({
     };
 
     return (
-        <div 
-            ref={containerRef} 
+        <div
+            ref={containerRef}
             style={containerStyle}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
@@ -437,8 +493,8 @@ const Scene3D = ({
                 />
             </div>
             <div style={resetButtonStyle}>
-                <Button 
-                    label="Reset" 
+                <Button
+                    label="Reset"
                     onClick={resetCamera}
                     style={{ opacity: 0.7 }}
                 />
