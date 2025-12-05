@@ -60,3 +60,30 @@ specify the color using the hex code. The component should have the following pr
 - showHex: boolean – whether to show the hex code input or not
 - showAlpha: boolean – whether to show the alpha input or not
 Demonstrate the usage of the component in Sandbox -> ComponentDemo page
+
+Update the Polygon component. 
+- Remove "reticleAlpha" prop, the alpha channel will be included in "reticleColor".
+- add "mode" props. "mode" can be one of: "viewer", "designer", "joystick".
+In a viewer mode the user can only see image, polygons
+and reticle (of course polygons and reticle will be visible if there are any
+polygons and if the showReticle is true). In th "designer" mode the user can draw
+polygons. Joystick mode will be implemented later. Do not bother with joystick mode at the moment.
+
+Update the Polygon component.
+Implement the "joystick" mode.
+In the "joystick" mode user cannot draw or edit polygons.
+In the "joystick" mode the user can click on any part of the component.
+As soon as he clicks on the image the initial point called static point is displayed as a circle
+with color "joystickColor" (default value is #999999cc) and size "joystickSize".
+On top of it is another circle called dynamic point again with color "joystickColor" and size "joystickSize".
+The centers of the circle are connected with a dotted line of width "joystickLineWidth" (default value is 2).
+There will be a "joystickLineMaxLength" prop which will define the maximum length of the line
+and therefore maximum distance between the centers of two circles. The default value of "joystickLineMaxLength"
+is 0.25 which means that the maximum distance between the centers of two circles is 25% of the image size
+computed from the smaller dimension of the image. If the user clicks on the image, moves the mouse or fingertip
+while still pressing left mouse button or fingertip - and the distance between the centers of the two circles
+is greater than the maximum length, the dynamic point will be placed at the point on the image that is at the
+maximum length from the static point and at the same time closest to the clicked point or fingertip.
+If the user releases the left mouse button or fingertip the dynamic point will snap to the clicked point
+and disappear. The animation length is defined by "joystickSnapAnimationDuration" prop (default value is 0.1s).
+Demonstrate the usage of the component in Sandbox -> ComponentDemo page.

@@ -27,12 +27,26 @@ const Polygon = ({
     reticleY = 0.5,
     showReticle = false,
     reticleSize = 1,
-    reticleAlpha = 0.5,
-    reticleColor = '#ff0000'
+    reticleColor = '#ff0000cc',
+    // Mode: 'viewer' (view only), 'designer' (draw polygons), 'joystick'
+    mode = 'designer',
+    // Joystick props
+    joystickColor = '#999999cc',
+    joystickSize = 48, // ~0.5 inches at 96 DPI
+    joystickLineWidth = 2,
+    joystickLineMaxLength = 0.25, // 25% of smaller dimension
+    joystickSnapAnimationDuration = 0.1, // seconds
+    onJoystickMove // callback with { x, y } normalized offset from center
 }) => {
     const [polygons, setPolygons] = useState(externalPolygons);
     const [currentPolygon, setCurrentPolygon] = useState(null); // Points being drawn (not yet closed)
     const [draggingPoint, setDraggingPoint] = useState(null); // { polyIndex, pointIndex }
+
+    // Joystick state
+    const [joystickStatic, setJoystickStatic] = useState(null); // { x, y } normalized
+    const [joystickDynamic, setJoystickDynamic] = useState(null); // { x, y } normalized
+    const [isJoystickActive, setIsJoystickActive] = useState(false);
+    const joystickAnimationRef = useRef(null);
 
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
@@ -240,7 +254,6 @@ const Polygon = ({
             const lineWidth = 2 * reticleSize;
 
             ctx.save();
-            ctx.globalAlpha = reticleAlpha;
             ctx.strokeStyle = reticleColor;
             ctx.fillStyle = reticleColor;
             ctx.lineWidth = lineWidth;
@@ -278,7 +291,46 @@ const Polygon = ({
 
             ctx.restore();
         }
-    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleAlpha, reticleColor]);
+
+        // Draw joystick if active
+        if (mode === 'joystick' && joystickStatic && joystickDynamic) {
+            const staticPos = normalizedToCanvas(joystickStatic.x, joystickStatic.y);
+            const dynamicPos = normalizedToCanvas(joystickDynamic.x, joystickDynamic.y);
+            const radius = joystickSize / 2;
+
+            ctx.save();
+
+            // Draw dotted line connecting centers
+            ctx.beginPath();
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = joystickColor;
+            ctx.lineWidth = joystickLineWidth;
+            ctx.moveTo(staticPos.x, staticPos.y);
+            ctx.lineTo(dynamicPos.x, dynamicPos.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw static circle (bottom)
+            ctx.beginPath();
+            ctx.arc(staticPos.x, staticPos.y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = joystickColor;
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw dynamic circle (top)
+            ctx.beginPath();
+            ctx.arc(dynamicPos.x, dynamicPos.y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = joystickColor;
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleColor, mode, joystickStatic, joystickDynamic, joystickColor, joystickSize, joystickLineWidth]);
 
     useEffect(() => {
         draw();
@@ -286,6 +338,7 @@ const Polygon = ({
 
     // Handle click
     const handleClick = (e) => {
+        if (mode !== 'designer') return;
         if (src && !imageLoaded) return;
 
         const screenX = e.clientX;
@@ -339,8 +392,24 @@ const Polygon = ({
         }
     };
 
-    // Handle mouse down (for dragging)
+    // Handle mouse down (for dragging in designer mode, or joystick start)
     const handleMouseDown = (e) => {
+        if (mode === 'joystick') {
+            // Cancel any ongoing animation
+            if (joystickAnimationRef.current) {
+                cancelAnimationFrame(joystickAnimationRef.current);
+                joystickAnimationRef.current = null;
+            }
+
+            const normCoords = screenToNormalized(e.clientX, e.clientY);
+            setJoystickStatic(normCoords);
+            setJoystickDynamic(normCoords);
+            setIsJoystickActive(true);
+            e.preventDefault();
+            return;
+        }
+
+        if (mode !== 'designer') return;
         if (src && !imageLoaded) return;
         if (currentPolygon) return; // Don't drag while drawing
 
@@ -353,6 +422,46 @@ const Polygon = ({
 
     // Handle mouse move
     const handleMouseMove = (e) => {
+        if (mode === 'joystick' && isJoystickActive && joystickStatic) {
+            const normCoords = screenToNormalized(e.clientX, e.clientY);
+
+            // Calculate max length in normalized coordinates based on smaller dimension
+            const smallerDim = Math.min(containerSize.width, containerSize.height);
+            const maxLengthPx = smallerDim * joystickLineMaxLength;
+            const maxLengthNormX = maxLengthPx / containerSize.width;
+            const maxLengthNormY = maxLengthPx / containerSize.height;
+
+            // Calculate distance from static point
+            const dx = normCoords.x - joystickStatic.x;
+            const dy = normCoords.y - joystickStatic.y;
+
+            // Convert to pixel space for distance calculation
+            const dxPx = dx * containerSize.width;
+            const dyPx = dy * containerSize.height;
+            const distPx = Math.sqrt(dxPx * dxPx + dyPx * dyPx);
+
+            let clampedCoords = normCoords;
+            if (distPx > maxLengthPx) {
+                // Clamp to max length
+                const scale = maxLengthPx / distPx;
+                clampedCoords = {
+                    x: joystickStatic.x + dx * scale,
+                    y: joystickStatic.y + dy * scale
+                };
+            }
+
+            setJoystickDynamic(clampedCoords);
+
+            // Notify callback with offset from center (normalized -1 to 1)
+            if (onJoystickMove) {
+                const offsetX = (clampedCoords.x - joystickStatic.x) / (maxLengthPx / containerSize.width);
+                const offsetY = (clampedCoords.y - joystickStatic.y) / (maxLengthPx / containerSize.height);
+                onJoystickMove({ x: offsetX, y: offsetY });
+            }
+            return;
+        }
+
+        if (mode !== 'designer') return;
         if (src && !imageLoaded) return;
 
         if (draggingPoint) {
@@ -369,11 +478,52 @@ const Polygon = ({
 
     // Handle mouse up
     const handleMouseUp = () => {
+        if (mode === 'joystick' && isJoystickActive && joystickStatic && joystickDynamic) {
+            // Animate snap back
+            const startTime = performance.now();
+            const startPos = { ...joystickDynamic };
+            const endPos = { ...joystickStatic };
+            const duration = joystickSnapAnimationDuration * 1000; // ms
+
+            const animate = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(1, elapsed / duration);
+
+                // Ease out
+                const eased = 1 - Math.pow(1 - progress, 2);
+
+                const currentPos = {
+                    x: startPos.x + (endPos.x - startPos.x) * eased,
+                    y: startPos.y + (endPos.y - startPos.y) * eased
+                };
+
+                setJoystickDynamic(currentPos);
+
+                if (progress < 1) {
+                    joystickAnimationRef.current = requestAnimationFrame(animate);
+                } else {
+                    // Animation complete, hide joystick
+                    setJoystickStatic(null);
+                    setJoystickDynamic(null);
+                    setIsJoystickActive(false);
+                    joystickAnimationRef.current = null;
+
+                    if (onJoystickMove) {
+                        onJoystickMove({ x: 0, y: 0 });
+                    }
+                }
+            };
+
+            joystickAnimationRef.current = requestAnimationFrame(animate);
+            return;
+        }
+
         setDraggingPoint(null);
     };
 
     // Handle double click (delete polygon)
     const handleDoubleClick = (e) => {
+        if (mode !== 'designer') return;
         if (src && !imageLoaded) return;
 
         // Cancel current drawing
@@ -414,7 +564,7 @@ const Polygon = ({
         height: stretchMode === 'originalSize' ? 'auto' : '100%',
         backgroundColor: background,
         position: 'relative',
-        cursor: currentPolygon ? 'crosshair' : 'default',
+        cursor: mode === 'designer' && currentPolygon ? 'crosshair' : (mode === 'joystick' ? 'pointer' : 'default'),
         ...style
     };
 

@@ -567,9 +567,8 @@ const ComponentsDemo = () => {
                                     showReticle={true}
                                     reticleX={0.5}
                                     reticleY={0.5}
-                                    reticleColor="#0066cc"
+                                    reticleColor="#0066cccc"
                                     reticleSize={1.5}
-                                    reticleAlpha={0.8}
                                     polygons={polygons6}
                                     onChange={setPolygons6}
                                 />
@@ -625,6 +624,30 @@ const ComponentsDemo = () => {
                                     </div>
                                 </div>
                             </RowLayout>
+                        </div>
+                    </ColumnLayout>
+                </Panel>
+
+                <Panel>
+                    <h2>Polygon Joystick Mode</h2>
+                    <ColumnLayout gap="2rem">
+                        <div>
+                            <h3>Click and Drag Joystick</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Click anywhere on the image and drag to move the joystick. Release to snap back.
+                            </p>
+                            <div style={{ width: '100%', height: '400px', border: '1px solid #ccc' }}>
+                                <Polygon
+                                    src={emptyImage}
+                                    stretchMode="fit"
+                                    background="#f0f0f0"
+                                    mode="joystick"
+                                    joystickColor="#3b82f6cc"
+                                    joystickSize={48}
+                                    joystickLineMaxLength={0.2}
+                                    polygons={polygons1}
+                                />
+                            </div>
                         </div>
                     </ColumnLayout>
                 </Panel>
