@@ -20,6 +20,7 @@ import ModalWindow from './components/ModalWindow';
 // Import assets
 import switchImg from './assets/switch.png';
 import sliderImg from './assets/slider.png';
+import emptyImage from './assets/EmptyImage.jpg';
 
 const ComponentsDemo = () => {
     const [switchValue, setSwitchValue] = useState(false);
@@ -418,7 +419,7 @@ const ComponentsDemo = () => {
                             </p>
                             <div style={{ width: '100%', height: '400px', border: '1px solid #ccc' }}>
                                 <Polygon
-                                    src="https://via.placeholder.com/600x400?text=Draw+Polygon+Here"
+                                    src={emptyImage}
                                     stretchMode="fit"
                                     background="#f0f0f0"
                                     borderColor="#009900ff"
@@ -447,7 +448,7 @@ const ComponentsDemo = () => {
                             </p>
                             <div style={{ width: '100%', height: '400px', border: '1px solid #ccc' }}>
                                 <Polygon
-                                    src="https://via.placeholder.com/600x400?text=Multiple+Polygons"
+                                    src={emptyImage}
                                     stretchMode="fit"
                                     background="#e0f2fe"
                                     borderColor="#0066ccff"
@@ -476,6 +477,7 @@ const ComponentsDemo = () => {
                             </p>
                             <div style={{ width: '100%', height: '300px', border: '1px solid #ccc', background: '#f9fafb' }}>
                                 <Polygon
+                                    src={emptyImage}
                                     stretchMode="fit"
                                     background="#f9fafb"
                                     borderColor="#ff6600ff"
@@ -509,7 +511,7 @@ const ComponentsDemo = () => {
                             </p>
                             <div style={{ width: '100%', height: '300px', border: '1px solid #ccc' }}>
                                 <Polygon
-                                    src="https://via.placeholder.com/600x400?text=Basic+Reticle"
+                                    src={emptyImage}
                                     stretchMode="fit"
                                     background="#f0f0f0"
                                     showReticle={true}
@@ -524,7 +526,7 @@ const ComponentsDemo = () => {
                             </p>
                             <div style={{ width: '100%', height: '300px', border: '1px solid #ccc' }}>
                                 <Polygon
-                                    src="https://via.placeholder.com/600x400?text=Custom+Position"
+                                    src={emptyImage}
                                     stretchMode="fit"
                                     background="#e0f2fe"
                                     showReticle={true}
@@ -541,7 +543,7 @@ const ComponentsDemo = () => {
                             </p>
                             <div style={{ width: '100%', height: '300px', border: '1px solid #ccc' }}>
                                 <Polygon
-                                    src="https://via.placeholder.com/600x400?text=Custom+Style"
+                                    src={emptyImage}
                                     stretchMode="fit"
                                     background="#fef3c7"
                                     showReticle={true}
@@ -561,6 +563,7 @@ const ComponentsDemo = () => {
                                     <h4>Small (0.75x)</h4>
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
                                         <Polygon
+                                            src={emptyImage}
                                             stretchMode="fit"
                                             background="#f9fafb"
                                             showReticle={true}
@@ -573,6 +576,7 @@ const ComponentsDemo = () => {
                                     <h4>Normal (1x)</h4>
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
                                         <Polygon
+                                            src={emptyImage}
                                             stretchMode="fit"
                                             background="#f9fafb"
                                             showReticle={true}
@@ -585,6 +589,7 @@ const ComponentsDemo = () => {
                                     <h4>Large (2x)</h4>
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
                                         <Polygon
+                                            src={emptyImage}
                                             stretchMode="fit"
                                             background="#f9fafb"
                                             showReticle={true}
