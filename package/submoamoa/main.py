@@ -60,6 +60,19 @@ async def save_camera_settings_endpoint(camera_settings: dict[str, Any]):
     settings["camera"] = camera_settings
     return await settingscontroller.save_settings(settings)
 
+@app.get("/api/settings/motors")
+async def get_motors_settings_endpoint():
+    """Get motors settings from settings.json file"""
+    settings = await settingscontroller.get_settings()
+    return settings.get("motors", [])
+
+@app.post("/api/settings/motors")
+async def save_motors_settings_endpoint(motors_settings: list[dict[str, Any]]):
+    """Save motors settings to settings.json file"""
+    settings = await settingscontroller.get_settings()
+    settings["motors"] = motors_settings
+    return await settingscontroller.save_settings(settings)
+
 app.mount("/", StaticFiles(directory=BASE_DIR / "wwwroot/dist", html=True), name="static")
 
 

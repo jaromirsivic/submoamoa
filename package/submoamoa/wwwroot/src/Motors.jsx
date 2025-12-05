@@ -10,7 +10,7 @@ import ColumnLayout from './components/ColumnLayout';
 import StaticText from './components/StaticText';
 import HorizontalSeparator from './components/HorizontalSeparator';
 
-import settingsData from './assets/settings.json';
+import { getMotorsSettings, saveMotorsSettings } from './lib/api';
 import masterData from './assets/masterdata.json';
 
 import linearIcon from './assets/icons/linear.svg';
@@ -22,10 +22,23 @@ const Motors = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingMotor, setEditingMotor] = useState(null);
     const [editingMotorIndex, setEditingMotorIndex] = useState(-1);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
-    // Load initial data
+    // Load initial data from API
     useEffect(() => {
-        setMotors(settingsData.motors);
+        const loadMotors = async () => {
+            try {
+                setIsLoading(true);
+                const data = await getMotorsSettings();
+                setMotors(data || []);
+            } catch (error) {
+                console.error('Failed to load motors settings:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadMotors();
     }, []);
 
     // Prepare dropdown options
@@ -65,57 +78,25 @@ const Motors = () => {
 
     const handleSave = async () => {
         try {
+            setIsSaving(true);
+            
             // Update the motors list with the edited motor
             const updatedMotors = motors.map((m, index) =>
                 index === editingMotorIndex ? editingMotor : m
             );
 
-            // Prepare the full settings object
-            const updatedSettings = {
-                ...settingsData,
-                motors: updatedMotors
-            };
+            // Save only motors section via API
+            await saveMotorsSettings(updatedMotors);
+            console.log('Motors settings saved successfully');
 
-            // Call the backend API to save settings
-            // Use dynamic URL based on current hostname to support access from any IP
-            const apiUrl = `http://${window.location.hostname}:8000/api/settings`;
-
-            // Create AbortController for timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(updatedSettings),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error('Failed to save settings');
-                }
-
-                const result = await response.json();
-                console.log('Settings saved:', result.message);
-
-                // Update local state
-                setMotors(updatedMotors);
-                handleCloseModal();
-            } catch (fetchError) {
-                clearTimeout(timeoutId);
-                if (fetchError.name === 'AbortError') {
-                    throw new Error('Server did not respond within 2 seconds');
-                }
-                throw fetchError;
-            }
+            // Update local state
+            setMotors(updatedMotors);
+            handleCloseModal();
         } catch (error) {
             console.error('Error saving settings:', error);
             alert(`Failed to save settings: ${error.message}`);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -265,6 +246,17 @@ const Motors = () => {
         return !!reversePinConflict;
     };
 
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="page-container">
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
+                    <StaticText text="Loading motors settings..." />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="page-container">
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
@@ -320,7 +312,8 @@ const Motors = () => {
                     title={`Edit ${editingMotor.name}`}
                     onOk={handleSave}
                     onCancel={handleCloseModal}
-                    okLabel="Save"
+                    okLabel={isSaving ? "Saving..." : "Save"}
+                    okDisabled={isSaving}
                     validationErrors={getValidationErrors()}
                     validationWarnings={getValidationWarnings()}
                 >

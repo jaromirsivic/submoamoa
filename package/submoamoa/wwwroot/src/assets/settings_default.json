@@ -14,7 +14,12 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "softness": 0.1,
+            "movementSmoothness": 0.1,
+            "strokeConfiguration": {
+                "enabled": true,
+                "fullExtensionTime": 10,
+                "strokeLength": 250
+            },
             "forwardSpeedHistogram": [
                 {
                     "speed": 0,
@@ -34,7 +39,8 @@
                     "speed": 1,
                     "pwmMultiplier": 1
                 }
-            ]
+            ],
+            "automaticCalibrationEnabled": true
         },
         {
             "enabled": true,
@@ -50,7 +56,12 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "softness": 0.1,
+            "movementSmoothness": 0.1,
+            "strokeConfiguration": {
+                "enabled": true,
+                "fullExtensionTime": 10,
+                "strokeLength": 250
+            },
             "forwardSpeedHistogram": [
                 {
                     "speed": 0,
@@ -86,7 +97,12 @@
                 "maxRunningTimeSeconds": 0,
                 "minRestTimeSeconds": 0
             },
-            "softness": 0.1,
+            "movementSmoothness": 0.1,
+            "strokeConfiguration": {
+                "enabled": false,
+                "fullExtensionTime": 0,
+                "strokeLength": 0
+            },
             "forwardSpeedHistogram": [
                 {
                     "speed": 0,
@@ -122,7 +138,12 @@
                 "maxRunningTimeSeconds": 0,
                 "minRestTimeSeconds": 0
             },
-            "softness": 0.1,
+            "movementSmoothness": 0.1,
+            "strokeConfiguration": {
+                "enabled": false,
+                "fullExtensionTime": 0,
+                "strokeLength": 0
+            },
             "forwardSpeedHistogram": [
                 {
                     "speed": 0,
@@ -144,5 +165,23 @@
                 }
             ]
         }
-    ]
+    ],
+    "camera": {
+        "source": "cam1",
+        "flipHorizontally": false,
+        "flipVertically": false,
+        "rotate": "0",
+        "cropLeft": 0,
+        "cropTop": 0,
+        "cropRight": 0,
+        "cropBottom": 0,
+        "resizeEnabled": true,
+        "resizeWidth": 640,
+        "resizeHeight": 480,
+        "showReticle": true,
+        "reticleX": 50,
+        "reticleY": 50,
+        "reticleColor": "#ff0000cc",
+        "reticleSize": 1
+    }
 }

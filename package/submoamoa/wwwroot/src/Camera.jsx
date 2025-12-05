@@ -10,6 +10,7 @@ import ColumnLayout from './components/ColumnLayout';
 import HorizontalSeparator from './components/HorizontalSeparator';
 import ColorPicker from './components/ColorPicker';
 import ModalWindow from './components/ModalWindow';
+import { getCameraSettings, saveCameraSettings } from './lib/api';
 import editIcon from './assets/icons/edit.svg';
 
 const Camera = () => {
@@ -50,14 +51,11 @@ const Camera = () => {
         const loadCameraSettings = async () => {
             try {
                 setIsLoading(true);
-                const response = await fetch('/api/settings/camera');
-                if (response.ok) {
-                    const data = await response.json();
-                    // Merge with defaults to ensure all properties exist
-                    const mergedSettings = { ...defaultCameraSettings, ...data };
-                    setCameraSettings(mergedSettings);
-                    setTempSettings(mergedSettings);
-                }
+                const data = await getCameraSettings();
+                // Merge with defaults to ensure all properties exist
+                const mergedSettings = { ...defaultCameraSettings, ...data };
+                setCameraSettings(mergedSettings);
+                setTempSettings(mergedSettings);
             } catch (error) {
                 console.error('Failed to load camera settings:', error);
             } finally {
@@ -108,24 +106,12 @@ const Camera = () => {
         
         try {
             setIsSaving(true);
-            const response = await fetch('/api/settings/camera', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(tempSettings),
-            });
-            
-            if (response.ok) {
-                setCameraSettings({ ...tempSettings });
-                setIsModalOpen(false);
-            } else {
-                const errorData = await response.json();
-                setValidationErrors([errorData.detail || 'Failed to save settings']);
-            }
+            await saveCameraSettings(tempSettings);
+            setCameraSettings({ ...tempSettings });
+            setIsModalOpen(false);
         } catch (error) {
             console.error('Failed to save camera settings:', error);
-            setValidationErrors(['Failed to save settings. Please try again.']);
+            setValidationErrors([error.message || 'Failed to save settings. Please try again.']);
         } finally {
             setIsSaving(false);
         }
