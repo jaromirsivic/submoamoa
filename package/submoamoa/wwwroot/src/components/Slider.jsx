@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import NumericInput from './NumericInput';
 
 const Slider = ({
+    label,
     value,
     onChange,
     min = 0,
@@ -137,14 +138,15 @@ const Slider = ({
         transform: 'translateX(-50%)',
         backgroundColor: '#1e293b',
         color: '#ffffff',
-        padding: '2px 6px',
+        padding: '2px 8px',
         borderRadius: '4px',
         fontSize: '0.75rem',
         whiteSpace: 'nowrap'
     };
 
     return (
-        <div className="custom-slider responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', ...style }}>
+        <div className="custom-slider responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', gap: '1rem', ...style }}>
+            {label && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
             <div style={{ position: 'relative', width: '100%', height: '40px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {isDragging && !allowManualInput && <div style={valueLabelStyle}>{value}</div>}
                 <div

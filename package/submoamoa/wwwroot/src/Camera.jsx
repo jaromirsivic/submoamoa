@@ -225,7 +225,7 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('source', value)}
                     />
 
-                    <HorizontalSeparator label="Flip, Rotate and Crop" fullWidth={true} />
+                    <HorizontalSeparator label="Flip, Rotate and Crop" fullWidth={true} bleed="1rem" />
                     <Switch
                         label="Flip Horizontally"
                         value={tempSettings.flipHorizontally}
@@ -279,7 +279,7 @@ const Camera = () => {
                         allowManualInput={true}
                     />
 
-                    <HorizontalSeparator label="Resize" fullWidth={true} />
+                    <HorizontalSeparator label="Resize" fullWidth={true} bleed="1rem" />
                     <Switch
                         label="Enabled"
                         value={tempSettings.resizeEnabled}
@@ -304,7 +304,7 @@ const Camera = () => {
                         allowManualInput={true}
                     />
 
-                    <HorizontalSeparator label="Reticle" fullWidth={true} />
+                    <HorizontalSeparator label="Reticle" fullWidth={true} bleed="1rem" />
                     <Switch
                         label="Show Reticle"
                         value={tempSettings.showReticle}

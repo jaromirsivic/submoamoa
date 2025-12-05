@@ -1,14 +1,14 @@
 import React from 'react';
 
-const HorizontalSeparator = ({ label, fullWidth = false }) => {
+const HorizontalSeparator = ({ label, fullWidth = false, bleed = '1.5rem' }) => {
     const containerStyle = {
         display: 'flex',
         alignItems: 'center',
         gap: '0.5rem',
         ...(fullWidth ? {
-            width: 'calc(100% + 3rem)',
-            marginLeft: '-1.5rem',
-            marginRight: '-1.5rem',
+            width: `calc(100% + calc(${bleed} * 2))`,
+            marginLeft: `-${bleed}`,
+            marginRight: `-${bleed}`,
             paddingLeft: '0', // Ensure line touches the left edge
             paddingRight: '0'
         } : {
