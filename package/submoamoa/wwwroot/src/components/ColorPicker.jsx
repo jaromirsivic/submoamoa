@@ -11,7 +11,9 @@ const ColorPicker = ({
     showAlpha = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [openAbove, setOpenAbove] = useState(false);
     const containerRef = useRef(null);
+    const dropdownRef = useRef(null);
 
     // Parse color into HSV + Alpha
     const parseColor = useCallback((colorStr) => {
@@ -216,7 +218,15 @@ const ColorPicker = ({
         <div className="custom-color-picker" ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
             {/* Trigger button (ComboBox style) */}
             <div
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => {
+                    if (!isOpen && containerRef.current) {
+                        const rect = containerRef.current.getBoundingClientRect();
+                        const dropdownHeight = showAlpha ? 260 : 220; // Approximate height
+                        const spaceBelow = window.innerHeight - rect.bottom;
+                        setOpenAbove(spaceBelow < dropdownHeight && rect.top > dropdownHeight);
+                    }
+                    setIsOpen(!isOpen);
+                }}
                 style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -253,18 +263,22 @@ const ColorPicker = ({
 
             {/* Dropdown panel */}
             {isOpen && (
-                <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    marginTop: '4px',
-                    width: '220px',
-                    padding: '12px',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                    zIndex: 1000
-                }}>
+                <div
+                    ref={dropdownRef}
+                    style={{
+                        position: 'absolute',
+                        ...(openAbove
+                            ? { bottom: '100%', marginBottom: '4px' }
+                            : { top: '100%', marginTop: '4px' }
+                        ),
+                        left: 0,
+                        width: '220px',
+                        padding: '12px',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                        zIndex: 1000
+                    }}>
                     {/* Saturation/Brightness picker */}
                     <div
                         ref={satBrightRef}
