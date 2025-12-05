@@ -227,3 +227,23 @@ Update Camera -> Settings -> Modal Window:
 5. In Reticle section the Size slider should have a step 0.1. (two decimal places should be always visible)
 6. Add a business validation: (Crop Left + Crop Right) < 100
 7. Add a business validation (Crop Top + Crop Botton) < 100
+
+Create a Settings -> ImportExport page.
+There will be following structure of the gui:
+
+ImportExport: Panel()
+	You can import settings from a file (that will override the current settings) or export settings to a file or restore settings to factory defaults.
+	Import: HorizontalSeparator()
+		Import from file: FileInput()
+	Export: HorizontalSeparator()
+		Export to file: Button()
+	Factory Defaults: HorizontalSeparator()
+		Restore Factory Settings: Button()
+
+If user clicks on "Import" button, the system should ask for confirmation, informing user that current settings of Motors, Camera, AI, ... will be overriden.
+User needs to confirm that.
+If user clicks on "Export" button the page will download settings.json.
+If user clicks on "Restore Factory Settings" button, the system should ask for confirmation, informing user that current settings of Motors, Camera, AI, ... will be restored to factory defaults.
+User needs to confirm that.
+
+Create a FileInput component.
