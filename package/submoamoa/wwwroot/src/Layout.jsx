@@ -82,14 +82,16 @@ const Layout = () => {
       {isMenuOpen && (
         <nav className="mobile-menu glass" style={{
           position: 'fixed',
-          top: 'var(--header-height)',
+          top: 'calc(var(--header-height) + var(--safe-area-top, 0px))',
           right: 0,
           width: '250px', // Increased width for icons
           padding: '1rem',
+          paddingRight: 'calc(1rem + var(--safe-area-right, 0px))',
           borderLeft: '1px solid var(--color-border)',
           borderBottom: '1px solid var(--color-border)',
           zIndex: 49,
-          maxHeight: 'calc(100vh - var(--header-height))',
+          maxHeight: 'calc(100vh - var(--header-height) - var(--safe-area-top, 0px))',
+          maxHeight: 'calc(100dvh - var(--header-height) - var(--safe-area-top, 0px))',
           overflowY: 'auto'
         }}>
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

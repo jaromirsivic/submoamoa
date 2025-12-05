@@ -135,3 +135,8 @@ not allow me to move the camera. Apparently when I press and hold finger in the 
 (above the Scene3D), the browser thinks I want to scroll the
 page and it blocks my attempts to move, rotate or zoom the camera.
 Fix the issue.
+
+There is a problem on all pages when they are displayed on a mobile phone.
+The top part of the content area is cut off (it is hidden behind Menu Bar).
+The bottom part of the content area is cut off (it is hidden behind mobile phone action buttons).
+Fix the issue.
