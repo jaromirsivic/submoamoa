@@ -22,6 +22,7 @@ Coding Standards:
 - Style with Tailwind CSS, mobile-first. Avoid inline CSS unless justified.
 - Use descriptive names with auxiliary verbs (e.g., isLoading). Prefix event handlers with handle (e.g., handleClick).
 - Wrap client components in <Suspense> with lightweight fallbacks.
+- Limit usage of useEffect if possible.
 
 Quick GUI Description
 - Incremental approach to quickly add already existing GUI components to may use following meta language:
