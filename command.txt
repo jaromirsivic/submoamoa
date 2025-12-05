@@ -128,3 +128,10 @@ There is still one issue with Polygon component on a mobile devices.
 When I am in "joystick" mode and I click and hold the finger on the image
 and I do not move it the browser shows me a popup asking me if I want to
 download the image. This should not happen. Fix the issue.
+
+There is a problem with the Scene3D component on a mobile devices.
+I have tried to use the Scene3D component from the chrome web browser on the mobile phone and it does
+not allow me to move the camera. Apparently when I press and hold finger in the browser
+(above the Scene3D), the browser thinks I want to scroll the
+page and it blocks my attempts to move, rotate or zoom the camera.
+Fix the issue.

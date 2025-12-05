@@ -362,41 +362,66 @@ const Scene3D = ({
         resetCamera();
     }, [objects, createObjects, resetCamera]);
 
-    // Mouse event handlers
-    const handleMouseDown = useCallback((e) => {
-        isDraggingRef.current = true;
-        lastMouseRef.current = { x: e.clientX, y: e.clientY };
+    // Get clientX/Y from either mouse or touch event
+    const getClientCoords = useCallback((e) => {
+        if (e.touches && e.touches.length > 0) {
+            return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+        }
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            return { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
+        }
+        return { clientX: e.clientX, clientY: e.clientY };
     }, []);
 
-    const handleMouseUp = useCallback(() => {
+    // Mouse/touch event handlers
+    const handlePointerDown = useCallback((e, isTouch = false) => {
+        if (isTouch) e.preventDefault(); // Prevent scrolling on touch
+        const { clientX, clientY } = getClientCoords(e);
+        isDraggingRef.current = true;
+        lastMouseRef.current = { x: clientX, y: clientY };
+    }, [getClientCoords]);
+
+    const handleMouseDown = useCallback((e) => handlePointerDown(e, false), [handlePointerDown]);
+    const handleTouchStart = useCallback((e) => handlePointerDown(e, true), [handlePointerDown]);
+
+    const handlePointerUp = useCallback(() => {
         isDraggingRef.current = false;
     }, []);
 
-    const handleMouseMove = useCallback((e) => {
-        if (!isDraggingRef.current) return;
+    const handleMouseUp = useCallback(() => handlePointerUp(), [handlePointerUp]);
+    const handleTouchEnd = useCallback(() => handlePointerUp(), [handlePointerUp]);
 
-        const deltaX = e.clientX - lastMouseRef.current.x;
-        const deltaY = e.clientY - lastMouseRef.current.y;
-        lastMouseRef.current = { x: e.clientX, y: e.clientY };
+    const handlePointerMove = useCallback((e, isTouch = false) => {
+        if (!isDraggingRef.current) return;
+        if (isTouch) e.preventDefault(); // Prevent scrolling while dragging
+
+        const { clientX, clientY } = getClientCoords(e);
+        const deltaX = clientX - lastMouseRef.current.x;
+        const deltaY = clientY - lastMouseRef.current.y;
+        lastMouseRef.current = { x: clientX, y: clientY };
 
         const state = cameraStateRef.current;
-        const isMiddleButton = e.buttons === 4;
-        const isLeftButton = e.buttons === 1;
-        const isShiftHeld = e.shiftKey;
 
-        let mode = null;
+        // For touch events, always use the control mode
+        // For mouse events, check for middle button and shift key
+        let mode = controlMode;
+        if (!isTouch) {
+            const isMiddleButton = e.buttons === 4;
+            const isLeftButton = e.buttons === 1;
+            const isShiftHeld = e.shiftKey;
 
-        // Middle button behaviors (like Blender)
-        if (isMiddleButton) {
-            if (isShiftHeld) {
-                mode = 'move';
-            } else {
-                mode = 'rotate';
+            // Middle button behaviors (like Blender)
+            if (isMiddleButton) {
+                if (isShiftHeld) {
+                    mode = 'move';
+                } else {
+                    mode = 'rotate';
+                }
             }
-        }
-        // Left button uses the control mode
-        else if (isLeftButton) {
-            mode = controlMode;
+            // Left button uses the control mode
+            else if (!isLeftButton) {
+                return; // Not a valid button
+            }
         }
 
         if (mode === 'rotate') {
@@ -430,7 +455,10 @@ const Scene3D = ({
         }
 
         updateCameraPosition();
-    }, [controlMode, updateCameraPosition]);
+    }, [controlMode, updateCameraPosition, getClientCoords]);
+
+    const handleMouseMove = useCallback((e) => handlePointerMove(e, false), [handlePointerMove]);
+    const handleTouchMove = useCallback((e) => handlePointerMove(e, true), [handlePointerMove]);
 
     const handleWheel = useCallback((e) => {
         e.preventDefault();
@@ -451,6 +479,7 @@ const Scene3D = ({
         width: '100%',
         height: '100%',
         overflow: 'hidden',
+        touchAction: 'none', // Prevent browser scroll on touch
         ...style
     };
 
@@ -487,6 +516,9 @@ const Scene3D = ({
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onWheel={handleWheel}
             onContextMenu={handleContextMenu}
         >
