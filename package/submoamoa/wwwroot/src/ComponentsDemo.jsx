@@ -69,6 +69,8 @@ const ComponentsDemo = () => {
     const [color2, setColor2] = useState('#22c55e');
     const [color3, setColor3] = useState('#ef4444cc');
     const [color4, setColor4] = useState('#8b5cf6');
+    // State for joystick demo
+    const [joystickOffset, setJoystickOffset] = useState({ x: 0, y: 0 });
 
     const comboItems = [
         { label: 'Option 1', value: 'option1' },
@@ -636,6 +638,9 @@ const ComponentsDemo = () => {
                             <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
                                 Click anywhere on the image and drag to move the joystick. Release to snap back.
                             </p>
+                            <div style={{ marginBottom: '0.5rem', padding: '8px 12px', backgroundColor: '#f1f5f9', borderRadius: '4px', fontFamily: 'monospace' }}>
+                                X: {joystickOffset.x.toFixed(3)} | Y: {joystickOffset.y.toFixed(3)}
+                            </div>
                             <div style={{ width: '100%', height: '400px', border: '1px solid #ccc' }}>
                                 <Polygon
                                     src={emptyImage}
@@ -643,8 +648,13 @@ const ComponentsDemo = () => {
                                     background="#f0f0f0"
                                     mode="joystick"
                                     joystickColor="#3b82f6cc"
-                                    joystickSize={48}
-                                    joystickLineMaxLength={0.2}
+                                    joystickSize={24}
+                                    joystickLineWidth={5}
+                                    joystickLineMaxLength={0.3}
+                                    joystickSnapAnimationDuration={0.2}
+                                    joystickLineColor1="#5555ffff"
+                                    joystickLineColor2="#ff0000ff"
+                                    onJoystickMove={setJoystickOffset}
                                     polygons={polygons1}
                                 />
                             </div>

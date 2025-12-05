@@ -36,6 +36,8 @@ const Polygon = ({
     joystickLineWidth = 2,
     joystickLineMaxLength = 0.25, // 25% of smaller dimension
     joystickSnapAnimationDuration = 0.1, // seconds
+    joystickLineColor1 = '#5555ffff', // color when dynamic on static
+    joystickLineColor2 = '#ff0000ff', // color when at max distance
     onJoystickMove // callback with { x, y } normalized offset from center
 }) => {
     const [polygons, setPolygons] = useState(externalPolygons);
@@ -300,10 +302,36 @@ const Polygon = ({
 
             ctx.save();
 
+            // Calculate distance ratio for color interpolation
+            const dx = dynamicPos.x - staticPos.x;
+            const dy = dynamicPos.y - staticPos.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const smallerDim = Math.min(containerSize.width, containerSize.height);
+            const maxDist = smallerDim * joystickLineMaxLength;
+            const distRatio = Math.min(1, dist / maxDist);
+
+            // Interpolate line color
+            const parseHexColor = (hex) => {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                const a = hex.length >= 9 ? parseInt(hex.slice(7, 9), 16) / 255 : 1;
+                return { r, g, b, a };
+            };
+            const color1 = parseHexColor(joystickLineColor1);
+            const color2 = parseHexColor(joystickLineColor2);
+            const interpColor = {
+                r: Math.round(color1.r + (color2.r - color1.r) * distRatio),
+                g: Math.round(color1.g + (color2.g - color1.g) * distRatio),
+                b: Math.round(color1.b + (color2.b - color1.b) * distRatio),
+                a: color1.a + (color2.a - color1.a) * distRatio
+            };
+            const lineColor = `rgba(${interpColor.r}, ${interpColor.g}, ${interpColor.b}, ${interpColor.a})`;
+
             // Draw dotted line connecting centers
             ctx.beginPath();
             ctx.setLineDash([4, 4]);
-            ctx.strokeStyle = joystickColor;
+            ctx.strokeStyle = lineColor;
             ctx.lineWidth = joystickLineWidth;
             ctx.moveTo(staticPos.x, staticPos.y);
             ctx.lineTo(dynamicPos.x, dynamicPos.y);
@@ -330,7 +358,7 @@ const Polygon = ({
 
             ctx.restore();
         }
-    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleColor, mode, joystickStatic, joystickDynamic, joystickColor, joystickSize, joystickLineWidth]);
+    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleColor, mode, joystickStatic, joystickDynamic, joystickColor, joystickSize, joystickLineWidth, joystickLineColor1, joystickLineColor2, joystickLineMaxLength, containerSize]);
 
     useEffect(() => {
         draw();

@@ -87,3 +87,16 @@ maximum length from the static point and at the same time closest to the clicked
 If the user releases the left mouse button or fingertip the dynamic point will snap to the clicked point
 and disappear. The animation length is defined by "joystickSnapAnimationDuration" prop (default value is 0.1s).
 Demonstrate the usage of the component in Sandbox -> ComponentDemo page.
+
+Update the Polygon component.
+Add event "onJoystickMove". It will be called when the dynamic point moves.
+There are x, y parameters of the event object.
+The x, y parameters are the coordinates of the dynamic point relative to the static point.
+Min value is -1, max value is 1.
+Add "joystickLineColor1" prop. It defines the color of the line when the dynamic
+point is on top of the static point. Default value is #5555ffff.
+Add "joystickLineColor2" prop. It defines the color of the line when the dynamic
+point is as far as possible from the static point. Default value is #ff0000ff.
+
+Demonstrate the usage of the component in Sandbox -> ComponentDemo page.
+Display x, y coordinates of the dynamic point relative to the static point in the label.
