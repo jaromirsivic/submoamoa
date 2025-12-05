@@ -166,38 +166,22 @@
             ]
         }
     ],
-    "cameras": [
-        {
-            "index": 0,
-            "indexDoc": "Index of the camera device",
-            "enabled": true,
-            "enabledDoc": "Enable the camera",
-            "fps": 30,
-            "fpsDoc": "Frames per second",
-            "width": 1920,
-            "widthDoc": "Width of the camera",
-            "height": 1080,
-            "heightDoc": "Height of the camera",
-            "aimPoint": {
-                "x": 0,
-                "y": 0
-            },
-            "aimPointDoc": "Aim point of the camera, by default it is the center of the camera. -1, -1 is the left bottom corner, 1, 1 is the right top corner",
-            "cropLeft": 0,
-            "cropRight": 0,
-            "cropTop": 0,
-            "cropBottom": 0,
-            "mirror": false,
-            "flip": false,
-            "mask": [
-                {
-                    "type": "rect",
-                    "x": 0,
-                    "y": 0,
-                    "width": 0,
-                    "height": 0
-                }
-            ]
-        }
-    ]
+    "camera": {
+        "source": "cam1",
+        "flipHorizontally": false,
+        "flipVertically": false,
+        "rotate": "0",
+        "cropLeft": 0,
+        "cropTop": 0,
+        "cropRight": 0,
+        "cropBottom": 0,
+        "resizeEnabled": true,
+        "resizeWidth": 640,
+        "resizeHeight": 480,
+        "showReticle": true,
+        "reticleX": 50,
+        "reticleY": 50,
+        "reticleColor": "#ff0000cc",
+        "reticleSize": 1
+    }
 }

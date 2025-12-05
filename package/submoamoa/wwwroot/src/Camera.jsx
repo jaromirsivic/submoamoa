@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Panel from './components/Panel';
 import Button from './components/Button';
 import ComboBox from './components/ComboBox';
@@ -16,9 +16,11 @@ const Camera = () => {
     // State for the modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
-    // Camera settings state
-    const [cameraSettings, setCameraSettings] = useState({
+    // Default camera settings
+    const defaultCameraSettings = {
         source: 'cam1',
         flipHorizontally: false,
         flipVertically: false,
@@ -35,10 +37,35 @@ const Camera = () => {
         reticleY: 50,
         reticleColor: '#ff0000cc',
         reticleSize: 1
-    });
+    };
+
+    // Camera settings state
+    const [cameraSettings, setCameraSettings] = useState(defaultCameraSettings);
 
     // Temp state for modal editing
     const [tempSettings, setTempSettings] = useState({ ...cameraSettings });
+
+    // Load camera settings from API on component mount
+    useEffect(() => {
+        const loadCameraSettings = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch('/api/settings/camera');
+                if (response.ok) {
+                    const data = await response.json();
+                    // Merge with defaults to ensure all properties exist
+                    const mergedSettings = { ...defaultCameraSettings, ...data };
+                    setCameraSettings(mergedSettings);
+                    setTempSettings(mergedSettings);
+                }
+            } catch (error) {
+                console.error('Failed to load camera settings:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadCameraSettings();
+    }, []);
 
     // Source options
     const sourceOptions = [
@@ -72,14 +99,36 @@ const Camera = () => {
         return errors;
     };
 
-    const handleModalOk = () => {
+    const handleModalOk = async () => {
         const errors = validateSettings();
         if (errors.length > 0) {
             setValidationErrors(errors);
             return;
         }
-        setCameraSettings({ ...tempSettings });
-        setIsModalOpen(false);
+        
+        try {
+            setIsSaving(true);
+            const response = await fetch('/api/settings/camera', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(tempSettings),
+            });
+            
+            if (response.ok) {
+                setCameraSettings({ ...tempSettings });
+                setIsModalOpen(false);
+            } else {
+                const errorData = await response.json();
+                setValidationErrors([errorData.detail || 'Failed to save settings']);
+            }
+        } catch (error) {
+            console.error('Failed to save camera settings:', error);
+            setValidationErrors(['Failed to save settings. Please try again.']);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleModalCancel = () => {
@@ -111,6 +160,17 @@ const Camera = () => {
 
     // Bold label style
     const boldLabelStyle = { fontWeight: 'bold' };
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="page-container">
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
+                    <StaticText text="Loading camera settings..." />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="page-container">
@@ -240,8 +300,9 @@ const Camera = () => {
                 title="Camera"
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
-                okLabel="Save"
+                okLabel={isSaving ? "Saving..." : "Save"}
                 validationErrors={validationErrors}
+                okDisabled={isSaving}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <ComboBox

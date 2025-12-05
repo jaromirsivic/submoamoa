@@ -1,6 +1,6 @@
 import React from 'react';
 
-const HorizontalSeparator = ({ label, fullWidth = false, bleed = '1.5rem' }) => {
+const HorizontalSeparator = ({ label, fullWidth = false, bleed = '1.5rem', color = '#3b82f6' }) => {
     const containerStyle = {
         display: 'flex',
         alignItems: 'center',
@@ -20,7 +20,7 @@ const HorizontalSeparator = ({ label, fullWidth = false, bleed = '1.5rem' }) => 
         <div style={containerStyle}>
             <div style={{ width: fullWidth ? '1.5rem' : '1rem', height: '1px', backgroundColor: '#ddddddff' }}></div>
             {label && (
-                <span style={{ fontWeight: '500', color: '#666', whiteSpace: 'nowrap' }}>
+                <span style={{ fontWeight: '500', color: color, whiteSpace: 'nowrap' }}>
                     {label}
                 </span>
             )}

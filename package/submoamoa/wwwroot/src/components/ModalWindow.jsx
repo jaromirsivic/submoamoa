@@ -11,7 +11,8 @@ const ModalWindow = ({
     okLabel = 'OK',
     cancelLabel = 'Cancel',
     validationErrors = [],
-    validationWarnings = []
+    validationWarnings = [],
+    okDisabled = false
 }) => {
     const [showTopShadow, setShowTopShadow] = useState(false);
     const [showBottomShadow, setShowBottomShadow] = useState(false);
@@ -162,8 +163,8 @@ const ModalWindow = ({
                         <Button
                             label={okLabel}
                             onClick={onOk}
-                            color={hasErrors ? '#94a3b8' : '#3b82f6'}
-                            disabled={hasErrors}
+                            color={hasErrors || okDisabled ? '#94a3b8' : '#3b82f6'}
+                            disabled={hasErrors || okDisabled}
                         />
                     )}
                 </div>

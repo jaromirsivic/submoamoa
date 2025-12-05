@@ -47,6 +47,19 @@ async def get_settings_endpoint():
     """Get current settings from settings.json file"""
     return await settingscontroller.get_settings()
 
+@app.get("/api/settings/camera")
+async def get_camera_settings_endpoint():
+    """Get camera settings from settings.json file"""
+    settings = await settingscontroller.get_settings()
+    return settings.get("camera", {})
+
+@app.post("/api/settings/camera")
+async def save_camera_settings_endpoint(camera_settings: dict[str, Any]):
+    """Save camera settings to settings.json file"""
+    settings = await settingscontroller.get_settings()
+    settings["camera"] = camera_settings
+    return await settingscontroller.save_settings(settings)
+
 app.mount("/", StaticFiles(directory=BASE_DIR / "wwwroot/dist", html=True), name="static")
 
 

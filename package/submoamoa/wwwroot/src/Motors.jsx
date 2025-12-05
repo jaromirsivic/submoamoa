@@ -7,8 +7,8 @@ import NumericInput from './components/NumericInput';
 import Switch from './components/Switch';
 import ComboBox from './components/ComboBox';
 import ColumnLayout from './components/ColumnLayout';
-import RowLayout from './components/RowLayout';
 import StaticText from './components/StaticText';
+import HorizontalSeparator from './components/HorizontalSeparator';
 
 import settingsData from './assets/settings.json';
 import masterData from './assets/masterdata.json';
@@ -293,29 +293,21 @@ const Motors = () => {
 
                         <div style={{ opacity: motor.enabled ? 1 : 0.5 }}>
                             <ColumnLayout gap="0.5rem">
-                                <StaticText text={`Enabled: ${motor.enabled ? 'Yes' : 'No'}`} />
-                                <StaticText text={`Type: ${motor.type}`} />
-                                <StaticText text={`Role: ${motor.role}`} />
-                                <StaticText text={`Movement Smoothness: ${motor.movementSmoothness}`} />
+                                <StaticText text={<>Enabled: <span style={{ fontWeight: 'bold' }}>{motor.enabled ? 'Yes' : 'No'}</span></>} />
+                                <StaticText text={<>Type: <span style={{ fontWeight: 'bold' }}>{motor.type}</span></>} />
+                                <StaticText text={<>Role: <span style={{ fontWeight: 'bold' }}>{motor.role}</span></>} />
+                                <StaticText text={<>Movement Smoothness: <span style={{ fontWeight: 'bold' }}>{motor.movementSmoothness}</span></>} />
 
-                                <div style={{ marginTop: '0.5rem' }}>
-                                    <strong>Pins:</strong>
-                                    <ul style={{ listStyle: 'none', paddingLeft: '1rem', margin: 0 }}>
-                                        <li>Forward: {getPinDisplayName(motor.forwardPin)}</li>
-                                        <li>Reverse: {getPinDisplayName(motor.reversePin)}</li>
-                                        <li>MCP3008 Fwd: {motor.mcp3008ForwardPin}</li>
-                                        <li>MCP3008 Rev: {motor.mcp3008ReversePin}</li>
-                                    </ul>
-                                </div>
+                                <HorizontalSeparator label="Pins" fullWidth={true} bleed="1.5rem" />
+                                <StaticText text={<>Forward: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.forwardPin)}</span></>} />
+                                <StaticText text={<>Reverse: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.reversePin)}</span></>} />
+                                <StaticText text={<>MCP3008 Fwd: <span style={{ fontWeight: 'bold' }}>{motor.mcp3008ForwardPin}</span></>} />
+                                <StaticText text={<>MCP3008 Rev: <span style={{ fontWeight: 'bold' }}>{motor.mcp3008ReversePin}</span></>} />
 
-                                <div style={{ marginTop: '0.5rem' }}>
-                                    <strong>Duty Cycle:</strong>
-                                    <ul style={{ listStyle: 'none', paddingLeft: '1rem', margin: 0 }}>
-                                        <li>Enabled: {motor.dutyCycle.enabled ? 'Yes' : 'No'}</li>
-                                        <li>Max Run: {motor.dutyCycle.maxRunningTimeSeconds}s</li>
-                                        <li>Min Rest: {motor.dutyCycle.minRestTimeSeconds}s</li>
-                                    </ul>
-                                </div>
+                                <HorizontalSeparator label="Duty Cycle" fullWidth={true} bleed="1.5rem" />
+                                <StaticText text={<>Enabled: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.enabled ? 'Yes' : 'No'}</span></>} />
+                                <StaticText text={<>Max Run: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.maxRunningTimeSeconds}s</span></>} />
+                                <StaticText text={<>Min Rest: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.minRestTimeSeconds}s</span></>} />
                             </ColumnLayout>
                         </div>
                     </Panel >
@@ -332,27 +324,26 @@ const Motors = () => {
                     validationErrors={getValidationErrors()}
                     validationWarnings={getValidationWarnings()}
                 >
-                    <ColumnLayout gap="1rem">
+                    <ColumnLayout gap="0.5rem">
                         <Switch
                             label="Enabled"
                             value={editingMotor.enabled}
                             onChange={(val) => updateMotorField('enabled', val)}
                         />
 
-                        <div style={{
-                            padding: '0.5rem',
-                            border: getNameValidationError() ? '2px solid #ef4444' : '1px solid transparent',
-                            boxShadow: getNameValidationError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
-                            borderRadius: '4px',
-                            transition: 'all 0.2s ease'
-                        }}>
-                            <Textbox
-                                label="Name"
-                                value={editingMotor.name}
-                                onChange={(val) => updateMotorField('name', val)}
-                                disabled={editingMotor.role !== 'general'}
-                            />
-                        </div>
+                        <Textbox
+                            label="Name"
+                            value={editingMotor.name}
+                            onChange={(val) => updateMotorField('name', val)}
+                            disabled={editingMotor.role !== 'general'}
+                            style={{
+                                border: getNameValidationError() ? '2px solid #ef4444' : undefined,
+                                boxShadow: getNameValidationError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : undefined,
+                                borderRadius: '4px',
+                                transition: 'all 0.2s ease',
+                                padding: getNameValidationError() ? '0.25rem' : undefined
+                            }}
+                        />
 
                         <ComboBox
                             label="Type"
@@ -379,87 +370,81 @@ const Motors = () => {
                             max={1}
                         />
 
-                        <fieldset style={{ border: '1px solid #e5e7eb', padding: '0.5rem', borderRadius: '4px' }}>
-                            <legend>Pins</legend>
-                            <ColumnLayout gap="0.5rem">
-                                <div style={{
-                                    padding: '0.5rem',
-                                    border: getForwardPinError() ? '2px solid #ef4444' : '1px solid transparent',
-                                    boxShadow: getForwardPinError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
+                        <HorizontalSeparator label="Pins" fullWidth={true} bleed="1rem" />
+                        <ColumnLayout gap="0.5rem">
+                            <ComboBox
+                                label="Forward Pin"
+                                items={pinOptions}
+                                value={editingMotor.forwardPin}
+                                onChange={(val) => updateMotorField('forwardPin', val)}
+                                style={{
+                                    border: getForwardPinError() ? '2px solid #ef4444' : undefined,
+                                    boxShadow: getForwardPinError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : undefined,
                                     borderRadius: '4px',
-                                    transition: 'all 0.2s ease'
-                                }}>
-                                    <ComboBox
-                                        label="Forward Pin"
-                                        items={pinOptions}
-                                        value={editingMotor.forwardPin}
-                                        onChange={(val) => updateMotorField('forwardPin', val)}
-                                    />
-                                </div>
-                                <div style={{
-                                    padding: '0.5rem',
-                                    border: getReversePinError() ? '2px solid #ef4444' : '1px solid transparent',
-                                    boxShadow: getReversePinError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : 'none',
+                                    transition: 'all 0.2s ease',
+                                    padding: getForwardPinError() ? '0.25rem' : undefined
+                                }}
+                            />
+                            <ComboBox
+                                label="Reverse Pin"
+                                items={pinOptions}
+                                value={editingMotor.reversePin}
+                                onChange={(val) => updateMotorField('reversePin', val)}
+                                style={{
+                                    border: getReversePinError() ? '2px solid #ef4444' : undefined,
+                                    boxShadow: getReversePinError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : undefined,
                                     borderRadius: '4px',
-                                    transition: 'all 0.2s ease'
-                                }}>
-                                    <ComboBox
-                                        label="Reverse Pin"
-                                        items={pinOptions}
-                                        value={editingMotor.reversePin}
-                                        onChange={(val) => updateMotorField('reversePin', val)}
-                                    />
-                                </div>
+                                    transition: 'all 0.2s ease',
+                                    padding: getReversePinError() ? '0.25rem' : undefined
+                                }}
+                            />
 
-                                <Switch
-                                    label="Automatic Calibration Enabled"
-                                    value={editingMotor.automaticCalibrationEnabled ?? true}
-                                    onChange={(val) => updateMotorField('automaticCalibrationEnabled', val)}
-                                />
+                            <Switch
+                                label="Automatic Calibration Enabled"
+                                value={editingMotor.automaticCalibrationEnabled ?? true}
+                                onChange={(val) => updateMotorField('automaticCalibrationEnabled', val)}
+                            />
 
-                                <NumericInput
-                                    label="MCP3008 Forward Pin"
-                                    value={editingMotor.mcp3008ForwardPin}
-                                    onChange={(val) => updateMotorField('mcp3008ForwardPin', val)}
-                                    min={0}
-                                    max={7}
-                                    disabled={!editingMotor.automaticCalibrationEnabled}
-                                />
-                                <NumericInput
-                                    label="MCP3008 Reverse Pin"
-                                    value={editingMotor.mcp3008ReversePin}
-                                    onChange={(val) => updateMotorField('mcp3008ReversePin', val)}
-                                    min={0}
-                                    max={7}
-                                    disabled={!editingMotor.automaticCalibrationEnabled}
-                                />
-                            </ColumnLayout>
-                        </fieldset>
+                            <NumericInput
+                                label="MCP3008 Forward Pin"
+                                value={editingMotor.mcp3008ForwardPin}
+                                onChange={(val) => updateMotorField('mcp3008ForwardPin', val)}
+                                min={0}
+                                max={7}
+                                disabled={!editingMotor.automaticCalibrationEnabled}
+                            />
+                            <NumericInput
+                                label="MCP3008 Reverse Pin"
+                                value={editingMotor.mcp3008ReversePin}
+                                onChange={(val) => updateMotorField('mcp3008ReversePin', val)}
+                                min={0}
+                                max={7}
+                                disabled={!editingMotor.automaticCalibrationEnabled}
+                            />
+                        </ColumnLayout>
 
-                        <fieldset style={{ border: '1px solid #e5e7eb', padding: '0.5rem', borderRadius: '4px' }}>
-                            <legend>Duty Cycle</legend>
-                            <ColumnLayout gap="0.5rem">
-                                <Switch
-                                    label="Enabled"
-                                    value={editingMotor.dutyCycle.enabled}
-                                    onChange={(val) => updateDutyCycleField('enabled', val)}
-                                />
-                                <NumericInput
-                                    label="Max Running Time (s)"
-                                    value={editingMotor.dutyCycle.maxRunningTimeSeconds}
-                                    onChange={(val) => updateDutyCycleField('maxRunningTimeSeconds', val)}
-                                    min={0}
-                                    disabled={!editingMotor.dutyCycle.enabled}
-                                />
-                                <NumericInput
-                                    label="Min Rest Time (s)"
-                                    value={editingMotor.dutyCycle.minRestTimeSeconds}
-                                    onChange={(val) => updateDutyCycleField('minRestTimeSeconds', val)}
-                                    min={0}
-                                    disabled={!editingMotor.dutyCycle.enabled}
-                                />
-                            </ColumnLayout>
-                        </fieldset>
+                        <HorizontalSeparator label="Duty Cycle" fullWidth={true} bleed="1rem" />
+                        <ColumnLayout gap="0.5rem">
+                            <Switch
+                                label="Enabled"
+                                value={editingMotor.dutyCycle.enabled}
+                                onChange={(val) => updateDutyCycleField('enabled', val)}
+                            />
+                            <NumericInput
+                                label="Max Running Time (s)"
+                                value={editingMotor.dutyCycle.maxRunningTimeSeconds}
+                                onChange={(val) => updateDutyCycleField('maxRunningTimeSeconds', val)}
+                                min={0}
+                                disabled={!editingMotor.dutyCycle.enabled}
+                            />
+                            <NumericInput
+                                label="Min Rest Time (s)"
+                                value={editingMotor.dutyCycle.minRestTimeSeconds}
+                                onChange={(val) => updateDutyCycleField('minRestTimeSeconds', val)}
+                                min={0}
+                                disabled={!editingMotor.dutyCycle.enabled}
+                            />
+                        </ColumnLayout>
                     </ColumnLayout>
                 </ModalWindow>
             )}
