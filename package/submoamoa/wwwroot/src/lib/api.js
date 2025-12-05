@@ -145,12 +145,35 @@ export const saveAllSettings = async (settings) => {
     return post('/api/settings', settings);
 };
 
+// ============================================
+// Hot Zone Settings API
+// ============================================
+
+/**
+ * Get hot zone settings from the server
+ * @returns {Promise<object>} Hot zone settings object
+ */
+export const getHotZoneSettings = async () => {
+    return get('/api/settings/hot-zone');
+};
+
+/**
+ * Save hot zone settings to the server
+ * @param {object} hotZoneSettings - Hot zone settings to save
+ * @returns {Promise<object>} Response from server
+ */
+export const saveHotZoneSettings = async (hotZoneSettings) => {
+    return post('/api/settings/hot-zone', hotZoneSettings);
+};
+
 // Export default object with all API functions
 export default {
     getCameraSettings,
     saveCameraSettings,
     getMotorsSettings,
     saveMotorsSettings,
+    getHotZoneSettings,
+    saveHotZoneSettings,
     getAllSettings,
     saveAllSettings
 };

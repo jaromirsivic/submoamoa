@@ -247,3 +247,30 @@ If user clicks on "Restore Factory Settings" button, the system should ask for c
 User needs to confirm that.
 
 Create a FileInput component.
+
+On a Settings -> Hot Zone page add an edit button to the Menu Bar on the left side of the menu button.
+Use the same style as in the Motors page.
+When user clicks on the edit button a modal window should open.
+
+Hot Zone: ModalWindow()
+	Units: MultiSwitch(values=["cm", "in"])
+	Center Pole: HorizontalSeparator()
+		Mic Stick Radius ({unit}): Slider(minValue=10, maxValue=300, decimalPlaces=1, step=0.1)
+		Height ({unit}): Slider(minValue=0, maxValue=300, decimalPlaces=1, step=0.1)
+		Y Distance from Arm Poles ({unit}): Slider(minValue=-100, maxValue=300, decimalPlaces=1, step=0.1)
+	Arm Poles: HorizontalSeparator()
+		Height ({unit}): Slider(minValue=0, maxValue=300, decimalPlaces=1, step=0.1)
+		X Distance ({unit}): Slider(minValue=10, maxValue=300, decimalPlaces=1, step=0.1)
+	Arms: HorizontalSeparator()
+		Left Arm Min Length ({unit}): Slider(minValue=1, maxValue=300, decimalPlaces=1, step=0.1)
+		Left Arm Max Length ({unit}): Slider(minValue=1, maxValue=300, decimalPlaces=1, step=0.1)
+		Right Arm Min Length ({unit}): Slider(minValue=1, maxValue=300, decimalPlaces=1, step=0.1)
+		Right Arm Max Length ({unit}): Slider(minValue=1, maxValue=300, decimalPlaces=1, step=0.1)
+
+Business validations:
+	Left Arm Min Length < Left Arm Max Length
+	Right Arm Min Length < Right Arm Max Length
+
+Add a section into the settings.json to store the hot zone settings.
+Update backend rest api to store the hot zone settings.
+Update backend rest api to get the hot zone settings.

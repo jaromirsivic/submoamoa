@@ -1,7 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Scene3D from './components/Scene3D';
+import Button from './components/Button';
+import HotZoneEditModal from './HotZoneEditModal';
 
 const HotZone = () => {
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
     // Override main-content padding for full-screen Scene3D
     useEffect(() => {
         const mainContent = document.querySelector('.main-content');
@@ -140,16 +144,60 @@ const HotZone = () => {
         }
     ];
 
+    // Edit button style - matches Reset button in Scene3D
+    const editButtonStyle = {
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        zIndex: 10
+    };
+
+    // Match MultiSwitch default colors (same as Reset button)
+    const editButtonColors = {
+        backgroundColor: '#cccccc',
+        color: '#333333',
+        border: '1px solid #999999',
+        borderRadius: '0.375rem',
+        padding: '0.5rem 1rem',
+        fontWeight: 400,
+        opacity: 0.5
+    };
+
+    const handleEditClick = () => {
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditModalClose = () => {
+        setIsEditModalOpen(false);
+    };
+
+    const handleSettingsSaved = (newSettings) => {
+        // Settings saved successfully - can be used to update 3D scene if needed
+        console.log('Hot zone settings saved:', newSettings);
+    };
+
     return (
         <div style={{ 
             width: '100%', 
             height: '100%',
             position: 'relative'
         }}>
+            <div style={editButtonStyle}>
+                <Button
+                    label="Edit"
+                    onClick={handleEditClick}
+                    style={editButtonColors}
+                />
+            </div>
             <Scene3D 
                 background="#ffffffff"
                 gridColor="#eeeeeeff"
                 objects={sceneObjects}
+            />
+            <HotZoneEditModal
+                isOpen={isEditModalOpen}
+                onClose={handleEditModalClose}
+                onSave={handleSettingsSaved}
             />
         </div>
     );
