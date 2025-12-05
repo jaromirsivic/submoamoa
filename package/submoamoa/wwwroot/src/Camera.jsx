@@ -15,6 +15,7 @@ import editIcon from './assets/icons/edit.svg';
 const Camera = () => {
     // State for the modal
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [validationErrors, setValidationErrors] = useState([]);
 
     // Camera settings state
     const [cameraSettings, setCameraSettings] = useState({
@@ -56,10 +57,27 @@ const Camera = () => {
 
     const handleEditClick = () => {
         setTempSettings({ ...cameraSettings });
+        setValidationErrors([]);
         setIsModalOpen(true);
     };
 
+    const validateSettings = () => {
+        const errors = [];
+        if (tempSettings.cropLeft + tempSettings.cropRight >= 100) {
+            errors.push('Sum of Crop Left and Crop Right must be less than 100%');
+        }
+        if (tempSettings.cropTop + tempSettings.cropBottom >= 100) {
+            errors.push('Sum of Crop Top and Crop Bottom must be less than 100%');
+        }
+        return errors;
+    };
+
     const handleModalOk = () => {
+        const errors = validateSettings();
+        if (errors.length > 0) {
+            setValidationErrors(errors);
+            return;
+        }
         setCameraSettings({ ...tempSettings });
         setIsModalOpen(false);
     };
@@ -69,7 +87,14 @@ const Camera = () => {
     };
 
     const updateTempSetting = (key, value) => {
-        setTempSettings(prev => ({ ...prev, [key]: value }));
+        setTempSettings(prev => {
+            const newSettings = { ...prev, [key]: value };
+            // Clear validation errors when user changes values related to errors
+            if (validationErrors.length > 0) {
+                setValidationErrors([]);
+            }
+            return newSettings;
+        });
     };
 
     // Get display text for source
@@ -216,6 +241,7 @@ const Camera = () => {
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
                 okLabel="Save"
+                validationErrors={validationErrors}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <ComboBox
@@ -248,7 +274,8 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('cropLeft', value)}
                         min={0}
                         max={100}
-                        step={0.5}
+                        step={0.25}
+                        decimalPlaces={2}
                         allowManualInput={true}
                     />
                     <Slider
@@ -257,7 +284,8 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('cropTop', value)}
                         min={0}
                         max={100}
-                        step={0.5}
+                        step={0.25}
+                        decimalPlaces={2}
                         allowManualInput={true}
                     />
                     <Slider
@@ -266,7 +294,8 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('cropRight', value)}
                         min={0}
                         max={100}
-                        step={0.5}
+                        step={0.25}
+                        decimalPlaces={2}
                         allowManualInput={true}
                     />
                     <Slider
@@ -275,7 +304,8 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('cropBottom', value)}
                         min={0}
                         max={100}
-                        step={0.5}
+                        step={0.25}
+                        decimalPlaces={2}
                         allowManualInput={true}
                     />
 
@@ -289,7 +319,7 @@ const Camera = () => {
                         label="Width (px)"
                         value={tempSettings.resizeWidth}
                         onChange={(value) => updateTempSetting('resizeWidth', value)}
-                        min={0}
+                        min={320}
                         max={3840}
                         step={1}
                         allowManualInput={true}
@@ -298,7 +328,7 @@ const Camera = () => {
                         label="Height (px)"
                         value={tempSettings.resizeHeight}
                         onChange={(value) => updateTempSetting('resizeHeight', value)}
-                        min={0}
+                        min={240}
                         max={2160}
                         step={1}
                         allowManualInput={true}
@@ -316,7 +346,8 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('reticleX', value)}
                         min={0}
                         max={100}
-                        step={0.5}
+                        step={0.1}
+                        decimalPlaces={2}
                         allowManualInput={true}
                     />
                     <Slider
@@ -325,7 +356,8 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('reticleY', value)}
                         min={0}
                         max={100}
-                        step={0.5}
+                        step={0.1}
+                        decimalPlaces={2}
                         allowManualInput={true}
                     />
                     <ColorPicker
@@ -340,7 +372,8 @@ const Camera = () => {
                         onChange={(value) => updateTempSetting('reticleSize', value)}
                         min={0.25}
                         max={5}
-                        step={0.25}
+                        step={0.1}
+                        decimalPlaces={2}
                         allowManualInput={true}
                     />
                 </div>

@@ -8,6 +8,7 @@ const Slider = ({
     min = 0,
     max = 100,
     step = 1,
+    decimalPlaces,
     disabled = false,
     allowManualInput = false,
     style = {}
@@ -167,6 +168,7 @@ const Slider = ({
                             min={min}
                             max={max}
                             step={step}
+                            decimalPlaces={decimalPlaces}
                             disabled={disabled}
                         />
                     </div>

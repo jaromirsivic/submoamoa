@@ -218,3 +218,12 @@ Camera: ModalWindow()
 		Color: ColorPicker()
 		Size: Slider(minValue=0.25, maxValue=5, decimalPlaces=2, step=0.25)
 Rename OK button to "Save".
+
+Update Camera -> Settings -> Modal Window:
+1. In section "Resize" the "Width (px)" Slider should have a min value 320
+2. In section "Resize" the "Height (px)" Slider should have a min value 240
+3. In section Flip, Rotate and Crop. All crop sliders should have step 0.25. (two decimal places should be always visible in the NumericInput on the right side of the Slider)
+4. In Reticle section the X, Y sliders should have a step 0.1. (two decimal places should be always visible)
+5. In Reticle section the Size slider should have a step 0.1. (two decimal places should be always visible)
+6. Add a business validation: (Crop Left + Crop Right) < 100
+7. Add a business validation (Crop Top + Crop Botton) < 100
