@@ -16,6 +16,7 @@ import Polygon from './components/Polygon';
 import ColumnLayout from './components/ColumnLayout';
 import RowLayout from './components/RowLayout';
 import ModalWindow from './components/ModalWindow';
+import ColorPicker from './components/ColorPicker';
 
 // Import assets
 import switchImg from './assets/switch.png';
@@ -55,6 +56,19 @@ const ComponentsDemo = () => {
             { "x": 0.6145940158575353, "y": 0.4369419345214071 }
         ]
     ]);
+    // State for reticle demo polygons
+    const [polygons4, setPolygons4] = useState([]);
+    const [polygons5, setPolygons5] = useState([]);
+    const [polygons6, setPolygons6] = useState([]);
+    const [polygons7, setPolygons7] = useState([]);
+    const [polygons8, setPolygons8] = useState([]);
+    const [polygons9, setPolygons9] = useState([]);
+    const [polygons10, setPolygons10] = useState([]);
+    // State for ColorPicker demos
+    const [color1, setColor1] = useState('#3b82f6');
+    const [color2, setColor2] = useState('#22c55e');
+    const [color3, setColor3] = useState('#ef4444cc');
+    const [color4, setColor4] = useState('#8b5cf6');
 
     const comboItems = [
         { label: 'Option 1', value: 'option1' },
@@ -515,6 +529,8 @@ const ComponentsDemo = () => {
                                     stretchMode="fit"
                                     background="#f0f0f0"
                                     showReticle={true}
+                                    polygons={polygons4}
+                                    onChange={setPolygons4}
                                 />
                             </div>
                         </div>
@@ -532,6 +548,8 @@ const ComponentsDemo = () => {
                                     showReticle={true}
                                     reticleX={0.25}
                                     reticleY={0.75}
+                                    polygons={polygons5}
+                                    onChange={setPolygons5}
                                 />
                             </div>
                         </div>
@@ -552,6 +570,8 @@ const ComponentsDemo = () => {
                                     reticleColor="#0066cc"
                                     reticleSize={1.5}
                                     reticleAlpha={0.8}
+                                    polygons={polygons6}
+                                    onChange={setPolygons6}
                                 />
                             </div>
                         </div>
@@ -564,11 +584,13 @@ const ComponentsDemo = () => {
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
                                         <Polygon
                                             src={emptyImage}
-                                            stretchMode="fit"
+                                            stretchMode="stretch"
                                             background="#f9fafb"
                                             showReticle={true}
                                             reticleSize={0.75}
                                             reticleColor="#22c55e"
+                                            polygons={polygons7}
+                                            onChange={setPolygons7}
                                         />
                                     </div>
                                 </div>
@@ -577,11 +599,13 @@ const ComponentsDemo = () => {
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
                                         <Polygon
                                             src={emptyImage}
-                                            stretchMode="fit"
+                                            stretchMode="stretch"
                                             background="#f9fafb"
                                             showReticle={true}
                                             reticleSize={1}
                                             reticleColor="#ff0000"
+                                            polygons={polygons8}
+                                            onChange={setPolygons8}
                                         />
                                     </div>
                                 </div>
@@ -590,13 +614,106 @@ const ComponentsDemo = () => {
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
                                         <Polygon
                                             src={emptyImage}
-                                            stretchMode="fit"
+                                            stretchMode="originalSize"
                                             background="#f9fafb"
                                             showReticle={true}
                                             reticleSize={2}
                                             reticleColor="#8b5cf6"
+                                            polygons={polygons9}
+                                            onChange={setPolygons9}
                                         />
                                     </div>
+                                </div>
+                            </RowLayout>
+                        </div>
+                    </ColumnLayout>
+                </Panel>
+
+                <Panel>
+                    <h2>ColorPicker Component</h2>
+                    <ColumnLayout gap="2rem">
+                        <div>
+                            <h3>Basic ColorPicker</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Default picker with hex input.
+                            </p>
+                            <RowLayout gap="2rem">
+                                <ColorPicker
+                                    color={color1}
+                                    onChange={setColor1}
+                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ width: '80px', height: '80px', backgroundColor: color1, borderRadius: '8px', border: '1px solid #ccc' }} />
+                                    <StaticText text={`Selected: ${color1}`} />
+                                </div>
+                            </RowLayout>
+                        </div>
+
+                        <div>
+                            <h3>Without Hex Input</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Picker only, no hex input field.
+                            </p>
+                            <RowLayout gap="2rem">
+                                <ColorPicker
+                                    color={color2}
+                                    onChange={setColor2}
+                                    showHex={false}
+                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ width: '80px', height: '80px', backgroundColor: color2, borderRadius: '8px', border: '1px solid #ccc' }} />
+                                    <StaticText text={`Selected: ${color2}`} />
+                                </div>
+                            </RowLayout>
+                        </div>
+
+                        <div>
+                            <h3>With Alpha Slider</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Includes alpha/transparency slider.
+                            </p>
+                            <RowLayout gap="2rem">
+                                <ColorPicker
+                                    color={color3}
+                                    onChange={setColor3}
+                                    showAlpha={true}
+                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        backgroundColor: color3.slice(0, 7),
+                                        opacity: color3.length === 9 ? parseInt(color3.slice(7, 9), 16) / 255 : 1,
+                                        borderRadius: '8px',
+                                        border: '1px solid #ccc'
+                                    }} />
+                                    <StaticText text={`Selected: ${color3}`} />
+                                </div>
+                            </RowLayout>
+                        </div>
+
+                        <div>
+                            <h3>All Features</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Hex input + alpha slider.
+                            </p>
+                            <RowLayout gap="2rem">
+                                <ColorPicker
+                                    color={color4}
+                                    onChange={setColor4}
+                                    showHex={true}
+                                    showAlpha={true}
+                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        backgroundColor: color4.slice(0, 7),
+                                        opacity: color4.length === 9 ? parseInt(color4.slice(7, 9), 16) / 255 : 1,
+                                        borderRadius: '8px',
+                                        border: '1px solid #ccc'
+                                    }} />
+                                    <StaticText text={`Selected: ${color4}`} />
                                 </div>
                             </RowLayout>
                         </div>

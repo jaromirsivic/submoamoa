@@ -51,3 +51,12 @@ reticleAlpha - default value is 50% or rather 0.5 which means that the reticle i
 reticleColor - color of the reticle, default value is red.
 Implement reticle which is displayed if showReticle is true and uses theme like in the picture enclosed to this chat.
 Add new examples to the ComponentsDemo page showing various capabilities of reticle.
+
+# ColorPicker
+Create a new ColorPicker component. The user will be able to select a color from the color picker, or
+specify the color using the hex code. The component should have the following props:
+- color: string – the selected color
+- onChange: function – the function to be called when the color is changed
+- showHex: boolean – whether to show the hex code input or not
+- showAlpha: boolean – whether to show the alpha input or not
+Demonstrate the usage of the component in Sandbox -> ComponentDemo page
