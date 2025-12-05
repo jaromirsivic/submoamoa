@@ -123,3 +123,8 @@ Apparently when i press and hold finger in the browser
 page and it blocks my attempts to move the points of the polygon.
 The same applies in the joystick mode.
 Fix the issue.
+
+There is still one issue with Polygon component on a mobile devices.
+When I am in "joystick" mode and I click and hold the finger on the image
+and I do not move it the browser shows me a popup asking me if I want to
+download the image. This should not happen. Fix the issue.

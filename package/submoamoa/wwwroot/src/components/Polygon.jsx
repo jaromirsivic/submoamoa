@@ -607,15 +607,23 @@ const Polygon = ({
 
     // Get image style (same as Image component)
     const getImageStyle = () => {
+        // Base styles to prevent long-press context menu on mobile
+        const preventLongPressStyles = (mode === 'designer' || mode === 'joystick') ? {
+            WebkitTouchCallout: 'none', // Disable iOS callout
+            WebkitUserSelect: 'none', // Disable selection
+            userSelect: 'none',
+            pointerEvents: 'none' // Let events pass through to container
+        } : {};
+
         switch (stretchMode) {
             case 'fit':
-                return { display: 'block', width: '100%', height: '100%', objectFit: 'contain' };
+                return { display: 'block', width: '100%', height: '100%', objectFit: 'contain', ...preventLongPressStyles };
             case 'stretch':
-                return { display: 'block', width: '100%', height: '100%', objectFit: 'fill' };
+                return { display: 'block', width: '100%', height: '100%', objectFit: 'fill', ...preventLongPressStyles };
             case 'originalSize':
-                return { display: 'block', width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: '100%' };
+                return { display: 'block', width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: '100%', ...preventLongPressStyles };
             default:
-                return { display: 'block' };
+                return { display: 'block', ...preventLongPressStyles };
         }
     };
 
