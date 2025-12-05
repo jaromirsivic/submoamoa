@@ -16,8 +16,26 @@ const Slider = ({
 
     const percentage = ((value - min) / (max - min)) * 100;
 
+    // Get clientX from either mouse or touch event
+    const getClientX = (e) => {
+        if (e.touches && e.touches.length > 0) {
+            return e.touches[0].clientX;
+        }
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            return e.changedTouches[0].clientX;
+        }
+        return e.clientX;
+    };
+
     const handleMouseDown = (e) => {
         if (disabled) return;
+        setIsDragging(true);
+        updateValue(e);
+    };
+
+    const handleTouchStart = (e) => {
+        if (disabled) return;
+        e.preventDefault(); // Prevent scrolling
         setIsDragging(true);
         updateValue(e);
     };
@@ -25,7 +43,8 @@ const Slider = ({
     const updateValue = (e) => {
         if (!trackRef.current) return;
         const rect = trackRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
+        const clientX = getClientX(e);
+        const x = clientX - rect.left;
         const width = rect.width;
         let newPercentage = x / width;
         newPercentage = Math.max(0, Math.min(1, newPercentage));
@@ -46,18 +65,33 @@ const Slider = ({
             }
         };
 
+        const handleTouchMove = (e) => {
+            if (isDragging) {
+                e.preventDefault(); // Prevent scrolling while dragging
+                updateValue(e);
+            }
+        };
+
         const handleMouseUp = () => {
+            setIsDragging(false);
+        };
+
+        const handleTouchEnd = () => {
             setIsDragging(false);
         };
 
         if (isDragging) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('touchmove', handleTouchMove, { passive: false });
+            window.addEventListener('touchend', handleTouchEnd);
         }
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleTouchEnd);
         };
     }, [isDragging, min, max, step, onChange]);
 
@@ -68,7 +102,8 @@ const Slider = ({
         backgroundColor: '#cbd5e1',
         borderRadius: '2px',
         cursor: 'pointer',
-        flex: 1
+        flex: 1,
+        touchAction: 'none' // Prevent browser from interpreting touch as scroll
     };
 
     const fillStyle = {
@@ -116,6 +151,7 @@ const Slider = ({
                     ref={trackRef}
                     style={trackStyle}
                     onMouseDown={handleMouseDown}
+                    onTouchStart={handleTouchStart}
                 >
                     <div style={fillStyle} />
                     <div style={thumbStyle} />

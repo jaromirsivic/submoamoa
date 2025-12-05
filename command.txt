@@ -100,3 +100,14 @@ point is as far as possible from the static point. Default value is #ff0000ff.
 
 Demonstrate the usage of the component in Sandbox -> ComponentDemo page.
 Display x, y coordinates of the dynamic point relative to the static point in the label.
+
+
+Update the Polygon component.
+Add "joystickZeroRadius" prop. It defines the radius of the circle when the
+dynamic point is almost on top of the static point. In this case the onJoystickMove event is still
+called but the x, y parameters are 0.
+Default value is 0.03.
+
+There is a problem with the Slider component on a mobile devices.
+I have tried to use the Slider component from the chrome web browser and it does
+not allow me to move slider. I can only click on it. Fix the issue.
