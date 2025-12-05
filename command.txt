@@ -42,4 +42,12 @@ that is OK, but after the polygon is closed the size should be set to the size o
 Update Sandbox -> ComponentDemo add a button under each polygon. After clicking the button
 the alert message will pop up displaying polygons json. That way I will be able to check if the json is OK.
 
-
+Update Polygon component. Add following props:
+reticleX - x position of the reticle (value between 0 and 1)
+reticleY - y position of the reticle (value between 0 and 1)
+showReticle - boolean, default value is false
+reticleSize - default value is 1
+reticleAlpha - default value is 50% or rather 0.5 which means that the reticle is half transparent
+reticleColor - color of the reticle, default value is red.
+Implement reticle which is displayed if showReticle is true and uses theme like in the picture enclosed to this chat.
+Add new examples to the ComponentsDemo page showing various capabilities of reticle.

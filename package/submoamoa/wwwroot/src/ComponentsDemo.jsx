@@ -201,7 +201,7 @@ const ComponentsDemo = () => {
                                     { label: 'Pending', value: 'pending' }
                                 ]}
                                 value="active"
-                                onChange={() => {}}
+                                onChange={() => { }}
                             />
                         </div>
 
@@ -213,7 +213,7 @@ const ComponentsDemo = () => {
                                     { label: 'Off', value: 'off' }
                                 ]}
                                 value="on"
-                                onChange={() => {}}
+                                onChange={() => { }}
                                 disabled
                             />
                         </div>
@@ -291,8 +291,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>Fit (default)</h4>
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/300x200?text=Fit+Mode" 
+                                        <Image
+                                            src="https://via.placeholder.com/300x200?text=Fit+Mode"
                                             stretchMode="fit"
                                             background="#f0f0f0"
                                         />
@@ -301,8 +301,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>Stretch</h4>
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/300x200?text=Stretch+Mode" 
+                                        <Image
+                                            src="https://via.placeholder.com/300x200?text=Stretch+Mode"
                                             stretchMode="stretch"
                                             background="#f0f0f0"
                                         />
@@ -311,8 +311,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>Original Size</h4>
                                     <div style={{ width: '100%', height: '200px', border: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/150x100?text=Original" 
+                                        <Image
+                                            src="https://via.placeholder.com/150x100?text=Original"
                                             stretchMode="originalSize"
                                             background="#f0f0f0"
                                         />
@@ -327,8 +327,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>No Border (default)</h4>
                                     <div style={{ width: '100%', height: '150px', border: '1px solid #ccc' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/200x150?text=No+Border" 
+                                        <Image
+                                            src="https://via.placeholder.com/200x150?text=No+Border"
                                             border={0}
                                             stretchMode="fit"
                                         />
@@ -337,8 +337,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>2px Border</h4>
                                     <div style={{ width: '100%', height: '150px' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/200x150?text=2px+Border" 
+                                        <Image
+                                            src="https://via.placeholder.com/200x150?text=2px+Border"
                                             border={2}
                                             stretchMode="fit"
                                         />
@@ -347,8 +347,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>4px Border</h4>
                                     <div style={{ width: '100%', height: '150px' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/200x150?text=4px+Border" 
+                                        <Image
+                                            src="https://via.placeholder.com/200x150?text=4px+Border"
                                             border={4}
                                             stretchMode="fit"
                                         />
@@ -363,8 +363,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>Transparent (default)</h4>
                                     <div style={{ width: '100%', height: '150px', border: '1px solid #ccc', background: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0), linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0)', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/100x100?text=Small" 
+                                        <Image
+                                            src="https://via.placeholder.com/100x100?text=Small"
                                             stretchMode="fit"
                                             background="transparent"
                                         />
@@ -373,8 +373,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>Light Blue Background</h4>
                                     <div style={{ width: '100%', height: '150px', border: '1px solid #ccc' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/100x100?text=Small" 
+                                        <Image
+                                            src="https://via.placeholder.com/100x100?text=Small"
                                             stretchMode="fit"
                                             background="#e0f2fe"
                                         />
@@ -383,8 +383,8 @@ const ComponentsDemo = () => {
                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                     <h4>Light Yellow Background</h4>
                                     <div style={{ width: '100%', height: '150px', border: '1px solid #ccc' }}>
-                                        <Image 
-                                            src="https://via.placeholder.com/100x100?text=Small" 
+                                        <Image
+                                            src="https://via.placeholder.com/100x100?text=Small"
                                             stretchMode="fit"
                                             background="#fef3c7"
                                         />
@@ -396,8 +396,8 @@ const ComponentsDemo = () => {
                         <div>
                             <h3>Combined Example</h3>
                             <div style={{ width: '100%', maxWidth: '400px' }}>
-                                <Image 
-                                    src="https://via.placeholder.com/300x200?text=Combined+Example" 
+                                <Image
+                                    src="https://via.placeholder.com/300x200?text=Combined+Example"
                                     border={3}
                                     stretchMode="fit"
                                     background="#f0f9ff"
@@ -430,9 +430,9 @@ const ComponentsDemo = () => {
                                 />
                             </div>
                             <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <Button 
-                                    label="Show JSON" 
-                                    onClick={() => alert(JSON.stringify(polygons1, null, 2))} 
+                                <Button
+                                    label="Show JSON"
+                                    onClick={() => alert(JSON.stringify(polygons1, null, 2))}
                                 />
                                 <span style={{ fontSize: '0.85rem', color: '#666' }}>
                                     {polygons1.length} polygon(s)
@@ -459,9 +459,9 @@ const ComponentsDemo = () => {
                                 />
                             </div>
                             <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <Button 
-                                    label="Show JSON" 
-                                    onClick={() => alert(JSON.stringify(polygons2, null, 2))} 
+                                <Button
+                                    label="Show JSON"
+                                    onClick={() => alert(JSON.stringify(polygons2, null, 2))}
                                 />
                                 <span style={{ fontSize: '0.85rem', color: '#666' }}>
                                     {polygons2.length} polygon(s)
@@ -487,14 +487,113 @@ const ComponentsDemo = () => {
                                 />
                             </div>
                             <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <Button 
-                                    label="Show JSON" 
-                                    onClick={() => alert(JSON.stringify(polygons3, null, 2))} 
+                                <Button
+                                    label="Show JSON"
+                                    onClick={() => alert(JSON.stringify(polygons3, null, 2))}
                                 />
                                 <span style={{ fontSize: '0.85rem', color: '#666' }}>
                                     {polygons3.length} polygon(s)
                                 </span>
                             </div>
+                        </div>
+                    </ColumnLayout>
+                </Panel>
+
+                <Panel>
+                    <h2>Polygon Reticle Feature</h2>
+                    <ColumnLayout gap="2rem">
+                        <div>
+                            <h3>Basic Reticle (Default Position)</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Reticle centered at position (0.5, 0.5) with default red color.
+                            </p>
+                            <div style={{ width: '100%', height: '300px', border: '1px solid #ccc' }}>
+                                <Polygon
+                                    src="https://via.placeholder.com/600x400?text=Basic+Reticle"
+                                    stretchMode="fit"
+                                    background="#f0f0f0"
+                                    showReticle={true}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Custom Position Reticle</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Reticle positioned at (0.25, 0.75) - bottom left quadrant.
+                            </p>
+                            <div style={{ width: '100%', height: '300px', border: '1px solid #ccc' }}>
+                                <Polygon
+                                    src="https://via.placeholder.com/600x400?text=Custom+Position"
+                                    stretchMode="fit"
+                                    background="#e0f2fe"
+                                    showReticle={true}
+                                    reticleX={0.25}
+                                    reticleY={0.75}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Custom Color and Size</h3>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                Blue reticle with size 1.5 and higher opacity.
+                            </p>
+                            <div style={{ width: '100%', height: '300px', border: '1px solid #ccc' }}>
+                                <Polygon
+                                    src="https://via.placeholder.com/600x400?text=Custom+Style"
+                                    stretchMode="fit"
+                                    background="#fef3c7"
+                                    showReticle={true}
+                                    reticleX={0.5}
+                                    reticleY={0.5}
+                                    reticleColor="#0066cc"
+                                    reticleSize={1.5}
+                                    reticleAlpha={0.8}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>Multiple Reticles Comparison</h3>
+                            <RowLayout gap="1rem">
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Small (0.75x)</h4>
+                                    <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
+                                        <Polygon
+                                            stretchMode="fit"
+                                            background="#f9fafb"
+                                            showReticle={true}
+                                            reticleSize={0.75}
+                                            reticleColor="#22c55e"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Normal (1x)</h4>
+                                    <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
+                                        <Polygon
+                                            stretchMode="fit"
+                                            background="#f9fafb"
+                                            showReticle={true}
+                                            reticleSize={1}
+                                            reticleColor="#ff0000"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                    <h4>Large (2x)</h4>
+                                    <div style={{ width: '100%', height: '200px', border: '1px solid #ccc' }}>
+                                        <Polygon
+                                            stretchMode="fit"
+                                            background="#f9fafb"
+                                            showReticle={true}
+                                            reticleSize={2}
+                                            reticleColor="#8b5cf6"
+                                        />
+                                    </div>
+                                </div>
+                            </RowLayout>
                         </div>
                     </ColumnLayout>
                 </Panel>

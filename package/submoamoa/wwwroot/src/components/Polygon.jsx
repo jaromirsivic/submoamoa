@@ -19,13 +19,21 @@ const Polygon = ({
     fillColor = '#00ee0055',
     lineWidth = 1,
     maxPoints = 32,
+    maxPolygons = 8,
     polygons: externalPolygons = [],
-    onChange
+    onChange,
+    // Reticle props
+    reticleX = 0.5,
+    reticleY = 0.5,
+    showReticle = false,
+    reticleSize = 1,
+    reticleAlpha = 0.5,
+    reticleColor = '#ff0000'
 }) => {
     const [polygons, setPolygons] = useState(externalPolygons);
     const [currentPolygon, setCurrentPolygon] = useState(null); // Points being drawn (not yet closed)
     const [draggingPoint, setDraggingPoint] = useState(null); // { polyIndex, pointIndex }
-    
+
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const imageRef = useRef(null);
@@ -157,30 +165,30 @@ const Polygon = ({
         const canvas = canvasRef.current;
         if (!canvas) return;
         if (src && !imageLoaded) return;
-        
+
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // Draw closed polygons
         polygons.forEach((polygon) => {
             if (polygon.length < 3) return;
-            
+
             ctx.beginPath();
             const first = normalizedToCanvas(polygon[0].x, polygon[0].y);
             ctx.moveTo(first.x, first.y);
-            
+
             for (let i = 1; i < polygon.length; i++) {
                 const pt = normalizedToCanvas(polygon[i].x, polygon[i].y);
                 ctx.lineTo(pt.x, pt.y);
             }
             ctx.closePath();
-            
+
             ctx.fillStyle = fillColor;
             ctx.fill();
             ctx.strokeStyle = borderColor;
             ctx.lineWidth = lineWidth;
             ctx.stroke();
-            
+
             // Draw vertex points
             polygon.forEach((point) => {
                 const canvasPt = normalizedToCanvas(point.x, point.y);
@@ -193,22 +201,22 @@ const Polygon = ({
                 ctx.stroke();
             });
         });
-        
+
         // Draw current polygon being drawn
         if (currentPolygon && currentPolygon.length > 0) {
             ctx.beginPath();
             const first = normalizedToCanvas(currentPolygon[0].x, currentPolygon[0].y);
             ctx.moveTo(first.x, first.y);
-            
+
             for (let i = 1; i < currentPolygon.length; i++) {
                 const pt = normalizedToCanvas(currentPolygon[i].x, currentPolygon[i].y);
                 ctx.lineTo(pt.x, pt.y);
             }
-            
+
             ctx.strokeStyle = borderColor;
             ctx.lineWidth = lineWidth;
             ctx.stroke();
-            
+
             // Draw vertex points
             currentPolygon.forEach((point, index) => {
                 const canvasPt = normalizedToCanvas(point.x, point.y);
@@ -221,7 +229,56 @@ const Polygon = ({
                 ctx.stroke();
             });
         }
-    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src]);
+
+        // Draw reticle if enabled
+        if (showReticle) {
+            const centerPos = normalizedToCanvas(reticleX, reticleY);
+            const baseSize = 20 * reticleSize;
+            const gapSize = 6 * reticleSize;
+            const lineLength = 14 * reticleSize;
+            const dotRadius = 2 * reticleSize;
+            const lineWidth = 2 * reticleSize;
+
+            ctx.save();
+            ctx.globalAlpha = reticleAlpha;
+            ctx.strokeStyle = reticleColor;
+            ctx.fillStyle = reticleColor;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+
+            // Draw center dot
+            ctx.beginPath();
+            ctx.arc(centerPos.x, centerPos.y, dotRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw four lines with gaps
+            // Top line
+            ctx.beginPath();
+            ctx.moveTo(centerPos.x, centerPos.y - gapSize);
+            ctx.lineTo(centerPos.x, centerPos.y - gapSize - lineLength);
+            ctx.stroke();
+
+            // Bottom line
+            ctx.beginPath();
+            ctx.moveTo(centerPos.x, centerPos.y + gapSize);
+            ctx.lineTo(centerPos.x, centerPos.y + gapSize + lineLength);
+            ctx.stroke();
+
+            // Left line
+            ctx.beginPath();
+            ctx.moveTo(centerPos.x - gapSize, centerPos.y);
+            ctx.lineTo(centerPos.x - gapSize - lineLength, centerPos.y);
+            ctx.stroke();
+
+            // Right line
+            ctx.beginPath();
+            ctx.moveTo(centerPos.x + gapSize, centerPos.y);
+            ctx.lineTo(centerPos.x + gapSize + lineLength, centerPos.y);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleAlpha, reticleColor]);
 
     useEffect(() => {
         draw();
@@ -230,11 +287,11 @@ const Polygon = ({
     // Handle click
     const handleClick = (e) => {
         if (src && !imageLoaded) return;
-        
+
         const screenX = e.clientX;
         const screenY = e.clientY;
         const normCoords = screenToNormalized(screenX, screenY);
-        
+
         // If currently drawing a polygon
         if (currentPolygon) {
             // Check if clicking on first point to close (need at least 3 points)
@@ -248,11 +305,11 @@ const Polygon = ({
                 }
                 return;
             }
-            
+
             // Add new point if under max
             if (currentPolygon.length < maxPoints) {
                 const newCurrentPolygon = [...currentPolygon, normCoords];
-                
+
                 // Auto-close if maxPoints reached
                 if (newCurrentPolygon.length >= maxPoints) {
                     const newPolygons = [...polygons, newCurrentPolygon];
@@ -267,24 +324,26 @@ const Polygon = ({
             }
             return;
         }
-        
+
         // Not drawing - check if clicking on existing point (to start dragging - handled in mousedown)
         const pointAt = findPointAt(screenX, screenY);
         if (pointAt) return;
-        
+
         // Check if clicking inside existing polygon (don't start new polygon)
         const polygonAt = findPolygonAt(screenX, screenY);
         if (polygonAt !== null) return;
-        
+
         // Start new polygon
-        setCurrentPolygon([normCoords]);
+        if (polygons.length < maxPolygons) {
+            setCurrentPolygon([normCoords]);
+        }
     };
 
     // Handle mouse down (for dragging)
     const handleMouseDown = (e) => {
         if (src && !imageLoaded) return;
         if (currentPolygon) return; // Don't drag while drawing
-        
+
         const pointAt = findPointAt(e.clientX, e.clientY);
         if (pointAt && pointAt.polyIndex >= 0) {
             setDraggingPoint(pointAt);
@@ -295,7 +354,7 @@ const Polygon = ({
     // Handle mouse move
     const handleMouseMove = (e) => {
         if (src && !imageLoaded) return;
-        
+
         if (draggingPoint) {
             const normCoords = screenToNormalized(e.clientX, e.clientY);
             const newPolygons = [...polygons];
@@ -316,13 +375,13 @@ const Polygon = ({
     // Handle double click (delete polygon)
     const handleDoubleClick = (e) => {
         if (src && !imageLoaded) return;
-        
+
         // Cancel current drawing
         if (currentPolygon) {
             setCurrentPolygon(null);
             return;
         }
-        
+
         // Delete polygon at click position
         const polygonAt = findPolygonAt(e.clientX, e.clientY);
         if (polygonAt !== null) {
@@ -370,8 +429,8 @@ const Polygon = ({
     }, [containerSize, imageLoaded, draw]);
 
     return (
-        <div 
-            className="custom-polygon" 
+        <div
+            className="custom-polygon"
             ref={containerRef}
             style={containerStyle}
             onClick={handleClick}
@@ -382,10 +441,10 @@ const Polygon = ({
             onDoubleClick={handleDoubleClick}
         >
             {src && (
-                <img 
+                <img
                     ref={imageRef}
-                    src={src} 
-                    alt="" 
+                    src={src}
+                    alt=""
                     style={getImageStyle()}
                     onLoad={handleImageLoad}
                     draggable={false}
