@@ -456,16 +456,27 @@ const Scene3D = ({
 
     const controlsStyle = {
         position: 'absolute',
-        top: '10px',
+        bottom: '10px',
         left: '10px',
         zIndex: 10
     };
 
     const resetButtonStyle = {
         position: 'absolute',
-        top: '10px',
+        bottom: '10px',
         right: '10px',
         zIndex: 10
+    };
+
+    // Match MultiSwitch default colors
+    const resetButtonColors = {
+        backgroundColor: '#cccccc',
+        color: '#333333',
+        border: '1px solid #999999',
+        borderRadius: '0.375rem',
+        padding: '0.5rem 1rem',
+        fontWeight: 400,
+        opacity: 0.5
     };
 
     return (
@@ -496,7 +507,7 @@ const Scene3D = ({
                 <Button
                     label="Reset"
                     onClick={resetCamera}
-                    style={{ opacity: 0.7 }}
+                    style={resetButtonColors}
                 />
             </div>
         </div>
