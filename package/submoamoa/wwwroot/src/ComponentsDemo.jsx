@@ -635,87 +635,49 @@ const ComponentsDemo = () => {
                         <div>
                             <h3>Basic ColorPicker</h3>
                             <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
-                                Default picker with hex input.
+                                Default picker with hex input. Click to open dropdown.
                             </p>
-                            <RowLayout gap="2rem">
-                                <ColorPicker
-                                    color={color1}
-                                    onChange={setColor1}
-                                />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    <div style={{ width: '80px', height: '80px', backgroundColor: color1, borderRadius: '8px', border: '1px solid #ccc' }} />
-                                    <StaticText text={`Selected: ${color1}`} />
-                                </div>
-                            </RowLayout>
+                            <ColorPicker
+                                color={color1}
+                                onChange={setColor1}
+                            />
                         </div>
 
                         <div>
                             <h3>Without Hex Input</h3>
                             <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
-                                Picker only, no hex input field.
+                                Picker only, no hex input field in dropdown.
                             </p>
-                            <RowLayout gap="2rem">
-                                <ColorPicker
-                                    color={color2}
-                                    onChange={setColor2}
-                                    showHex={false}
-                                />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    <div style={{ width: '80px', height: '80px', backgroundColor: color2, borderRadius: '8px', border: '1px solid #ccc' }} />
-                                    <StaticText text={`Selected: ${color2}`} />
-                                </div>
-                            </RowLayout>
+                            <ColorPicker
+                                color={color2}
+                                onChange={setColor2}
+                                showHex={false}
+                            />
                         </div>
 
                         <div>
                             <h3>With Alpha Slider</h3>
                             <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
-                                Includes alpha/transparency slider.
+                                Includes alpha slider. Hex shows 8 digits (RRGGBBAA).
                             </p>
-                            <RowLayout gap="2rem">
-                                <ColorPicker
-                                    color={color3}
-                                    onChange={setColor3}
-                                    showAlpha={true}
-                                />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    <div style={{
-                                        width: '80px',
-                                        height: '80px',
-                                        backgroundColor: color3.slice(0, 7),
-                                        opacity: color3.length === 9 ? parseInt(color3.slice(7, 9), 16) / 255 : 1,
-                                        borderRadius: '8px',
-                                        border: '1px solid #ccc'
-                                    }} />
-                                    <StaticText text={`Selected: ${color3}`} />
-                                </div>
-                            </RowLayout>
+                            <ColorPicker
+                                color={color3}
+                                onChange={setColor3}
+                                showAlpha={true}
+                            />
                         </div>
 
                         <div>
                             <h3>All Features</h3>
                             <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
-                                Hex input + alpha slider.
+                                Hex input + alpha slider combined.
                             </p>
-                            <RowLayout gap="2rem">
-                                <ColorPicker
-                                    color={color4}
-                                    onChange={setColor4}
-                                    showHex={true}
-                                    showAlpha={true}
-                                />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    <div style={{
-                                        width: '80px',
-                                        height: '80px',
-                                        backgroundColor: color4.slice(0, 7),
-                                        opacity: color4.length === 9 ? parseInt(color4.slice(7, 9), 16) / 255 : 1,
-                                        borderRadius: '8px',
-                                        border: '1px solid #ccc'
-                                    }} />
-                                    <StaticText text={`Selected: ${color4}`} />
-                                </div>
-                            </RowLayout>
+                            <ColorPicker
+                                color={color4}
+                                onChange={setColor4}
+                                showHex={true}
+                                showAlpha={true}
+                            />
                         </div>
                     </ColumnLayout>
                 </Panel>

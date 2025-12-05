@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 /**
  * ColorPicker component for selecting colors with optional hex input and alpha support.
+ * Displays as a ComboBox-style dropdown with color swatch trigger.
  */
 const ColorPicker = ({
     color = '#ff0000',
@@ -9,6 +10,9 @@ const ColorPicker = ({
     showHex = true,
     showAlpha = false
 }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef(null);
+
     // Parse color into HSV + Alpha
     const parseColor = useCallback((colorStr) => {
         let hex = colorStr;
@@ -69,7 +73,7 @@ const ColorPicker = ({
         const toHex = (val) => Math.round((val + m) * 255).toString(16).padStart(2, '0');
         let hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 
-        if (showAlpha && a < 1) {
+        if (showAlpha) {
             hex += Math.round(a * 255).toString(16).padStart(2, '0');
         }
 
@@ -77,7 +81,7 @@ const ColorPicker = ({
     }, [showAlpha]);
 
     const [hsv, setHsv] = useState(() => parseColor(color));
-    const [hexInput, setHexInput] = useState(color.slice(0, 7));
+    const [hexInput, setHexInput] = useState(color);
 
     const satBrightRef = useRef(null);
     const hueRef = useRef(null);
@@ -90,8 +94,19 @@ const ColorPicker = ({
     useEffect(() => {
         const parsed = parseColor(color);
         setHsv(parsed);
-        setHexInput(color.slice(0, 7));
+        setHexInput(color);
     }, [color, parseColor]);
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Notify onChange
     const notifyChange = useCallback((newHsv) => {
@@ -114,7 +129,8 @@ const ColorPicker = ({
 
         const newHsv = { ...hsv, s: x, v: 1 - y };
         setHsv(newHsv);
-        setHexInput(hsvToHex(newHsv.h, newHsv.s, newHsv.v, newHsv.a).slice(0, 7));
+        const newHex = hsvToHex(newHsv.h, newHsv.s, newHsv.v, newHsv.a);
+        setHexInput(newHex);
         notifyChange(newHsv);
     };
 
@@ -131,7 +147,8 @@ const ColorPicker = ({
 
         const newHsv = { ...hsv, h: Math.round(x * 360) };
         setHsv(newHsv);
-        setHexInput(hsvToHex(newHsv.h, newHsv.s, newHsv.v, newHsv.a).slice(0, 7));
+        const newHex = hsvToHex(newHsv.h, newHsv.s, newHsv.v, newHsv.a);
+        setHexInput(newHex);
         notifyChange(newHsv);
     };
 
@@ -148,6 +165,8 @@ const ColorPicker = ({
 
         const newHsv = { ...hsv, a: x };
         setHsv(newHsv);
+        const newHex = hsvToHex(newHsv.h, newHsv.s, newHsv.v, newHsv.a);
+        setHexInput(newHex);
         notifyChange(newHsv);
     };
 
@@ -181,11 +200,11 @@ const ColorPicker = ({
         const value = e.target.value;
         setHexInput(value);
 
-        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+        const hexPattern = showAlpha ? /^#[0-9A-Fa-f]{8}$/ : /^#[0-9A-Fa-f]{6}$/;
+        if (hexPattern.test(value)) {
             const parsed = parseColor(value);
-            const newHsv = { ...parsed, a: hsv.a };
-            setHsv(newHsv);
-            notifyChange(newHsv);
+            setHsv(parsed);
+            notifyChange(parsed);
         }
     };
 
@@ -194,127 +213,168 @@ const ColorPicker = ({
     const pureHueHex = hsvToHex(hsv.h, 1, 1, 1);
 
     return (
-        <div className="custom-color-picker" style={{ width: '220px', padding: '12px', backgroundColor: '#ffffff', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-            {/* Saturation/Brightness picker */}
+        <div className="custom-color-picker" ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
+            {/* Trigger button (ComboBox style) */}
             <div
-                ref={satBrightRef}
-                onMouseDown={handleSBMouseDown}
+                onClick={() => setIsOpen(!isOpen)}
                 style={{
-                    width: '100%',
-                    height: '150px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 10px',
+                    border: '1px solid #ccc',
                     borderRadius: '4px',
-                    cursor: 'crosshair',
-                    position: 'relative',
-                    background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${pureHueHex})`
-                }}
-            >
-                <div style={{
-                    position: 'absolute',
-                    left: `${hsv.s * 100}%`,
-                    top: `${(1 - hsv.v) * 100}%`,
-                    transform: 'translate(-50%, -50%)',
-                    width: '14px',
-                    height: '14px',
-                    borderRadius: '50%',
-                    border: '2px solid white',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                    pointerEvents: 'none'
-                }} />
-            </div>
-
-            {/* Hue slider */}
-            <div
-                ref={hueRef}
-                onMouseDown={handleHueMouseDown}
-                style={{
-                    width: '100%',
-                    height: '12px',
-                    marginTop: '12px',
-                    borderRadius: '6px',
                     cursor: 'pointer',
-                    position: 'relative',
-                    background: 'linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)'
+                    backgroundColor: '#fff',
+                    minWidth: '140px'
                 }}
             >
                 <div style={{
-                    position: 'absolute',
-                    left: `${(hsv.h / 360) * 100}%`,
-                    top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
-                    border: '2px solid white',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                    backgroundColor: pureHueHex,
-                    pointerEvents: 'none'
-                }} />
-            </div>
-
-            {/* Alpha slider */}
-            {showAlpha && (
-                <div
-                    ref={alphaRef}
-                    onMouseDown={handleAlphaMouseDown}
-                    style={{
-                        width: '100%',
-                        height: '12px',
-                        marginTop: '8px',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        background: `linear-gradient(to right, transparent, ${hsvToHex(hsv.h, hsv.s, hsv.v, 1).slice(0, 7)})`,
-                        backgroundImage: `linear-gradient(to right, transparent, ${hsvToHex(hsv.h, hsv.s, hsv.v, 1).slice(0, 7)}), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Crect x='0' y='0' width='4' height='4' fill='%23ccc'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%23ccc'/%3E%3C/svg%3E")`
-                    }}
-                >
-                    <div style={{
-                        position: 'absolute',
-                        left: `${hsv.a * 100}%`,
-                        top: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '16px',
-                        height: '16px',
-                        borderRadius: '50%',
-                        border: '2px solid white',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                        backgroundColor: currentHex.slice(0, 7),
-                        pointerEvents: 'none'
-                    }} />
-                </div>
-            )}
-
-            {/* Hex input and preview */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
-                <div style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '24px',
+                    height: '24px',
                     borderRadius: '4px',
                     border: '1px solid #ccc',
                     backgroundColor: currentHex.slice(0, 7),
-                    opacity: hsv.a
-                }} />
-                {showHex && (
-                    <input
-                        type="text"
-                        value={hexInput}
-                        onChange={handleHexChange}
-                        style={{
-                            flex: 1,
-                            padding: '6px 8px',
-                            border: '1px solid #ccc',
-                            borderRadius: '4px',
-                            fontSize: '0.9rem',
-                            fontFamily: 'monospace'
-                        }}
-                        placeholder="#000000"
-                    />
-                )}
-                {showAlpha && (
-                    <span style={{ fontSize: '0.8rem', color: '#666', minWidth: '40px' }}>
-                        {Math.round(hsv.a * 100)}%
-                    </span>
-                )}
+                    opacity: hsv.a,
+                    backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'8\' height=\'8\' viewBox=\'0 0 8 8\'%3E%3Crect x=\'0\' y=\'0\' width=\'4\' height=\'4\' fill=\'%23ccc\'/%3E%3Crect x=\'4\' y=\'4\' width=\'4\' height=\'4\' fill=\'%23ccc\'/%3E%3C/svg%3E")',
+                    backgroundSize: '8px 8px'
+                }}>
+                    <div style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: currentHex.slice(0, 7),
+                        opacity: hsv.a,
+                        borderRadius: '3px'
+                    }} />
+                </div>
+                <span style={{ fontSize: '0.9rem', fontFamily: 'monospace', flex: 1 }}>{currentHex}</span>
+                <span style={{ fontSize: '0.7rem', color: '#666' }}>▼</span>
             </div>
+
+            {/* Dropdown panel */}
+            {isOpen && (
+                <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    marginTop: '4px',
+                    width: '220px',
+                    padding: '12px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                    zIndex: 1000
+                }}>
+                    {/* Saturation/Brightness picker */}
+                    <div
+                        ref={satBrightRef}
+                        onMouseDown={handleSBMouseDown}
+                        style={{
+                            width: '100%',
+                            height: '150px',
+                            borderRadius: '4px',
+                            cursor: 'crosshair',
+                            position: 'relative',
+                            background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${pureHueHex})`
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            left: `${hsv.s * 100}%`,
+                            top: `${(1 - hsv.v) * 100}%`,
+                            transform: 'translate(-50%, -50%)',
+                            width: '14px',
+                            height: '14px',
+                            borderRadius: '50%',
+                            border: '2px solid white',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                            pointerEvents: 'none'
+                        }} />
+                    </div>
+
+                    {/* Hue slider */}
+                    <div
+                        ref={hueRef}
+                        onMouseDown={handleHueMouseDown}
+                        style={{
+                            width: '100%',
+                            height: '12px',
+                            marginTop: '12px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            background: 'linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)'
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            left: `${(hsv.h / 360) * 100}%`,
+                            top: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '50%',
+                            border: '2px solid white',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                            backgroundColor: pureHueHex,
+                            pointerEvents: 'none'
+                        }} />
+                    </div>
+
+                    {/* Alpha slider */}
+                    {showAlpha && (
+                        <div
+                            ref={alphaRef}
+                            onMouseDown={handleAlphaMouseDown}
+                            style={{
+                                width: '100%',
+                                height: '12px',
+                                marginTop: '8px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                position: 'relative',
+                                background: `linear-gradient(to right, transparent, ${hsvToHex(hsv.h, hsv.s, hsv.v, 1).slice(0, 7)})`,
+                                backgroundImage: `linear-gradient(to right, transparent, ${hsvToHex(hsv.h, hsv.s, hsv.v, 1).slice(0, 7)}), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Crect x='0' y='0' width='4' height='4' fill='%23ccc'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%23ccc'/%3E%3C/svg%3E")`
+                            }}
+                        >
+                            <div style={{
+                                position: 'absolute',
+                                left: `${hsv.a * 100}%`,
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                width: '16px',
+                                height: '16px',
+                                borderRadius: '50%',
+                                border: '2px solid white',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                                backgroundColor: currentHex.slice(0, 7),
+                                pointerEvents: 'none'
+                            }} />
+                        </div>
+                    )}
+
+                    {/* Hex input */}
+                    {showHex && (
+                        <div style={{ marginTop: '12px' }}>
+                            <input
+                                type="text"
+                                value={hexInput}
+                                onChange={handleHexChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '6px 8px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                    fontSize: '0.9rem',
+                                    fontFamily: 'monospace',
+                                    boxSizing: 'border-box'
+                                }}
+                                placeholder={showAlpha ? '#00000000' : '#000000'}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
