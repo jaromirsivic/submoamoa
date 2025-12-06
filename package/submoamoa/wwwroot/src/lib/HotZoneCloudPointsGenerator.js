@@ -237,7 +237,7 @@ export const generateHotZoneSceneObjects = (settings, calculationQuality = 10) =
     
     const centerSphereCenterPoint = {
         x: 0,
-        y: centerPole.yDistanceFromArmPoles * scale,
+        y: - (centerPole.yDistanceFromArmPoles * scale),
         z: centerPole.height * scale
     };
     
@@ -275,12 +275,12 @@ export const generateHotZoneSceneObjects = (settings, calculationQuality = 10) =
             y: point.y,
             z: point.z,
             color: '#0088ffff',
-            width: 0.05
+            width: 0.01
         });
     });
     
-    // Add poles as black lines with width 4 (scaled to 0.04 for scene units)
-    const poleWidth = 0.04;
+    // Add poles as black lines with width 2
+    const poleWidth = 0.02;
     const poleColor = '#000000ff';
     
     // Left pole
@@ -323,7 +323,7 @@ export const generateHotZoneSceneObjects = (settings, calculationQuality = 10) =
     });
     
     // Add anchor spheres on top of each pole
-    const anchorSphereRadius = 0.08;
+    const anchorSphereRadius = 0.04;
     
     // Left anchor sphere (red)
     sceneObjects.push({

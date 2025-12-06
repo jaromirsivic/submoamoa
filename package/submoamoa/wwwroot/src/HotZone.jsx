@@ -20,7 +20,8 @@ const HotZone = () => {
             setIsLoading(true);
             const settings = await getHotZoneSettings();
             if (settings && Object.keys(settings).length > 0) {
-                const objects = generateHotZoneSceneObjects(settings, 15);
+                const quality = settings.computationQuality || 15;
+                const objects = generateHotZoneSceneObjects(settings, quality);
                 setSceneObjects(objects);
             }
         } catch (error) {
@@ -74,7 +75,8 @@ const HotZone = () => {
 
     const handleSettingsSaved = (newSettings) => {
         // Regenerate the scene with the new settings
-        const objects = generateHotZoneSceneObjects(newSettings, 15);
+        const quality = newSettings.computationQuality || 15;
+        const objects = generateHotZoneSceneObjects(newSettings, quality);
         setSceneObjects(objects);
         console.log('Hot zone settings saved, scene updated with', objects.length, 'objects');
     };

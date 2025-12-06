@@ -8,6 +8,7 @@ import { getHotZoneSettings, saveHotZoneSettings } from './lib/api';
 // Default hot zone settings
 const defaultHotZoneSettings = {
     units: 'cm',
+    computationQuality: 15,
     centerPole: {
         micStickRadius: 50,
         height: 150,
@@ -160,6 +161,16 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
                             onChange={updateUnits}
                         />
                     </div>
+
+                    <Slider
+                        label="Computation Quality"
+                        value={tempSettings.computationQuality}
+                        onChange={(value) => setTempSettings(prev => ({ ...prev, computationQuality: value }))}
+                        min={5}
+                        max={50}
+                        step={1}
+                        allowManualInput={true}
+                    />
 
                     <HorizontalSeparator label="Center Pole" fullWidth={true} bleed="1rem" />
                     <Slider
