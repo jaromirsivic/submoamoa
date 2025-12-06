@@ -354,3 +354,12 @@ Update Modal Window. Add prop "movable" to the modal window.
 When movable is true, the modal window should be movable.
 When movable is false, the modal window should not be movable.
 Default value of movable is false.
+
+1. Update Hot Zone Modal window. Whenever any Slider value is changed,
+meaning mouse up event is triggered, the Scene3D should be updated
+but the configuration should not be saved to the settings.json file.
+Configuration will be saved only when the Save button is clicked.
+2. Update Hot Zone Modal window. The business validation regarding
+existence of all 4 boundary points should be treated as an Error.
+When the Error is triggered, the Save button should be disabled.
+When the Error is cleared, the Save button should be enabled.

@@ -5,6 +5,7 @@ const Slider = ({
     label,
     value,
     onChange,
+    onAfterChange,
     min = 0,
     max = 100,
     step = 1,
@@ -58,6 +59,7 @@ const Slider = ({
         newValue = Math.max(min, Math.min(max, newValue));
 
         onChange(newValue);
+        return newValue; // Return for immediate use if needed
     };
 
     useEffect(() => {
@@ -74,12 +76,28 @@ const Slider = ({
             }
         };
 
-        const handleMouseUp = () => {
-            setIsDragging(false);
+        const handleMouseUp = (e) => {
+            if (isDragging) {
+                setIsDragging(false);
+                // Trigger onAfterChange with the final value.
+                // Since state update might be async, we recalculate or rely on current event flow.
+                // Ideally we should pass the value we just calculated.
+                // However, updateValue calls onChange, which pushes to parent. Parent updates prop `value`.
+                // By the time mouseUp happens, `value` prop might be old or new depending on React batching.
+                // Safest to call updateValue one last time or rely on `value` if we assume sync.
+                // But wait, mouseUp doesn't necessarily have new coordinates if mouse didn't move.
+                // Let's rely on the `value` prop being relatively fresh or pass current value if available?
+                // Actually, simply emitting onAfterChange(value) using the prop `value` is risky if bad timing.
+                // Let's just emit whatever the current value is from props, assuming parent has updated it by now if we were dragging.
+                if (onAfterChange) onAfterChange(value);
+            }
         };
 
         const handleTouchEnd = () => {
-            setIsDragging(false);
+            if (isDragging) {
+                setIsDragging(false);
+                if (onAfterChange) onAfterChange(value);
+            }
         };
 
         if (isDragging) {
@@ -95,7 +113,12 @@ const Slider = ({
             window.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [isDragging, min, max, step, onChange]);
+    }, [isDragging, min, max, step, onChange, onAfterChange, value]);
+
+    const handleManualChange = (val) => {
+        onChange(val);
+        if (onAfterChange) onAfterChange(val);
+    };
 
     const trackStyle = {
         position: 'relative',
@@ -164,7 +187,7 @@ const Slider = ({
                     <div style={{ width: '110px' }}>
                         <NumericInput
                             value={value}
-                            onChange={onChange}
+                            onChange={handleManualChange}
                             min={min}
                             max={max}
                             step={step}

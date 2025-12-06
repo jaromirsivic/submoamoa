@@ -81,9 +81,16 @@ const HotZone = () => {
         console.log('Hot zone settings saved, scene updated with', objects.length, 'objects');
     };
 
+    const handlePreview = (previewSettings) => {
+        // Just regenerate scene without saving to backend
+        const quality = previewSettings.computationQuality || 15;
+        const objects = generateHotZoneSceneObjects(previewSettings, quality);
+        setSceneObjects(objects);
+    };
+
     return (
-        <div style={{ 
-            width: '100%', 
+        <div style={{
+            width: '100%',
             height: '100%',
             position: 'relative'
         }}>
@@ -94,7 +101,7 @@ const HotZone = () => {
                     style={editButtonColors}
                 />
             </div>
-            <Scene3D 
+            <Scene3D
                 background="#ffffffff"
                 gridColor="#eeeeeeff"
                 objects={sceneObjects}
@@ -103,6 +110,7 @@ const HotZone = () => {
                 isOpen={isEditModalOpen}
                 onClose={handleEditModalClose}
                 onSave={handleSettingsSaved}
+                onPreview={handlePreview}
             />
         </div>
     );
