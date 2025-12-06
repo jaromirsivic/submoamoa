@@ -197,8 +197,8 @@
             "xDistance": 100
         },
         "arms": {
-            "leftArmMinLength": 70,
-            "leftArmMaxLength": 120,
+            "leftArmMinLength": 39.300000000000004,
+            "leftArmMaxLength": 140.9,
             "rightArmMinLength": 70,
             "rightArmMaxLength": 120
         },

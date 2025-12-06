@@ -324,4 +324,23 @@ On top of each pole there should be displayed an anchor sphere.
 Color of left anchor sphere should be red.
 Color of right anchor sphere should be green.
 Color of center anchor sphere should be blue.
-			
+
+Update HotZoneCloudPointsGenerator.js in a way that it computes the four boundary points.
+Boundary points are computed as follows:
+Top Boundary Point is computed as intersection of Left Sphere with radius leftArmMinLength and Right Sphere with radius rightArmMinLength and center sphere with radius centerPole.micStickRadius.
+Left Boundary Point is computed as intersection of Left Sphere with radius leftArmMaxLength and Right Sphere with radius rightArmMinLength and center sphere with radius centerPole.micStickRadius.
+Bottom Boundary Point is computed as intersection of Left Sphere with radius leftArmMinLength and Right Sphere with radius rightArmMaxLength and center sphere with radius centerPole.micStickRadius.
+Right Boundary Point is computed as intersection of Left Sphere with radius leftArmMaxLength and Right Sphere with radius rightArmMaxLength and center sphere with radius centerPole.micStickRadius.
+Since the Intersection of three spheres can produce multiple points, we need to select the point that is closest to the ground (z coordinate is the smallest).
+
+Update Hot Zone page to display the BoundaryStructure. BoundaryStructure is rendered as a set of lines:
+1. Red line of width 0.05 from (leftSphereCenterPoint.x, leftSphereCenterPoint.y, leftSphereCenterPoint.z) to (topBoundaryPoint.x, topBoundaryPoint.y, topBoundaryPoint.z)
+2. Green line of width 0.05 from (rightSphereCenterPoint.x, rightSphereCenterPoint.y, rightSphereCenterPoint.z) to (topBoundaryPoint.x, topBoundaryPoint.y, topBoundaryPoint.z)
+3. Blue line of width 0.05 from (centerSphereCenterPoint.x, centerSphereCenterPoint.y, centerSphereCenterPoint.z) to (topBoundaryPoint.x, topBoundaryPoint.y, topBoundaryPoint.z)
+4. Blue line of width 0.05 from (centerSphereCenterPoint.x, centerSphereCenterPoint.y, centerSphereCenterPoint.z) to (leftBoundaryPoint.x, leftBoundaryPoint.y, leftBoundaryPoint.z)
+5. Blue line of width 0.05 from (centerSphereCenterPoint.x, centerSphereCenterPoint.y, centerSphereCenterPoint.z) to (bottomBoundaryPoint.x, bottomBoundaryPoint.y, bottomBoundaryPoint.z)
+6. Blue line of width 0.05 from (centerSphereCenterPoint.x, centerSphereCenterPoint.y, centerSphereCenterPoint.z) to (rightBoundaryPoint.x, rightBoundaryPoint.y, rightBoundaryPoint.z)
+
+1. When drawing points use red color for those points which have z coordinate smaller than the ground level (z=0)
+2. When drawing points use #bbbb00 color for those points which are above the plane defined by topBoundaryPoint, centerSphereCenterPoint, rightBoundaryPoint
+or which are above the plane defined by topBoundaryPoint, leftBoundaryPoint and centerSphereCenterPoint 
