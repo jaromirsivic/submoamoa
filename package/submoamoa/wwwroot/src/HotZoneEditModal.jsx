@@ -4,6 +4,7 @@ import MultiSwitch from './components/MultiSwitch';
 import Slider from './components/Slider';
 import HorizontalSeparator from './components/HorizontalSeparator';
 import { getHotZoneSettings, saveHotZoneSettings } from './lib/api';
+import { generateHotZoneSceneObjects, validateHotZoneSettings } from './lib/HotZoneCloudPointsGenerator';
 
 // Default hot zone settings
 const defaultHotZoneSettings = {
@@ -79,6 +80,12 @@ const HotZoneEditModal = ({ isOpen, onClose, onSave }) => {
 
     const getValidationWarnings = () => {
         const warnings = [];
+
+        const isValid = validateHotZoneSettings(tempSettings);
+        if (!isValid) {
+            warnings.push("Invalid Hot Zone Settings. With this setup the motors will not be able to move from fully retracted position to fully extended position. Please adjust the hot zone settings.");
+        }
+
         return warnings;
     };
 

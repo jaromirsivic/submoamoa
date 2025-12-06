@@ -343,4 +343,14 @@ Update Hot Zone page to display the BoundaryStructure. BoundaryStructure is rend
 
 1. When drawing points use red color for those points which have z coordinate smaller than the ground level (z=0)
 2. When drawing points use #bbbb00 color for those points which are above the plane defined by topBoundaryPoint, centerSphereCenterPoint, rightBoundaryPoint
-or which are above the plane defined by topBoundaryPoint, leftBoundaryPoint and centerSphereCenterPoint 
+or which are above the plane defined by topBoundaryPoint, leftBoundaryPoint and centerSphereCenterPoint
+
+Add a new business validation on the Hot Zone Edit Modal Window to check that all 4 boundary Points exist.
+If any of the boundary points do not exist, show a warning message starting with text:
+"Invalid Hot Zone Settings. With this setup the motors will not be able to move
+from fully retracted position to fully extended position. Please adjust the hot zone settings."
+
+Update Modal Window. Add prop "movable" to the modal window.
+When movable is true, the modal window should be movable.
+When movable is false, the modal window should not be movable.
+Default value of movable is false.

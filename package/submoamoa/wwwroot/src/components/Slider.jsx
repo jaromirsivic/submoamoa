@@ -161,7 +161,7 @@ const Slider = ({
                 </div>
 
                 {allowManualInput && (
-                    <div style={{ width: '80px' }}>
+                    <div style={{ width: '110px' }}>
                         <NumericInput
                             value={value}
                             onChange={onChange}
@@ -170,6 +170,7 @@ const Slider = ({
                             step={step}
                             decimalPlaces={decimalPlaces}
                             disabled={disabled}
+                            style={{ width: '100%' }}
                         />
                     </div>
                 )}

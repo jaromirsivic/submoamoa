@@ -12,12 +12,18 @@ const ModalWindow = ({
     cancelLabel = 'Cancel',
     validationErrors = [],
     validationWarnings = [],
-    okDisabled = false
+    okDisabled = false,
+    movable = false
 }) => {
     const [showTopShadow, setShowTopShadow] = useState(false);
     const [showBottomShadow, setShowBottomShadow] = useState(false);
     const [showWarningPopup, setShowWarningPopup] = useState(false);
     const bodyRef = useRef(null);
+
+    // Draggable state
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartRef = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
 
     const checkScroll = () => {
         if (bodyRef.current) {
@@ -33,8 +39,53 @@ const ModalWindow = ({
             checkScroll();
             window.addEventListener('resize', checkScroll);
             return () => window.removeEventListener('resize', checkScroll);
+        } else {
+            // Reset position when closed
+            setPosition({ x: 0, y: 0 });
         }
     }, [isOpen, children]); // Re-check if children change
+
+    // Dragging handlers
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const dx = e.clientX - dragStartRef.current.x;
+            const dy = e.clientY - dragStartRef.current.y;
+            setPosition({
+                x: dragStartRef.current.initialX + dx,
+                y: dragStartRef.current.initialY + dy
+            });
+        };
+
+        const handleMouseUp = () => {
+            if (isDragging) {
+                setIsDragging(false);
+            }
+        };
+
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging]);
+
+    const handleMouseDown = (e) => {
+        if (!movable) return;
+        // Only allow dragging from header, but we attach this to header div so it's implicitly true
+        setIsDragging(true);
+        dragStartRef.current = {
+            x: e.clientX,
+            y: e.clientY,
+            initialX: position.x,
+            initialY: position.y
+        };
+    };
 
     if (!isOpen) return null;
 
@@ -60,7 +111,8 @@ const ModalWindow = ({
         display: 'flex',
         flexDirection: 'column',
         maxHeight: '90vh',
-        position: 'relative' // For absolute positioning of warning popup if needed
+        position: 'relative', // For absolute positioning of warning popup if needed
+        transform: `translate(${position.x}px, ${position.y}px)`
     };
 
     const headerStyle = {
@@ -73,7 +125,9 @@ const ModalWindow = ({
         alignItems: 'center',
         boxShadow: showTopShadow ? '0 16px 24px -4px rgba(0, 0, 0, 0.2)' : 'none',
         zIndex: 10,
-        transition: 'box-shadow 0.2s ease'
+        transition: 'box-shadow 0.2s ease',
+        cursor: movable ? 'move' : 'default',
+        userSelect: 'none' // Prevent text selection while dragging
     };
 
     const bodyStyle = {
@@ -127,7 +181,7 @@ const ModalWindow = ({
     return (
         <div style={overlayStyle}>
             <div style={modalStyle}>
-                <div style={headerStyle}>
+                <div style={headerStyle} onMouseDown={handleMouseDown}>
                     <span>{title}</span>
                 </div>
 

@@ -186,20 +186,21 @@
     },
     "hotZone": {
         "units": "cm",
+        "computationQuality": 30,
         "centerPole": {
             "micStickRadius": 50,
-            "height": 150,
-            "yDistanceFromArmPoles": 100
+            "height": 40,
+            "yDistanceFromArmPoles": 25
         },
         "armPoles": {
-            "height": 150,
-            "xDistance": 100
+            "height": 80,
+            "xDistance": 80
         },
         "arms": {
             "leftArmMinLength": 50,
-            "leftArmMaxLength": 150,
+            "leftArmMaxLength": 80,
             "rightArmMinLength": 50,
-            "rightArmMaxLength": 150
+            "rightArmMaxLength": 80
         }
     }
 }

@@ -469,7 +469,61 @@ export const generateHotZoneSceneObjects = (settings, calculationQuality = 10) =
     return sceneObjects;
 };
 
+/**
+ * Validates the hot zone settings by checking if all 4 boundary points exist.
+ * 
+ * @param {Object} settings - Hot zone settings object
+ * @returns {boolean} - True if valid (all 4 points exist), False otherwise
+ */
+export const validateHotZoneSettings = (settings) => {
+    const { centerPole, armPoles, arms } = settings;
+    const scale = 0.01;
+
+    // Calculate sphere center points
+    const leftSphereCenterPoint = {
+        x: -(armPoles.xDistance / 2) * scale,
+        y: 0,
+        z: armPoles.height * scale
+    };
+
+    const rightSphereCenterPoint = {
+        x: (armPoles.xDistance / 2) * scale,
+        y: 0,
+        z: armPoles.height * scale
+    };
+
+    const centerSphereCenterPoint = {
+        x: 0,
+        y: - (centerPole.yDistanceFromArmPoles * scale),
+        z: centerPole.height * scale
+    };
+
+    const rMicStick = centerPole.micStickRadius;
+
+    // Helper to check existence
+    const checkIntersection = (rLeft, rRight, rCenter) => {
+        const points = computeIntersectionOfThreeSpheres(
+            leftSphereCenterPoint,
+            rightSphereCenterPoint,
+            centerSphereCenterPoint,
+            rLeft * scale,
+            rRight * scale,
+            rCenter * scale
+        );
+        return points.length > 0;
+    };
+
+    // Check all 4 boundary points
+    const hasTop = checkIntersection(arms.leftArmMinLength, arms.rightArmMinLength, rMicStick);
+    const hasLeft = checkIntersection(arms.leftArmMaxLength, arms.rightArmMinLength, rMicStick);
+    const hasBottom = checkIntersection(arms.leftArmMinLength, arms.rightArmMaxLength, rMicStick);
+    const hasRight = checkIntersection(arms.leftArmMaxLength, arms.rightArmMaxLength, rMicStick);
+
+    return hasTop && hasLeft && hasBottom && hasRight;
+};
+
 export default {
     computeIntersectionOfThreeSpheres,
-    generateHotZoneSceneObjects
+    generateHotZoneSceneObjects,
+    validateHotZoneSettings
 };
