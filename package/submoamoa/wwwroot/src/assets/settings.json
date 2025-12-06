@@ -193,14 +193,14 @@
             "yDistanceFromArmPoles": 25
         },
         "armPoles": {
-            "height": 80,
-            "xDistance": 80
+            "height": 81.10000000000001,
+            "xDistance": 109.4
         },
         "arms": {
-            "leftArmMinLength": 50,
-            "leftArmMaxLength": 80,
-            "rightArmMinLength": 50,
-            "rightArmMaxLength": 80
+            "leftArmMinLength": 63.6,
+            "leftArmMaxLength": 102.4,
+            "rightArmMinLength": 53.2,
+            "rightArmMaxLength": 63.2
         }
     }
 }

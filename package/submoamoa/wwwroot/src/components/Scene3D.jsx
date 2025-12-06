@@ -356,10 +356,21 @@ const Scene3D = ({
         updateGrid();
     }, [gridColor, updateGrid]);
 
+    const hasInitializedCameraRef = useRef(false);
+
     // Update objects and reset camera when objects prop changes
     useEffect(() => {
         createObjects();
-        resetCamera();
+
+        // Only reset camera if we haven't initialized it yet and we have objects to focus on
+        if (!hasInitializedCameraRef.current && objects.length > 0) {
+            resetCamera();
+            hasInitializedCameraRef.current = true;
+        }
+        // If objects become empty, we might want to allow re-initialization next time objects arrive
+        if (objects.length === 0) {
+            hasInitializedCameraRef.current = false;
+        }
     }, [objects, createObjects, resetCamera]);
 
     // Get clientX/Y from either mouse or touch event
