@@ -377,3 +377,5 @@ fontColor: string
 fontFamily: string
 fontStyle: string
 fontWeight: string
+
+

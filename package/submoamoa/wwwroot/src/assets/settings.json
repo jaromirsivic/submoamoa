@@ -190,7 +190,7 @@
         "centerPole": {
             "micStickRadius": 50,
             "height": 40,
-            "yDistanceFromArmPoles": 25
+            "yDistanceFromArmPoles": 20
         },
         "armPoles": {
             "height": 80,
