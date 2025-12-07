@@ -466,7 +466,46 @@ export const generateHotZoneSceneObjects = (settings, calculationQuality = 10) =
         color: '#0000ffff'
     });
 
-    return sceneObjects;
+    // FOV Calculation
+    const calculateAngle = (p1, center, p2) => {
+        if (!p1 || !center || !p2) return 0;
+
+        // Vectors from center to points
+        const v1 = { x: p1.x - center.x, y: p1.y - center.y, z: p1.z - center.z };
+        const v2 = { x: p2.x - center.x, y: p2.y - center.y, z: p2.z - center.z };
+
+        // Dot product
+        const dot = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+
+        // Magnitudes
+        const m1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+        const m2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
+
+        if (m1 === 0 || m2 === 0) return 0;
+
+        // Cos theta
+        const cosTheta = dot / (m1 * m2);
+
+        // Clamp for safety
+        const clampedCos = Math.max(-1, Math.min(1, cosTheta));
+
+        // Angle in radians
+        const radians = Math.acos(clampedCos);
+
+        // Convert to degrees
+        return radians * (180 / Math.PI);
+    };
+
+    const horizontalFOV = calculateAngle(leftBoundaryPoint, centerSphereCenterPoint, rightBoundaryPoint);
+    const verticalFOV = calculateAngle(topBoundaryPoint, centerSphereCenterPoint, bottomBoundaryPoint);
+
+    return {
+        objects: sceneObjects,
+        fov: {
+            horizontal: horizontalFOV,
+            vertical: verticalFOV
+        }
+    };
 };
 
 /**

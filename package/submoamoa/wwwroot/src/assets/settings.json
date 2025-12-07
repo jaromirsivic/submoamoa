@@ -189,7 +189,7 @@
         "computationQuality": 28,
         "centerPole": {
             "micStickRadius": 50,
-            "height": 50,
+            "height": 40,
             "yDistanceFromArmPoles": 25
         },
         "armPoles": {
