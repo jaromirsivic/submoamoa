@@ -363,3 +363,17 @@ Configuration will be saved only when the Save button is clicked.
 existence of all 4 boundary points should be treated as an Error.
 When the Error is triggered, the Save button should be disabled.
 When the Error is cleared, the Save button should be enabled.
+
+Update the Hot Zone. Add two TextFields to the Scene3D to the top left corner.
+The first TextField should display the "Horizontal FOV: " value in degrees with two decimal places.
+The second TextField should display the "Vertical FOV: " value in degrees with two decimal places.
+The horizontal FOV is computed as follows an angle between leftBoundaryPoint, centerSphereCenterPoint and rightBoundaryPoint.
+The vertical FOV is computed as follows an angle between topBoundaryPoint, centerSphereCenterPoint and bottomBoundaryPoint.
+Create a TextField component if necessary. The TextField component should be used to display text.
+It is not an input field, it is just a display field. There should be at least following props:
+text: string
+fontSize: number
+fontColor: string
+fontFamily: string
+fontStyle: string
+fontWeight: string
