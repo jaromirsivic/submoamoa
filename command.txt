@@ -381,3 +381,27 @@ fontWeight: string
 Update the Scene3D component Reset button which is used to reset the camera position to the default position.
 When the Reset button is clicked, the camera position should be reset to the default position.
 Default position of camera is (x=200, y=200, z=200). Camera is looking at point (x=0, y=0, z=0).
+
+Create a Table component which should behave like an excel table and will have the following props:
+- width: number - optional, by default the width is 100% of parent container
+- height: number
+- canAddRows: boolean - default false
+- canAddColumns: boolean - default false
+- canDeleteRows: boolean - default false
+- canDeleteColumns: boolean - default false
+- maxColumns: number - by default null meaning infinite number of columns. maxColumns is usable only in case that user canAddColumns.
+- maxRows: number - by default null meaning infinite number of rows. maxRows is usable only in case that user canAddRows.
+- cellsEditable: boolean - by default true
+- columnsHeaders: array of objects with properties: name, width, align, backgroundColor, textColor, fontSize, fontFamily, fontStyle, fontWeight - identifying parameter of each column header cell. User cannot override text in header cells. Column header cells are pinned, they do not scroll if vertical scrollbar is used. Similar behavior like in Excel.
+- rowsHeaders: array of objects with properties: name, height, align, backgroundColor, textColor, fontSize, fontFamily, fontStyle, fontWeight - identifying parameter of each row header cell. User cannot override text in header cells. Row header cells are pinned, they do not scroll if Horizontal scrollbar is used. Similar behavior like in Excel.
+- cells: array of objects with properties: value, align, backgroundColor, textColor, fontSize, fontFamily, fontStyle, fontWeight, editable
+
+RowsHeaders and columnsHeaders can be null.
+Cells can be modified by the user. User can select multiple cells, write a number or text and use ctrl+enter to copy the value to all selected cells. Similar behavior like in Excel.
+Copy, paste, cut, delete, undo, redo operations are supported.
+User can drag the cell by the corner to copy its value - similar behavior as in Excel.
+If enabled user can add new rows and columns.
+
+- Cells area of the Table should be scrollable if necessary
+
+Create a new web page in the sandbox and demonstrate the usage of the Table component

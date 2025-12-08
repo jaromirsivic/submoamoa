@@ -39,6 +39,7 @@ const Layout = () => {
       if (path === '/sandbox/components-demo') return { title: 'Components Demo', icon: componentsDemoIcon };
       if (path === '/sandbox/modal-windows-demo') return { title: 'Modal Windows Demo', icon: modalWindowsIcon };
       if (path === '/sandbox/editable-chart') return { title: 'Editable Chart', icon: componentsDemoIcon };
+      if (path === '/sandbox/table-demo') return { title: 'Table Demo', icon: componentsDemoIcon };
       return { title: 'Developers Sandbox', icon: manualControlIcon };
     }
     if (path === '/tutorials') return { title: 'Tutorials', icon: tutorialsIcon };
@@ -121,6 +122,7 @@ const Layout = () => {
                 <li><MenuLink to="/sandbox/components-demo" icon={componentsDemoIcon} label="Components Demo" onClick={() => setIsMenuOpen(false)} /></li>
                 <li><MenuLink to="/sandbox/modal-windows-demo" icon={modalWindowsIcon} label="Modal Windows Demo" onClick={() => setIsMenuOpen(false)} /></li>
                 <li><MenuLink to="/sandbox/editable-chart" icon={componentsDemoIcon} label="Editable Chart" onClick={() => setIsMenuOpen(false)} /></li>
+                <li><MenuLink to="/sandbox/table-demo" icon={componentsDemoIcon} label="Table Demo" onClick={() => setIsMenuOpen(false)} /></li>
               </ul>
             </li>
             <li><MenuLink to="/about" icon={aboutIcon} label="About" onClick={() => setIsMenuOpen(false)} /></li>
