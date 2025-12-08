@@ -425,3 +425,18 @@ but if multiple cells in multiple rows are selected (lets say cells A1, B1, C1, 
 - Delete Columns - enabled only if canDeleteColumns is true. Deletes columns of all currently selected cells.
 - Delete Rows - enabled only if canDeleteRows is true. Deletes rows of all currently selected cells.
 
+
+
+Update the table component. There are following issues:
+1. Popup menu used to add rows and columns should be displayed above all other components (to not be cropped by parent panel).
+If there is not enough space on the screen to display the menu below mouse cursor, display it above the cursor.
+2. Add following props to each column and implement logic for resizing column(s):
+- minWidth
+- maxWidth
+- canResize
+2. Add following props to each row and implement logic for resizing row(s):
+- minHeight
+- maxHeight
+- canResize
+3. The area on the bottom right corner of the cell (used when user wants to copy cell into multiple others)
+

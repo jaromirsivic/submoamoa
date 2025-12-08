@@ -5,22 +5,22 @@ import StaticText from './components/StaticText';
 import HorizontalSeparator from './components/HorizontalSeparator';
 
 const TableDemo = () => {
-    // Example 1: Basic table with column and row headers
-    const columnHeaders1 = [
-        { name: 'Product', width: 150, align: 'left', backgroundColor: '#4a90d9', textColor: '#ffffff' },
-        { name: 'Q1', width: 80, align: 'center', backgroundColor: '#4a90d9', textColor: '#ffffff' },
-        { name: 'Q2', width: 80, align: 'center', backgroundColor: '#4a90d9', textColor: '#ffffff' },
-        { name: 'Q3', width: 80, align: 'center', backgroundColor: '#4a90d9', textColor: '#ffffff' },
-        { name: 'Q4', width: 80, align: 'center', backgroundColor: '#4a90d9', textColor: '#ffffff' },
-        { name: 'Total', width: 100, align: 'right', backgroundColor: '#2d5986', textColor: '#ffffff', fontWeight: 'bold' }
-    ];
+    // Example 1: Basic table with column and row headers (resizable)
+    const [columnHeaders1, setColumnHeaders1] = useState([
+        { name: 'Product', width: 150, align: 'left', backgroundColor: '#4a90d9', textColor: '#ffffff', canResize: true, minWidth: 80, maxWidth: 300 },
+        { name: 'Q1', width: 80, align: 'center', backgroundColor: '#4a90d9', textColor: '#ffffff', canResize: true, minWidth: 50, maxWidth: 150 },
+        { name: 'Q2', width: 80, align: 'center', backgroundColor: '#4a90d9', textColor: '#ffffff', canResize: true, minWidth: 50, maxWidth: 150 },
+        { name: 'Q3', width: 80, align: 'center', backgroundColor: '#4a90d9', textColor: '#ffffff', canResize: true, minWidth: 50, maxWidth: 150 },
+        { name: 'Q4', width: 80, align: 'center', backgroundColor: '#4a90d9', textColor: '#ffffff', canResize: true, minWidth: 50, maxWidth: 150 },
+        { name: 'Total', width: 100, align: 'right', backgroundColor: '#2d5986', textColor: '#ffffff', fontWeight: 'bold', canResize: true, minWidth: 60, maxWidth: 200 }
+    ]);
 
-    const rowHeaders1 = [
-        { name: '2021', height: 32, align: 'center', backgroundColor: '#e8e8e8' },
-        { name: '2022', height: 32, align: 'center', backgroundColor: '#e8e8e8' },
-        { name: '2023', height: 32, align: 'center', backgroundColor: '#e8e8e8' },
-        { name: '2024', height: 32, align: 'center', backgroundColor: '#e8e8e8' }
-    ];
+    const [rowHeaders1, setRowHeaders1] = useState([
+        { name: '2021', height: 32, align: 'center', backgroundColor: '#e8e8e8', canResize: true, minHeight: 24, maxHeight: 60 },
+        { name: '2022', height: 32, align: 'center', backgroundColor: '#e8e8e8', canResize: true, minHeight: 24, maxHeight: 60 },
+        { name: '2023', height: 32, align: 'center', backgroundColor: '#e8e8e8', canResize: true, minHeight: 24, maxHeight: 60 },
+        { name: '2024', height: 32, align: 'center', backgroundColor: '#e8e8e8', canResize: true, minHeight: 24, maxHeight: 60 }
+    ]);
 
     const [cells1, setCells1] = useState([
         [
@@ -58,12 +58,12 @@ const TableDemo = () => {
     ]);
 
     // Example 2: Editable table with add/delete capabilities
-    const columnHeaders2 = [
-        { name: 'Name', width: 150, align: 'left' },
-        { name: 'Email', width: 200, align: 'left' },
-        { name: 'Department', width: 120, align: 'center' },
-        { name: 'Salary', width: 100, align: 'right' }
-    ];
+    const [columnHeaders2, setColumnHeaders2] = useState([
+        { name: 'Name', width: 150, align: 'left', canResize: true, minWidth: 100, maxWidth: 250 },
+        { name: 'Email', width: 200, align: 'left', canResize: true, minWidth: 120, maxWidth: 350 },
+        { name: 'Department', width: 120, align: 'center', canResize: true, minWidth: 80, maxWidth: 200 },
+        { name: 'Salary', width: 100, align: 'right', canResize: true, minWidth: 70, maxWidth: 150 }
+    ]);
 
     const [cells2, setCells2] = useState([
         [
@@ -86,7 +86,7 @@ const TableDemo = () => {
         ]
     ]);
 
-    // Example 3: Simple table without headers
+    // Example 3: Simple table with add/delete rows and columns
     const [cells3, setCells3] = useState([
         [{ value: 'A1' }, { value: 'B1' }, { value: 'C1' }, { value: 'D1' }],
         [{ value: 'A2' }, { value: 'B2' }, { value: 'C2' }, { value: 'D2' }],
@@ -95,13 +95,13 @@ const TableDemo = () => {
     ]);
 
     // Example 4: Color-coded data table
-    const columnHeaders4 = [
-        { name: 'Metric', width: 120, align: 'left', backgroundColor: '#333', textColor: '#fff' },
-        { name: 'Jan', width: 70, align: 'center', backgroundColor: '#333', textColor: '#fff' },
-        { name: 'Feb', width: 70, align: 'center', backgroundColor: '#333', textColor: '#fff' },
-        { name: 'Mar', width: 70, align: 'center', backgroundColor: '#333', textColor: '#fff' },
-        { name: 'Status', width: 80, align: 'center', backgroundColor: '#333', textColor: '#fff' }
-    ];
+    const [columnHeaders4, setColumnHeaders4] = useState([
+        { name: 'Metric', width: 120, align: 'left', backgroundColor: '#333', textColor: '#fff', canResize: true, minWidth: 80, maxWidth: 200 },
+        { name: 'Jan', width: 70, align: 'center', backgroundColor: '#333', textColor: '#fff', canResize: true, minWidth: 50, maxWidth: 120 },
+        { name: 'Feb', width: 70, align: 'center', backgroundColor: '#333', textColor: '#fff', canResize: true, minWidth: 50, maxWidth: 120 },
+        { name: 'Mar', width: 70, align: 'center', backgroundColor: '#333', textColor: '#fff', canResize: true, minWidth: 50, maxWidth: 120 },
+        { name: 'Status', width: 80, align: 'center', backgroundColor: '#333', textColor: '#fff', canResize: true, minWidth: 60, maxWidth: 150 }
+    ]);
 
     const [cells4] = useState([
         [
@@ -140,9 +140,9 @@ const TableDemo = () => {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 {/* Example 1 */}
-                <Panel title="Example 1: Sales Data Table (with Row & Column Headers)">
+                <Panel title="Example 1: Sales Data Table (Resizable Columns & Rows)">
                     <div style={{ marginBottom: '1rem' }}>
-                        <StaticText text="A read-only sales report with pinned headers. Try scrolling if content overflows." />
+                        <StaticText text="Sales report with resizable columns and rows. Drag the edge of column/row headers to resize." />
                     </div>
                     <Table
                         height={200}
@@ -151,16 +151,18 @@ const TableDemo = () => {
                         cells={cells1}
                         cellsEditable={true}
                         onCellsChange={setCells1}
+                        onColumnsHeadersChange={setColumnHeaders1}
+                        onRowsHeadersChange={setRowHeaders1}
                     />
                     <div style={{ marginTop: '0.5rem', fontSize: '12px', color: '#666' }}>
-                        <strong>Features:</strong> Column headers (blue), Row headers (gray), Editable cells, Ctrl+C/V for copy/paste
+                        <strong>Features:</strong> Resizable columns (drag right edge of header), Resizable rows (drag bottom edge of row header), Editable cells
                     </div>
                 </Panel>
 
                 {/* Example 2 */}
-                <Panel title="Example 2: Employee Directory (Add/Delete Rows)">
+                <Panel title="Example 2: Employee Directory (Add/Delete Rows & Columns)">
                     <div style={{ marginBottom: '1rem' }}>
-                        <StaticText text="Editable employee table with ability to add and delete rows. Max 10 rows." />
+                        <StaticText text="Editable employee table. Right-click to add/delete rows and columns. Max 10 rows, 8 columns." />
                     </div>
                     <Table
                         height={200}
@@ -169,18 +171,22 @@ const TableDemo = () => {
                         cellsEditable={true}
                         canAddRows={true}
                         canDeleteRows={true}
+                        canAddColumns={true}
+                        canDeleteColumns={true}
                         maxRows={10}
+                        maxColumns={8}
                         onCellsChange={setCells2}
+                        onColumnsHeadersChange={setColumnHeaders2}
                     />
                     <div style={{ marginTop: '0.5rem', fontSize: '12px', color: '#666' }}>
-                        <strong>Features:</strong> Add rows (+), Delete rows (×), Max 10 rows limit, Undo (Ctrl+Z), Redo (Ctrl+Y)
+                        <strong>Features:</strong> Right-click → Add/Delete Rows/Columns, Resizable columns, Max 10 rows & 8 columns limit
                     </div>
                 </Panel>
 
                 {/* Example 3 */}
-                <Panel title="Example 3: Simple Grid (No Headers)">
+                <Panel title="Example 3: Simple Grid (Add/Delete via Context Menu)">
                     <div style={{ marginBottom: '1rem' }}>
-                        <StaticText text="Simple spreadsheet-like grid. Select multiple cells and press Ctrl+Enter to fill all with the same value." />
+                        <StaticText text="Simple spreadsheet-like grid. Select cells and right-click to add or delete rows/columns." />
                     </div>
                     <Table
                         height={180}
@@ -188,12 +194,14 @@ const TableDemo = () => {
                         cellsEditable={true}
                         canAddRows={true}
                         canAddColumns={true}
+                        canDeleteRows={true}
+                        canDeleteColumns={true}
                         maxRows={8}
-                        maxColumns={6}
+                        maxColumns={8}
                         onCellsChange={setCells3}
                     />
                     <div style={{ marginTop: '0.5rem', fontSize: '12px', color: '#666' }}>
-                        <strong>Features:</strong> No headers, Add rows/columns, Drag fill handle (corner), Shift+Click for range selection
+                        <strong>Features:</strong> No headers, Right-click to add/delete rows/columns, Drag fill handle (blue square in corner)
                     </div>
                 </Panel>
 

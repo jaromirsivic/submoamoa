@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 
 const Table = ({
     width = '100%',
@@ -10,15 +11,23 @@ const Table = ({
     maxColumns = null,
     maxRows = null,
     cellsEditable = true,
-    columnsHeaders = null,
-    rowsHeaders = null,
+    columnsHeaders: initialColumnsHeaders = null,
+    rowsHeaders: initialRowsHeaders = null,
     cells: initialCells = [],
-    onCellsChange = null
+    onCellsChange = null,
+    onColumnsHeadersChange = null,
+    onRowsHeadersChange = null
 }) => {
     // State
     const [cells, setCells] = useState(() => {
         // Deep clone initial cells
         return initialCells.map(row => row.map(cell => ({ ...cell })));
+    });
+    const [columnsHeaders, setColumnsHeaders] = useState(() => {
+        return initialColumnsHeaders ? initialColumnsHeaders.map(h => ({ ...h })) : null;
+    });
+    const [rowsHeaders, setRowsHeaders] = useState(() => {
+        return initialRowsHeaders ? initialRowsHeaders.map(h => ({ ...h })) : null;
     });
     const [selection, setSelection] = useState({ start: null, end: null });
     const [editingCell, setEditingCell] = useState(null);
@@ -34,9 +43,20 @@ const Table = ({
     const [clipboard, setClipboard] = useState(null);
     const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
     
+    // Column/row resize state
+    const [isResizingCol, setIsResizingCol] = useState(false);
+    const [resizingColIndex, setResizingColIndex] = useState(null);
+    const [resizeColStartX, setResizeColStartX] = useState(0);
+    const [resizeColStartWidth, setResizeColStartWidth] = useState(0);
+    const [isResizingRow, setIsResizingRow] = useState(false);
+    const [resizingRowIndex, setResizingRowIndex] = useState(null);
+    const [resizeRowStartY, setResizeRowStartY] = useState(0);
+    const [resizeRowStartHeight, setResizeRowStartHeight] = useState(0);
+    
     const tableRef = useRef(null);
     const inputRef = useRef(null);
     const scrollContainerRef = useRef(null);
+    const contextMenuRef = useRef(null);
 
     // Default column width and row height
     const defaultColWidth = 100;
@@ -48,7 +68,7 @@ const Table = ({
     const numCols = columnsHeaders ? columnsHeaders.length : (cells[0]?.length || 0);
     const numRows = rowsHeaders ? rowsHeaders.length : cells.length;
 
-    // Get column width
+    // Get column width with min/max constraints
     const getColWidth = (colIndex) => {
         if (columnsHeaders && columnsHeaders[colIndex]?.width) {
             return columnsHeaders[colIndex].width;
@@ -56,13 +76,41 @@ const Table = ({
         return defaultColWidth;
     };
 
-    // Get row height
+    // Get row height with min/max constraints
     const getRowHeight = (rowIndex) => {
         if (rowsHeaders && rowsHeaders[rowIndex]?.height) {
             return rowsHeaders[rowIndex].height;
         }
         return defaultRowHeight;
     };
+
+    // Check if column can be resized
+    const canResizeColumn = (colIndex) => {
+        if (!columnsHeaders || !columnsHeaders[colIndex]) return false;
+        return columnsHeaders[colIndex].canResize === true;
+    };
+
+    // Check if row can be resized
+    const canResizeRow = (rowIndex) => {
+        if (!rowsHeaders || !rowsHeaders[rowIndex]) return false;
+        return rowsHeaders[rowIndex].canResize === true;
+    };
+
+    // Update column headers and notify parent
+    const updateColumnsHeaders = useCallback((newHeaders) => {
+        setColumnsHeaders(newHeaders);
+        if (onColumnsHeadersChange) {
+            onColumnsHeadersChange(newHeaders);
+        }
+    }, [onColumnsHeadersChange]);
+
+    // Update row headers and notify parent
+    const updateRowsHeaders = useCallback((newHeaders) => {
+        setRowsHeaders(newHeaders);
+        if (onRowsHeadersChange) {
+            onRowsHeadersChange(newHeaders);
+        }
+    }, [onRowsHeadersChange]);
 
     // Save state to history
     const saveToHistory = useCallback((newCells) => {
@@ -224,6 +272,99 @@ const Table = ({
         setFillDragEnd(null);
     };
 
+    // Column resize handlers
+    const handleColumnResizeMouseDown = (colIndex, e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!canResizeColumn(colIndex)) return;
+        
+        setIsResizingCol(true);
+        setResizingColIndex(colIndex);
+        setResizeColStartX(e.clientX);
+        setResizeColStartWidth(getColWidth(colIndex));
+    };
+
+    const handleColumnResizeMouseMove = useCallback((e) => {
+        if (!isResizingCol || resizingColIndex === null) return;
+        
+        const delta = e.clientX - resizeColStartX;
+        let newWidth = resizeColStartWidth + delta;
+        
+        // Apply min/max constraints
+        const header = columnsHeaders[resizingColIndex];
+        const minWidth = header?.minWidth ?? 30;
+        const maxWidth = header?.maxWidth ?? 1000;
+        newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+        
+        const newHeaders = columnsHeaders.map((h, i) => 
+            i === resizingColIndex ? { ...h, width: newWidth } : h
+        );
+        updateColumnsHeaders(newHeaders);
+    }, [isResizingCol, resizingColIndex, resizeColStartX, resizeColStartWidth, columnsHeaders, updateColumnsHeaders]);
+
+    const handleColumnResizeMouseUp = useCallback(() => {
+        setIsResizingCol(false);
+        setResizingColIndex(null);
+    }, []);
+
+    // Row resize handlers
+    const handleRowResizeMouseDown = (rowIndex, e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!canResizeRow(rowIndex)) return;
+        
+        setIsResizingRow(true);
+        setResizingRowIndex(rowIndex);
+        setResizeRowStartY(e.clientY);
+        setResizeRowStartHeight(getRowHeight(rowIndex));
+    };
+
+    const handleRowResizeMouseMove = useCallback((e) => {
+        if (!isResizingRow || resizingRowIndex === null) return;
+        
+        const delta = e.clientY - resizeRowStartY;
+        let newHeight = resizeRowStartHeight + delta;
+        
+        // Apply min/max constraints
+        const header = rowsHeaders[resizingRowIndex];
+        const minHeight = header?.minHeight ?? 20;
+        const maxHeight = header?.maxHeight ?? 200;
+        newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
+        
+        const newHeaders = rowsHeaders.map((h, i) => 
+            i === resizingRowIndex ? { ...h, height: newHeight } : h
+        );
+        updateRowsHeaders(newHeaders);
+    }, [isResizingRow, resizingRowIndex, resizeRowStartY, resizeRowStartHeight, rowsHeaders, updateRowsHeaders]);
+
+    const handleRowResizeMouseUp = useCallback(() => {
+        setIsResizingRow(false);
+        setResizingRowIndex(null);
+    }, []);
+
+    // Effect for column/row resize
+    useEffect(() => {
+        if (isResizingCol) {
+            document.addEventListener('mousemove', handleColumnResizeMouseMove);
+            document.addEventListener('mouseup', handleColumnResizeMouseUp);
+            return () => {
+                document.removeEventListener('mousemove', handleColumnResizeMouseMove);
+                document.removeEventListener('mouseup', handleColumnResizeMouseUp);
+            };
+        }
+    }, [isResizingCol, handleColumnResizeMouseMove, handleColumnResizeMouseUp]);
+
+    useEffect(() => {
+        if (isResizingRow) {
+            document.addEventListener('mousemove', handleRowResizeMouseMove);
+            document.addEventListener('mouseup', handleRowResizeMouseUp);
+            return () => {
+                document.removeEventListener('mousemove', handleRowResizeMouseMove);
+                document.removeEventListener('mouseup', handleRowResizeMouseUp);
+            };
+        }
+    }, [isResizingRow, handleRowResizeMouseMove, handleRowResizeMouseUp]);
+
     // Apply fill operation
     const applyFill = () => {
         if (!selection.start || !fillDragEnd) return;
@@ -280,14 +421,35 @@ const Table = ({
         }
     };
 
-    // Handle context menu
+    // Handle context menu - position at screen coordinates for portal
     const handleContextMenu = (e) => {
         e.preventDefault();
-        const rect = tableRef.current.getBoundingClientRect();
+        
+        // Use screen coordinates since we'll render via portal
+        const menuWidth = 180;
+        const menuHeight = 280;
+        
+        let x = e.clientX;
+        let y = e.clientY;
+        
+        // Check if menu would go off right edge
+        if (x + menuWidth > window.innerWidth) {
+            x = e.clientX - menuWidth;
+        }
+        
+        // Check if menu would go off bottom edge
+        if (y + menuHeight > window.innerHeight) {
+            y = e.clientY - menuHeight;
+        }
+        
+        // Ensure menu doesn't go off top or left
+        x = Math.max(0, x);
+        y = Math.max(0, y);
+        
         setContextMenu({
             visible: true,
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            x: x,
+            y: y
         });
     };
 
@@ -769,30 +931,55 @@ const Table = ({
         whiteSpace: 'nowrap',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: header?.align === 'right' ? 'flex-end' : (header?.align === 'center' ? 'center' : 'flex-start')
+        justifyContent: header?.align === 'right' ? 'flex-end' : (header?.align === 'center' ? 'center' : 'flex-start'),
+        position: 'relative'
     });
 
     const fillHandleStyle = {
         position: 'absolute',
-        right: '-3px',
-        bottom: '-3px',
-        width: '6px',
-        height: '6px',
+        right: '-6px',
+        bottom: '-6px',
+        width: '12px',
+        height: '12px',
         backgroundColor: '#0066cc',
         cursor: 'crosshair',
-        zIndex: 10
+        zIndex: 10,
+        border: '2px solid #fff',
+        boxSizing: 'border-box'
+    };
+
+    const columnResizeHandleStyle = {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: '5px',
+        cursor: 'col-resize',
+        backgroundColor: 'transparent',
+        zIndex: 5
+    };
+
+    const rowResizeHandleStyle = {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: '5px',
+        cursor: 'row-resize',
+        backgroundColor: 'transparent',
+        zIndex: 5
     };
 
     const contextMenuStyle = {
-        position: 'absolute',
+        position: 'fixed',
         left: `${contextMenu.x}px`,
         top: `${contextMenu.y}px`,
         backgroundColor: '#fff',
         border: '1px solid #ccc',
         borderRadius: '4px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-        zIndex: 1000,
-        minWidth: '150px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+        zIndex: 99999,
+        minWidth: '180px',
         padding: '4px 0'
     };
 
@@ -844,6 +1031,85 @@ const Table = ({
 
     const fillHandlePosition = getSelectedCellPosition();
 
+    // Render context menu via portal
+    const renderContextMenu = () => {
+        if (!contextMenu.visible) return null;
+        
+        return ReactDOM.createPortal(
+            <div 
+                ref={contextMenuRef}
+                style={contextMenuStyle} 
+                onClick={(e) => e.stopPropagation()}
+            >
+                <button
+                    style={contextMenuItemStyle(false)}
+                    onClick={handleContextMenuCopy}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    Copy &nbsp;&nbsp;&nbsp;(Ctrl + C)
+                </button>
+                <button
+                    style={contextMenuItemStyle(!isAnySelectedCellEditable())}
+                    onClick={isAnySelectedCellEditable() ? handleContextMenuCut : undefined}
+                    disabled={!isAnySelectedCellEditable()}
+                    onMouseEnter={(e) => isAnySelectedCellEditable() && (e.target.style.backgroundColor = '#f0f0f0')}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    Cut &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Ctrl + X)
+                </button>
+                <button
+                    style={contextMenuItemStyle(false)}
+                    onClick={handleContextMenuPaste}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    Paste &nbsp;&nbsp;(Ctrl + V)
+                </button>
+                
+                <div style={contextMenuSeparatorStyle} />
+                
+                <button
+                    style={contextMenuItemStyle(!canAddColumns || (maxColumns && numCols + selectedColCount > maxColumns))}
+                    onClick={canAddColumns && (!maxColumns || numCols + selectedColCount <= maxColumns) ? addColumns : undefined}
+                    disabled={!canAddColumns || (maxColumns && numCols + selectedColCount > maxColumns)}
+                    onMouseEnter={(e) => canAddColumns && (!maxColumns || numCols + selectedColCount <= maxColumns) && (e.target.style.backgroundColor = '#f0f0f0')}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    Add Column{selectedColCount > 1 ? `s (${selectedColCount})` : ''}
+                </button>
+                <button
+                    style={contextMenuItemStyle(!canAddRows || (maxRows && cells.length + selectedRowCount > maxRows))}
+                    onClick={canAddRows && (!maxRows || cells.length + selectedRowCount <= maxRows) ? addRows : undefined}
+                    disabled={!canAddRows || (maxRows && cells.length + selectedRowCount > maxRows)}
+                    onMouseEnter={(e) => canAddRows && (!maxRows || cells.length + selectedRowCount <= maxRows) && (e.target.style.backgroundColor = '#f0f0f0')}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    Add Row{selectedRowCount > 1 ? `s (${selectedRowCount})` : ''}
+                </button>
+                <button
+                    style={contextMenuItemStyle(!canDeleteColumns || numCols - selectedColCount < 1)}
+                    onClick={canDeleteColumns && numCols - selectedColCount >= 1 ? deleteSelectedColumns : undefined}
+                    disabled={!canDeleteColumns || numCols - selectedColCount < 1}
+                    onMouseEnter={(e) => canDeleteColumns && numCols - selectedColCount >= 1 && (e.target.style.backgroundColor = '#f0f0f0')}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    Delete Column{selectedColCount > 1 ? `s (${selectedColCount})` : ''}
+                </button>
+                <button
+                    style={contextMenuItemStyle(!canDeleteRows || cells.length - selectedRowCount < 1)}
+                    onClick={canDeleteRows && cells.length - selectedRowCount >= 1 ? deleteSelectedRows : undefined}
+                    disabled={!canDeleteRows || cells.length - selectedRowCount < 1}
+                    onMouseEnter={(e) => canDeleteRows && cells.length - selectedRowCount >= 1 && (e.target.style.backgroundColor = '#f0f0f0')}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    Delete Row{selectedRowCount > 1 ? `s (${selectedRowCount})` : ''}
+                </button>
+            </div>,
+            document.body
+        );
+    };
+
     return (
         <div
             ref={tableRef}
@@ -867,7 +1133,15 @@ const Table = ({
                     )}
                     {columnsHeaders.map((header, i) => (
                         <div key={i} style={headerCellStyle(header)}>
-                            {header.name}
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {header.name}
+                            </span>
+                            {canResizeColumn(i) && (
+                                <div 
+                                    style={columnResizeHandleStyle}
+                                    onMouseDown={(e) => handleColumnResizeMouseDown(i, e)}
+                                />
+                            )}
                         </div>
                     ))}
                 </div>
@@ -880,7 +1154,15 @@ const Table = ({
                     <div style={rowHeadersContainerStyle}>
                         {rowsHeaders.map((header, i) => (
                             <div key={i} style={headerCellStyle(header, true)}>
-                                {header.name}
+                                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {header.name}
+                                </span>
+                                {canResizeRow(i) && (
+                                    <div 
+                                        style={rowResizeHandleStyle}
+                                        onMouseDown={(e) => handleRowResizeMouseDown(i, e)}
+                                    />
+                                )}
                             </div>
                         ))}
                     </div>
@@ -939,75 +1221,8 @@ const Table = ({
                 </div>
             </div>
 
-            {/* Context Menu */}
-            {contextMenu.visible && (
-                <div style={contextMenuStyle} onClick={(e) => e.stopPropagation()}>
-                    <button
-                        style={contextMenuItemStyle(false)}
-                        onClick={handleContextMenuCopy}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                        Copy
-                    </button>
-                    <button
-                        style={contextMenuItemStyle(!isAnySelectedCellEditable())}
-                        onClick={isAnySelectedCellEditable() ? handleContextMenuCut : undefined}
-                        disabled={!isAnySelectedCellEditable()}
-                        onMouseEnter={(e) => isAnySelectedCellEditable() && (e.target.style.backgroundColor = '#f0f0f0')}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                        Cut
-                    </button>
-                    <button
-                        style={contextMenuItemStyle(false)}
-                        onClick={handleContextMenuPaste}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                        Paste
-                    </button>
-                    
-                    <div style={contextMenuSeparatorStyle} />
-                    
-                    <button
-                        style={contextMenuItemStyle(!canAddColumns || (maxColumns && numCols + selectedColCount > maxColumns))}
-                        onClick={canAddColumns && (!maxColumns || numCols + selectedColCount <= maxColumns) ? addColumns : undefined}
-                        disabled={!canAddColumns || (maxColumns && numCols + selectedColCount > maxColumns)}
-                        onMouseEnter={(e) => canAddColumns && (!maxColumns || numCols + selectedColCount <= maxColumns) && (e.target.style.backgroundColor = '#f0f0f0')}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                        Add Column{selectedColCount > 1 ? `s (${selectedColCount})` : ''}
-                    </button>
-                    <button
-                        style={contextMenuItemStyle(!canAddRows || (maxRows && cells.length + selectedRowCount > maxRows))}
-                        onClick={canAddRows && (!maxRows || cells.length + selectedRowCount <= maxRows) ? addRows : undefined}
-                        disabled={!canAddRows || (maxRows && cells.length + selectedRowCount > maxRows)}
-                        onMouseEnter={(e) => canAddRows && (!maxRows || cells.length + selectedRowCount <= maxRows) && (e.target.style.backgroundColor = '#f0f0f0')}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                        Add Row{selectedRowCount > 1 ? `s (${selectedRowCount})` : ''}
-                    </button>
-                    <button
-                        style={contextMenuItemStyle(!canDeleteColumns || numCols - selectedColCount < 1)}
-                        onClick={canDeleteColumns && numCols - selectedColCount >= 1 ? deleteSelectedColumns : undefined}
-                        disabled={!canDeleteColumns || numCols - selectedColCount < 1}
-                        onMouseEnter={(e) => canDeleteColumns && numCols - selectedColCount >= 1 && (e.target.style.backgroundColor = '#f0f0f0')}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                        Delete Column{selectedColCount > 1 ? `s (${selectedColCount})` : ''}
-                    </button>
-                    <button
-                        style={contextMenuItemStyle(!canDeleteRows || cells.length - selectedRowCount < 1)}
-                        onClick={canDeleteRows && cells.length - selectedRowCount >= 1 ? deleteSelectedRows : undefined}
-                        disabled={!canDeleteRows || cells.length - selectedRowCount < 1}
-                        onMouseEnter={(e) => canDeleteRows && cells.length - selectedRowCount >= 1 && (e.target.style.backgroundColor = '#f0f0f0')}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                        Delete Row{selectedRowCount > 1 ? `s (${selectedRowCount})` : ''}
-                    </button>
-                </div>
-            )}
+            {/* Context Menu via Portal */}
+            {renderContextMenu()}
         </div>
     );
 };
