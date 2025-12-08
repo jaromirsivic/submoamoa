@@ -32,6 +32,7 @@ const Table = ({
     const [history, setHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [clipboard, setClipboard] = useState(null);
+    const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
     
     const tableRef = useRef(null);
     const inputRef = useRef(null);
@@ -128,6 +129,28 @@ const Table = ({
         return true;
     };
 
+    // Get selection bounds
+    const getSelectionBounds = () => {
+        if (!selection.start) return null;
+        const minRow = Math.min(selection.start.row, selection.end?.row ?? selection.start.row);
+        const maxRow = Math.max(selection.start.row, selection.end?.row ?? selection.start.row);
+        const minCol = Math.min(selection.start.col, selection.end?.col ?? selection.start.col);
+        const maxCol = Math.max(selection.start.col, selection.end?.col ?? selection.start.col);
+        return { minRow, maxRow, minCol, maxCol };
+    };
+
+    // Check if any selected cell is editable
+    const isAnySelectedCellEditable = () => {
+        const bounds = getSelectionBounds();
+        if (!bounds) return false;
+        for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
+            for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
+                if (isCellEditable(r, c)) return true;
+            }
+        }
+        return false;
+    };
+
     // Check if cell is in selection
     const isCellSelected = (row, col) => {
         if (!selection.start) return false;
@@ -156,6 +179,7 @@ const Table = ({
             setSelection({ start: { row, col }, end: { row, col } });
         }
         setEditingCell(null);
+        setContextMenu({ visible: false, x: 0, y: 0 });
     };
 
     // Handle cell double click
@@ -256,6 +280,22 @@ const Table = ({
         }
     };
 
+    // Handle context menu
+    const handleContextMenu = (e) => {
+        e.preventDefault();
+        const rect = tableRef.current.getBoundingClientRect();
+        setContextMenu({
+            visible: true,
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        });
+    };
+
+    // Close context menu
+    const closeContextMenu = () => {
+        setContextMenu({ visible: false, x: 0, y: 0 });
+    };
+
     // Handle keyboard events
     const handleKeyDown = useCallback((e) => {
         if (!selection.start) return;
@@ -327,29 +367,44 @@ const Table = ({
             return;
         }
 
-        // Escape to cancel edit
+        // Escape to cancel edit or close context menu
         if (e.key === 'Escape') {
             setEditingCell(null);
+            closeContextMenu();
             return;
         }
 
         // Arrow keys for navigation
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !editingCell) {
             e.preventDefault();
-            const { row, col } = selection.start;
-            let newRow = row;
-            let newCol = col;
-
-            switch (e.key) {
-                case 'ArrowUp': newRow = Math.max(0, row - 1); break;
-                case 'ArrowDown': newRow = Math.min(numRows - 1, row + 1); break;
-                case 'ArrowLeft': newCol = Math.max(0, col - 1); break;
-                case 'ArrowRight': newCol = Math.min(numCols - 1, col + 1); break;
-            }
-
+            
             if (e.shiftKey) {
+                // Extend selection from the current end point (or start if no end)
+                const currentEnd = selection.end || selection.start;
+                let newRow = currentEnd.row;
+                let newCol = currentEnd.col;
+
+                switch (e.key) {
+                    case 'ArrowUp': newRow = Math.max(0, currentEnd.row - 1); break;
+                    case 'ArrowDown': newRow = Math.min(numRows - 1, currentEnd.row + 1); break;
+                    case 'ArrowLeft': newCol = Math.max(0, currentEnd.col - 1); break;
+                    case 'ArrowRight': newCol = Math.min(numCols - 1, currentEnd.col + 1); break;
+                }
+
                 setSelection({ start: selection.start, end: { row: newRow, col: newCol } });
             } else {
+                // Move selection
+                const { row, col } = selection.start;
+                let newRow = row;
+                let newCol = col;
+
+                switch (e.key) {
+                    case 'ArrowUp': newRow = Math.max(0, row - 1); break;
+                    case 'ArrowDown': newRow = Math.min(numRows - 1, row + 1); break;
+                    case 'ArrowLeft': newCol = Math.max(0, col - 1); break;
+                    case 'ArrowRight': newCol = Math.min(numCols - 1, col + 1); break;
+                }
+
                 setSelection({ start: { row: newRow, col: newCol }, end: { row: newRow, col: newCol } });
             }
         }
@@ -484,35 +539,101 @@ const Table = ({
         updateCells(newCells);
     };
 
-    // Add row
-    const addRow = () => {
-        if (maxRows && cells.length >= maxRows) return;
-        const newRow = Array(numCols).fill(null).map(() => ({ value: '' }));
-        const newCells = [...cells, newRow];
+    // Add rows after the last selected row
+    const addRows = useCallback(() => {
+        if (!canAddRows) return;
+        const bounds = getSelectionBounds();
+        if (!bounds) return;
+        
+        const numRowsToAdd = bounds.maxRow - bounds.minRow + 1;
+        const insertAfterRow = bounds.maxRow;
+        
+        if (maxRows && cells.length + numRowsToAdd > maxRows) return;
+        
+        const newRows = Array(numRowsToAdd).fill(null).map(() => 
+            Array(numCols).fill(null).map(() => ({ value: '' }))
+        );
+        
+        const newCells = [
+            ...cells.slice(0, insertAfterRow + 1),
+            ...newRows,
+            ...cells.slice(insertAfterRow + 1)
+        ];
+        
         updateCells(newCells);
-    };
+        closeContextMenu();
+    }, [canAddRows, selection, cells, numCols, maxRows, updateCells]);
 
-    // Add column
-    const addColumn = () => {
-        if (maxColumns && numCols >= maxColumns) return;
-        const newCells = cells.map(row => [...row, { value: '' }]);
+    // Add columns after the last selected column
+    const addColumns = useCallback(() => {
+        if (!canAddColumns) return;
+        const bounds = getSelectionBounds();
+        if (!bounds) return;
+        
+        const numColsToAdd = bounds.maxCol - bounds.minCol + 1;
+        const insertAfterCol = bounds.maxCol;
+        
+        if (maxColumns && numCols + numColsToAdd > maxColumns) return;
+        
+        const newCells = cells.map(row => {
+            const newCellsForRow = Array(numColsToAdd).fill(null).map(() => ({ value: '' }));
+            return [
+                ...row.slice(0, insertAfterCol + 1),
+                ...newCellsForRow,
+                ...row.slice(insertAfterCol + 1)
+            ];
+        });
+        
         updateCells(newCells);
-    };
+        closeContextMenu();
+    }, [canAddColumns, selection, cells, numCols, maxColumns, updateCells]);
 
-    // Delete row
-    const deleteRow = (rowIndex) => {
-        if (cells.length <= 1) return;
-        const newCells = cells.filter((_, i) => i !== rowIndex);
+    // Delete selected rows
+    const deleteSelectedRows = useCallback(() => {
+        if (!canDeleteRows) return;
+        const bounds = getSelectionBounds();
+        if (!bounds) return;
+        
+        const numRowsToDelete = bounds.maxRow - bounds.minRow + 1;
+        if (cells.length - numRowsToDelete < 1) return;
+        
+        const newCells = cells.filter((_, i) => i < bounds.minRow || i > bounds.maxRow);
         updateCells(newCells);
         setSelection({ start: null, end: null });
-    };
+        closeContextMenu();
+    }, [canDeleteRows, selection, cells, updateCells]);
 
-    // Delete column
-    const deleteColumn = (colIndex) => {
-        if (numCols <= 1) return;
-        const newCells = cells.map(row => row.filter((_, i) => i !== colIndex));
+    // Delete selected columns
+    const deleteSelectedColumns = useCallback(() => {
+        if (!canDeleteColumns) return;
+        const bounds = getSelectionBounds();
+        if (!bounds) return;
+        
+        const numColsToDelete = bounds.maxCol - bounds.minCol + 1;
+        if (numCols - numColsToDelete < 1) return;
+        
+        const newCells = cells.map(row => 
+            row.filter((_, i) => i < bounds.minCol || i > bounds.maxCol)
+        );
         updateCells(newCells);
         setSelection({ start: null, end: null });
+        closeContextMenu();
+    }, [canDeleteColumns, selection, cells, numCols, updateCells]);
+
+    // Context menu action handlers
+    const handleContextMenuCopy = () => {
+        copySelection();
+        closeContextMenu();
+    };
+
+    const handleContextMenuCut = () => {
+        cutSelection();
+        closeContextMenu();
+    };
+
+    const handleContextMenuPaste = () => {
+        pasteClipboard();
+        closeContextMenu();
     };
 
     // Effect to focus input when editing
@@ -541,6 +662,17 @@ const Table = ({
         return () => document.removeEventListener('mouseup', handleMouseUp);
     }, [isFillDragging, fillDragStart, fillDragEnd]);
 
+    // Effect to close context menu on click outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (contextMenu.visible && tableRef.current && !tableRef.current.contains(e.target)) {
+                closeContextMenu();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [contextMenu.visible]);
+
     // Calculate total dimensions
     const totalWidth = Array(numCols).fill(0).reduce((sum, _, i) => sum + getColWidth(i), 0);
     const totalHeight = Array(numRows).fill(0).reduce((sum, _, i) => sum + getRowHeight(i), 0);
@@ -556,7 +688,11 @@ const Table = ({
         fontSize: '14px',
         position: 'relative',
         outline: 'none',
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none'
     };
 
     const headerRowStyle = {
@@ -647,6 +783,42 @@ const Table = ({
         zIndex: 10
     };
 
+    const contextMenuStyle = {
+        position: 'absolute',
+        left: `${contextMenu.x}px`,
+        top: `${contextMenu.y}px`,
+        backgroundColor: '#fff',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+        zIndex: 1000,
+        minWidth: '150px',
+        padding: '4px 0'
+    };
+
+    const contextMenuItemStyle = (disabled = false) => ({
+        padding: '8px 16px',
+        cursor: disabled ? 'default' : 'pointer',
+        backgroundColor: 'transparent',
+        border: 'none',
+        width: '100%',
+        textAlign: 'left',
+        fontSize: '14px',
+        color: disabled ? '#999' : '#333',
+        display: 'block'
+    });
+
+    const contextMenuSeparatorStyle = {
+        height: '1px',
+        backgroundColor: '#e0e0e0',
+        margin: '4px 0'
+    };
+
+    // Get bounds info for context menu labels
+    const bounds = getSelectionBounds();
+    const selectedColCount = bounds ? bounds.maxCol - bounds.minCol + 1 : 0;
+    const selectedRowCount = bounds ? bounds.maxRow - bounds.minRow + 1 : 0;
+
     // Get selected cell position for fill handle
     const getSelectedCellPosition = () => {
         if (!selection.start) return null;
@@ -677,6 +849,8 @@ const Table = ({
             ref={tableRef}
             style={containerStyle}
             tabIndex={0}
+            onContextMenu={handleContextMenu}
+            onClick={() => contextMenu.visible && closeContextMenu()}
         >
             {/* Column Headers */}
             {columnsHeaders && (
@@ -694,41 +868,8 @@ const Table = ({
                     {columnsHeaders.map((header, i) => (
                         <div key={i} style={headerCellStyle(header)}>
                             {header.name}
-                            {canDeleteColumns && (
-                                <button
-                                    onClick={() => deleteColumn(i)}
-                                    style={{
-                                        marginLeft: '4px',
-                                        padding: '0 4px',
-                                        fontSize: '10px',
-                                        cursor: 'pointer',
-                                        backgroundColor: '#ff6666',
-                                        border: 'none',
-                                        borderRadius: '2px',
-                                        color: '#fff'
-                                    }}
-                                >
-                                    ×
-                                </button>
-                            )}
                         </div>
                     ))}
-                    {canAddColumns && (!maxColumns || numCols < maxColumns) && (
-                        <button
-                            onClick={addColumn}
-                            style={{
-                                width: '30px',
-                                height: `${headerRowHeight}px`,
-                                cursor: 'pointer',
-                                backgroundColor: '#4caf50',
-                                border: 'none',
-                                color: '#fff',
-                                fontSize: '18px'
-                            }}
-                        >
-                            +
-                        </button>
-                    )}
                 </div>
             )}
 
@@ -738,45 +879,10 @@ const Table = ({
                 {rowsHeaders && (
                     <div style={rowHeadersContainerStyle}>
                         {rowsHeaders.map((header, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
-                                <div style={headerCellStyle(header, true)}>
-                                    {header.name}
-                                </div>
-                                {canDeleteRows && (
-                                    <button
-                                        onClick={() => deleteRow(i)}
-                                        style={{
-                                            padding: '0 4px',
-                                            fontSize: '10px',
-                                            cursor: 'pointer',
-                                            backgroundColor: '#ff6666',
-                                            border: 'none',
-                                            borderRadius: '2px',
-                                            color: '#fff',
-                                            marginLeft: '-20px'
-                                        }}
-                                    >
-                                        ×
-                                    </button>
-                                )}
+                            <div key={i} style={headerCellStyle(header, true)}>
+                                {header.name}
                             </div>
                         ))}
-                        {canAddRows && (!maxRows || cells.length < maxRows) && (
-                            <button
-                                onClick={addRow}
-                                style={{
-                                    width: `${headerColWidth}px`,
-                                    height: '30px',
-                                    cursor: 'pointer',
-                                    backgroundColor: '#4caf50',
-                                    border: 'none',
-                                    color: '#fff',
-                                    fontSize: '18px'
-                                }}
-                            >
-                                +
-                            </button>
-                        )}
                     </div>
                 )}
 
@@ -808,7 +914,11 @@ const Table = ({
                                                 padding: 0,
                                                 margin: 0,
                                                 font: 'inherit',
-                                                backgroundColor: 'transparent'
+                                                backgroundColor: 'transparent',
+                                                userSelect: 'text',
+                                                WebkitUserSelect: 'text',
+                                                MozUserSelect: 'text',
+                                                msUserSelect: 'text'
                                             }}
                                         />
                                     ) : (
@@ -826,46 +936,77 @@ const Table = ({
                             ))}
                         </div>
                     ))}
-                    
-                    {/* Add row button (when no row headers) */}
-                    {canAddRows && !rowsHeaders && (!maxRows || cells.length < maxRows) && (
-                        <button
-                            onClick={addRow}
-                            style={{
-                                width: '100%',
-                                height: '30px',
-                                cursor: 'pointer',
-                                backgroundColor: '#4caf50',
-                                border: 'none',
-                                color: '#fff',
-                                fontSize: '14px'
-                            }}
-                        >
-                            + Add Row
-                        </button>
-                    )}
                 </div>
             </div>
 
-            {/* Add column button (when no column headers) */}
-            {canAddColumns && !columnsHeaders && (!maxColumns || numCols < maxColumns) && (
-                <button
-                    onClick={addColumn}
-                    style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 0,
-                        width: '30px',
-                        height: '100%',
-                        cursor: 'pointer',
-                        backgroundColor: '#4caf50',
-                        border: 'none',
-                        color: '#fff',
-                        fontSize: '18px'
-                    }}
-                >
-                    +
-                </button>
+            {/* Context Menu */}
+            {contextMenu.visible && (
+                <div style={contextMenuStyle} onClick={(e) => e.stopPropagation()}>
+                    <button
+                        style={contextMenuItemStyle(false)}
+                        onClick={handleContextMenuCopy}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                        Copy
+                    </button>
+                    <button
+                        style={contextMenuItemStyle(!isAnySelectedCellEditable())}
+                        onClick={isAnySelectedCellEditable() ? handleContextMenuCut : undefined}
+                        disabled={!isAnySelectedCellEditable()}
+                        onMouseEnter={(e) => isAnySelectedCellEditable() && (e.target.style.backgroundColor = '#f0f0f0')}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                        Cut
+                    </button>
+                    <button
+                        style={contextMenuItemStyle(false)}
+                        onClick={handleContextMenuPaste}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                        Paste
+                    </button>
+                    
+                    <div style={contextMenuSeparatorStyle} />
+                    
+                    <button
+                        style={contextMenuItemStyle(!canAddColumns || (maxColumns && numCols + selectedColCount > maxColumns))}
+                        onClick={canAddColumns && (!maxColumns || numCols + selectedColCount <= maxColumns) ? addColumns : undefined}
+                        disabled={!canAddColumns || (maxColumns && numCols + selectedColCount > maxColumns)}
+                        onMouseEnter={(e) => canAddColumns && (!maxColumns || numCols + selectedColCount <= maxColumns) && (e.target.style.backgroundColor = '#f0f0f0')}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                        Add Column{selectedColCount > 1 ? `s (${selectedColCount})` : ''}
+                    </button>
+                    <button
+                        style={contextMenuItemStyle(!canAddRows || (maxRows && cells.length + selectedRowCount > maxRows))}
+                        onClick={canAddRows && (!maxRows || cells.length + selectedRowCount <= maxRows) ? addRows : undefined}
+                        disabled={!canAddRows || (maxRows && cells.length + selectedRowCount > maxRows)}
+                        onMouseEnter={(e) => canAddRows && (!maxRows || cells.length + selectedRowCount <= maxRows) && (e.target.style.backgroundColor = '#f0f0f0')}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                        Add Row{selectedRowCount > 1 ? `s (${selectedRowCount})` : ''}
+                    </button>
+                    <button
+                        style={contextMenuItemStyle(!canDeleteColumns || numCols - selectedColCount < 1)}
+                        onClick={canDeleteColumns && numCols - selectedColCount >= 1 ? deleteSelectedColumns : undefined}
+                        disabled={!canDeleteColumns || numCols - selectedColCount < 1}
+                        onMouseEnter={(e) => canDeleteColumns && numCols - selectedColCount >= 1 && (e.target.style.backgroundColor = '#f0f0f0')}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                        Delete Column{selectedColCount > 1 ? `s (${selectedColCount})` : ''}
+                    </button>
+                    <button
+                        style={contextMenuItemStyle(!canDeleteRows || cells.length - selectedRowCount < 1)}
+                        onClick={canDeleteRows && cells.length - selectedRowCount >= 1 ? deleteSelectedRows : undefined}
+                        disabled={!canDeleteRows || cells.length - selectedRowCount < 1}
+                        onMouseEnter={(e) => canDeleteRows && cells.length - selectedRowCount >= 1 && (e.target.style.backgroundColor = '#f0f0f0')}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                        Delete Row{selectedRowCount > 1 ? `s (${selectedRowCount})` : ''}
+                    </button>
+                </div>
             )}
         </div>
     );

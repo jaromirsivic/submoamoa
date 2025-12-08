@@ -405,3 +405,23 @@ If enabled user can add new rows and columns.
 - Cells area of the Table should be scrollable if necessary
 
 Create a new web page in the sandbox and demonstrate the usage of the Table component
+
+Update the table component. There are following issues:
+1. When user selects multiple cells either by mouse or by clicking into the cell (lets say cell B1) then holding shift key and selecting another cell (lets say cell B2),
+the cells beckground is highlighted correctly, but at the same time web browser highlights/selects as well the text in cells C1, D1, E1, ..., A2, because it probably thinks I want to select, copy and paste a plain text
+and it does not recognize that those are different cells and that we are working in the excel like Table. You should correct this behavior so the text in the cells user did not select is not highlighted.
+2. Selecting neighboring cells by holding Shift key + arrow key works only for nearest neighboring cell but not for neighbour of the neighbour.
+When I press shift + right arrow it selects correctly the right cell from the currently selected cell, but if I press right arrow again nothing happens. The same applies to the top, left and bottom arrows.
+3. Remove add buttons for adding new rows and new columns, which are displayed directly in the table. Use context (popup) menu instead.
+In the context menu there should be at least following items:
+- Copy
+- Cut - enabled only if cells are editable, otherwise it is disabled
+- Paste
+HorizontalSeparator
+- Add Column(s) - enabled only if canAddColumns is true. Will add column(s) after the latest selected cell. Typically it adds exactly one column,
+but if multiple cells in multiple columns are selected (lets say cells A1, B1, C1, A2, B2, C2) it will add 3 columns after the column C (because cells in three distinct columns are selected and that dictates that 3 columns should be added).
+- Add Rows(s) - enabled only if canAddRows is true. Will add row(s) after the latest selected cell. Typically it adds exactly one row,
+but if multiple cells in multiple rows are selected (lets say cells A1, B1, C1, A2, B2, C2) it will add 2 rows after the row 2 (because cells in two distinct rows are selected).
+- Delete Columns - enabled only if canDeleteColumns is true. Deletes columns of all currently selected cells.
+- Delete Rows - enabled only if canDeleteRows is true. Deletes rows of all currently selected cells.
+
