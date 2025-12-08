@@ -206,18 +206,19 @@ const TableDemo = () => {
                 </Panel>
 
                 {/* Example 4 */}
-                <Panel title="Example 4: Dashboard Metrics (Color-Coded)">
+                <Panel title="Example 4: Dashboard Metrics (Resizable Columns)">
                     <div style={{ marginBottom: '1rem' }}>
-                        <StaticText text="Dashboard-style metrics table with color-coded status indicators." />
+                        <StaticText text="Dashboard-style metrics table with color-coded status indicators and resizable columns." />
                     </div>
                     <Table
                         height={180}
                         columnsHeaders={columnHeaders4}
                         cells={cells4}
                         cellsEditable={false}
+                        onColumnsHeadersChange={setColumnHeaders4}
                     />
                     <div style={{ marginTop: '0.5rem', fontSize: '12px', color: '#666' }}>
-                        <strong>Features:</strong> Read-only, Custom cell colors, Status indicators
+                        <strong>Features:</strong> Read-only, Custom cell colors, Status indicators, Resizable columns
                     </div>
                 </Panel>
 

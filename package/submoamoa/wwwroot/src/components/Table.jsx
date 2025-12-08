@@ -16,7 +16,19 @@ const Table = ({
     cells: initialCells = [],
     onCellsChange = null,
     onColumnsHeadersChange = null,
-    onRowsHeadersChange = null
+    onRowsHeadersChange = null,
+    // New event props
+    onChange = null,
+    onSelectionChange = null,
+    onAddColumn = null,
+    onAddRow = null,
+    onDeleteColumn = null,
+    onDeleteRow = null,
+    onResizeColumn = null,
+    onResizeRow = null,
+    onCopy = null,
+    onCut = null,
+    onPaste = null
 }) => {
     // State
     const [cells, setCells] = useState(() => {
@@ -56,6 +68,7 @@ const Table = ({
     const tableRef = useRef(null);
     const inputRef = useRef(null);
     const scrollContainerRef = useRef(null);
+    const headerScrollRef = useRef(null);
     const contextMenuRef = useRef(null);
 
     // Default column width and row height
@@ -102,7 +115,10 @@ const Table = ({
         if (onColumnsHeadersChange) {
             onColumnsHeadersChange(newHeaders);
         }
-    }, [onColumnsHeadersChange]);
+        if (onChange) {
+            onChange({ type: 'columnsHeaders', data: newHeaders });
+        }
+    }, [onColumnsHeadersChange, onChange]);
 
     // Update row headers and notify parent
     const updateRowsHeaders = useCallback((newHeaders) => {
@@ -110,7 +126,10 @@ const Table = ({
         if (onRowsHeadersChange) {
             onRowsHeadersChange(newHeaders);
         }
-    }, [onRowsHeadersChange]);
+        if (onChange) {
+            onChange({ type: 'rowsHeaders', data: newHeaders });
+        }
+    }, [onRowsHeadersChange, onChange]);
 
     // Save state to history
     const saveToHistory = useCallback((newCells) => {
@@ -129,7 +148,10 @@ const Table = ({
         if (onCellsChange) {
             onCellsChange(newCells);
         }
-    }, [onCellsChange, saveToHistory]);
+        if (onChange) {
+            onChange({ type: 'cells', data: newCells });
+        }
+    }, [onCellsChange, onChange, saveToHistory]);
 
     // Undo
     const undo = useCallback(() => {
@@ -219,12 +241,20 @@ const Table = ({
         return row >= minRow && row <= maxRow && col >= minCol && col <= maxCol;
     };
 
+    // Update selection and trigger event
+    const updateSelection = useCallback((newSelection) => {
+        setSelection(newSelection);
+        if (onSelectionChange) {
+            onSelectionChange(newSelection);
+        }
+    }, [onSelectionChange]);
+
     // Handle cell click
     const handleCellClick = (row, col, e) => {
         if (e.shiftKey && selection.start) {
-            setSelection({ start: selection.start, end: { row, col } });
+            updateSelection({ start: selection.start, end: { row, col } });
         } else {
-            setSelection({ start: { row, col }, end: { row, col } });
+            updateSelection({ start: { row, col }, end: { row, col } });
         }
         setEditingCell(null);
         setContextMenu({ visible: false, x: 0, y: 0 });
@@ -245,7 +275,7 @@ const Table = ({
         setDragStart({ row, col });
         setDragEnd({ row, col });
         if (!e.shiftKey) {
-            setSelection({ start: { row, col }, end: { row, col } });
+            updateSelection({ start: { row, col }, end: { row, col } });
         }
     };
 
@@ -253,7 +283,7 @@ const Table = ({
     const handleMouseMove = (row, col) => {
         if (isDragging) {
             setDragEnd({ row, col });
-            setSelection({ start: dragStart, end: { row, col } });
+            updateSelection({ start: dragStart, end: { row, col } });
         }
         if (isFillDragging) {
             setFillDragEnd({ row, col });
@@ -303,9 +333,13 @@ const Table = ({
     }, [isResizingCol, resizingColIndex, resizeColStartX, resizeColStartWidth, columnsHeaders, updateColumnsHeaders]);
 
     const handleColumnResizeMouseUp = useCallback(() => {
+        if (resizingColIndex !== null && onResizeColumn) {
+            const finalWidth = getColWidth(resizingColIndex);
+            onResizeColumn({ columnIndex: resizingColIndex, width: finalWidth });
+        }
         setIsResizingCol(false);
         setResizingColIndex(null);
-    }, []);
+    }, [resizingColIndex, onResizeColumn, getColWidth]);
 
     // Row resize handlers
     const handleRowResizeMouseDown = (rowIndex, e) => {
@@ -338,9 +372,13 @@ const Table = ({
     }, [isResizingRow, resizingRowIndex, resizeRowStartY, resizeRowStartHeight, rowsHeaders, updateRowsHeaders]);
 
     const handleRowResizeMouseUp = useCallback(() => {
+        if (resizingRowIndex !== null && onResizeRow) {
+            const finalHeight = getRowHeight(resizingRowIndex);
+            onResizeRow({ rowIndex: resizingRowIndex, height: finalHeight });
+        }
         setIsResizingRow(false);
         setResizingRowIndex(null);
-    }, []);
+    }, [resizingRowIndex, onResizeRow, getRowHeight]);
 
     // Effect for column/row resize
     useEffect(() => {
@@ -522,7 +560,7 @@ const Table = ({
                 handleEditBlur();
                 // Move to next row
                 const nextRow = Math.min(editingCell.row + 1, numRows - 1);
-                setSelection({ start: { row: nextRow, col: editingCell.col }, end: { row: nextRow, col: editingCell.col } });
+                updateSelection({ start: { row: nextRow, col: editingCell.col }, end: { row: nextRow, col: editingCell.col } });
             } else if (selection.start && isCellEditable(selection.start.row, selection.start.col)) {
                 handleCellDoubleClick(selection.start.row, selection.start.col);
             }
@@ -553,7 +591,7 @@ const Table = ({
                     case 'ArrowRight': newCol = Math.min(numCols - 1, currentEnd.col + 1); break;
                 }
 
-                setSelection({ start: selection.start, end: { row: newRow, col: newCol } });
+                updateSelection({ start: selection.start, end: { row: newRow, col: newCol } });
             } else {
                 // Move selection
                 const { row, col } = selection.start;
@@ -567,7 +605,7 @@ const Table = ({
                     case 'ArrowRight': newCol = Math.min(numCols - 1, col + 1); break;
                 }
 
-                setSelection({ start: { row: newRow, col: newCol }, end: { row: newRow, col: newCol } });
+                updateSelection({ start: { row: newRow, col: newCol }, end: { row: newRow, col: newCol } });
             }
         }
 
@@ -576,7 +614,7 @@ const Table = ({
             e.preventDefault();
             const { row, col } = selection.start;
             const newCol = e.shiftKey ? Math.max(0, col - 1) : Math.min(numCols - 1, col + 1);
-            setSelection({ start: { row, col: newCol }, end: { row, col: newCol } });
+            updateSelection({ start: { row, col: newCol }, end: { row, col: newCol } });
         }
 
         // Start typing to edit
@@ -609,12 +647,28 @@ const Table = ({
         // Also copy to system clipboard as text
         const textData = copiedData.map(row => row.map(cell => cell.value ?? '').join('\t')).join('\n');
         navigator.clipboard?.writeText(textData);
+
+        // Call onCopy event
+        if (onCopy) {
+            onCopy({ data: copiedData, bounds: { minRow, maxRow, minCol, maxCol } });
+        }
     };
 
     // Cut selection
     const cutSelection = () => {
+        if (!selection.start) return;
+        const minRow = Math.min(selection.start.row, selection.end?.row ?? selection.start.row);
+        const maxRow = Math.max(selection.start.row, selection.end?.row ?? selection.start.row);
+        const minCol = Math.min(selection.start.col, selection.end?.col ?? selection.start.col);
+        const maxCol = Math.max(selection.start.col, selection.end?.col ?? selection.start.col);
+
         copySelection();
         deleteSelection();
+
+        // Call onCut event
+        if (onCut) {
+            onCut({ bounds: { minRow, maxRow, minCol, maxCol } });
+        }
     };
 
     // Paste clipboard
@@ -655,6 +709,11 @@ const Table = ({
         );
 
         updateCells(newCells);
+
+        // Call onPaste event
+        if (onPaste) {
+            onPaste({ data: dataToPaste, startRow, startCol });
+        }
     };
 
     // Delete selection
@@ -724,7 +783,12 @@ const Table = ({
         
         updateCells(newCells);
         closeContextMenu();
-    }, [canAddRows, selection, cells, numCols, maxRows, updateCells]);
+
+        // Call onAddRow event
+        if (onAddRow) {
+            onAddRow({ addedRows: numRowsToAdd, insertAfterRow });
+        }
+    }, [canAddRows, selection, cells, numCols, maxRows, updateCells, onAddRow]);
 
     // Add columns after the last selected column
     const addColumns = useCallback(() => {
@@ -748,7 +812,12 @@ const Table = ({
         
         updateCells(newCells);
         closeContextMenu();
-    }, [canAddColumns, selection, cells, numCols, maxColumns, updateCells]);
+
+        // Call onAddColumn event
+        if (onAddColumn) {
+            onAddColumn({ addedColumns: numColsToAdd, insertAfterCol });
+        }
+    }, [canAddColumns, selection, cells, numCols, maxColumns, updateCells, onAddColumn]);
 
     // Delete selected rows
     const deleteSelectedRows = useCallback(() => {
@@ -761,9 +830,12 @@ const Table = ({
         
         const newCells = cells.filter((_, i) => i < bounds.minRow || i > bounds.maxRow);
         updateCells(newCells);
-        setSelection({ start: null, end: null });
+        updateSelection({ start: null, end: null });
         closeContextMenu();
-    }, [canDeleteRows, selection, cells, updateCells]);
+        if (onDeleteRow) {
+            onDeleteRow({ deletedRows: bounds.maxRow - bounds.minRow + 1, startRow: bounds.minRow });
+        }
+    }, [canDeleteRows, selection, cells, updateCells, onDeleteRow, updateSelection]);
 
     // Delete selected columns
     const deleteSelectedColumns = useCallback(() => {
@@ -778,9 +850,12 @@ const Table = ({
             row.filter((_, i) => i < bounds.minCol || i > bounds.maxCol)
         );
         updateCells(newCells);
-        setSelection({ start: null, end: null });
+        updateSelection({ start: null, end: null });
         closeContextMenu();
-    }, [canDeleteColumns, selection, cells, numCols, updateCells]);
+        if (onDeleteColumn) {
+            onDeleteColumn({ deletedColumns: bounds.maxCol - bounds.minCol + 1, startColumn: bounds.minCol });
+        }
+    }, [canDeleteColumns, selection, cells, numCols, updateCells, onDeleteColumn, updateSelection]);
 
     // Context menu action handlers
     const handleContextMenuCopy = () => {
@@ -827,13 +902,30 @@ const Table = ({
     // Effect to close context menu on click outside
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (contextMenu.visible && tableRef.current && !tableRef.current.contains(e.target)) {
+            if (contextMenu.visible && tableRef.current && 
+                !tableRef.current.contains(e.target) && 
+                !(contextMenuRef.current && contextMenuRef.current.contains(e.target))) {
                 closeContextMenu();
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [contextMenu.visible]);
+
+    // Effect to sync header scroll with cells scroll
+    useEffect(() => {
+        const scrollContainer = scrollContainerRef.current;
+        if (!scrollContainer) return;
+
+        const handleScroll = () => {
+            if (headerScrollRef.current) {
+                headerScrollRef.current.scrollLeft = scrollContainer.scrollLeft;
+            }
+        };
+
+        scrollContainer.addEventListener('scroll', handleScroll);
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // Calculate total dimensions
     const totalWidth = Array(numCols).fill(0).reduce((sum, _, i) => sum + getColWidth(i), 0);
@@ -937,15 +1029,16 @@ const Table = ({
 
     const fillHandleStyle = {
         position: 'absolute',
-        right: '-6px',
-        bottom: '-6px',
-        width: '12px',
-        height: '12px',
+        right: '-10px',
+        bottom: '-10px',
+        width: '20px',
+        height: '20px',
         backgroundColor: '#0066cc',
         cursor: 'crosshair',
         zIndex: 10,
-        border: '2px solid #fff',
-        boxSizing: 'border-box'
+        border: '3px solid #fff',
+        boxSizing: 'border-box',
+        borderRadius: '2px'
     };
 
     const columnResizeHandleStyle = {
@@ -1120,7 +1213,7 @@ const Table = ({
         >
             {/* Column Headers */}
             {columnsHeaders && (
-                <div style={headerRowStyle}>
+                <div style={{ display: 'flex', flexDirection: 'row', flexShrink: 0, backgroundColor: '#f0f0f0', borderBottom: '2px solid #999' }}>
                     {rowsHeaders && (
                         <div style={{
                             width: `${headerColWidth}px`,
@@ -1131,19 +1224,29 @@ const Table = ({
                             flexShrink: 0
                         }} />
                     )}
-                    {columnsHeaders.map((header, i) => (
-                        <div key={i} style={headerCellStyle(header)}>
-                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {header.name}
-                            </span>
-                            {canResizeColumn(i) && (
-                                <div 
-                                    style={columnResizeHandleStyle}
-                                    onMouseDown={(e) => handleColumnResizeMouseDown(i, e)}
-                                />
-                            )}
-                        </div>
-                    ))}
+                    <div 
+                        ref={headerScrollRef}
+                        style={{ 
+                            flex: 1, 
+                            overflow: 'hidden', 
+                            display: 'flex', 
+                            flexDirection: 'row' 
+                        }}
+                    >
+                        {columnsHeaders.map((header, i) => (
+                            <div key={i} style={headerCellStyle(header)}>
+                                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {header.name}
+                                </span>
+                                {canResizeColumn(i) && (
+                                    <div 
+                                        style={columnResizeHandleStyle}
+                                        onMouseDown={(e) => handleColumnResizeMouseDown(i, e)}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
