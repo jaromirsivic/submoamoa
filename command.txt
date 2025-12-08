@@ -378,4 +378,6 @@ fontFamily: string
 fontStyle: string
 fontWeight: string
 
-
+Update the Scene3D component Reset button which is used to reset the camera position to the default position.
+When the Reset button is clicked, the camera position should be reset to the default position.
+Default position of camera is (x=200, y=200, z=200). Camera is looking at point (x=0, y=0, z=0).

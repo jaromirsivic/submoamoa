@@ -72,17 +72,14 @@ const Scene3D = ({
         }
     }, []);
 
-    // Fit camera to view all objects
+    // Fit camera to view all objects (Auto-fit)
     const resetCamera = useCallback(() => {
         const group = objectsGroupRef.current;
-        if (!group || group.children.length === 0) {
-            cameraStateRef.current = {
-                distance: 10,
-                theta: Math.PI / 4,
-                phi: Math.PI / 3,
-                target: new THREE.Vector3(0, 0, 0)
-            };
-            updateCameraPosition();
+        if (!group) return; // Allow empty group handling if needed, but usually we just skip
+
+        // If no children, default to a sensible view, but distinct from "The Default"
+        if (group.children.length === 0) {
+            setCameraToDefault();
             return;
         }
 
@@ -93,11 +90,40 @@ const Scene3D = ({
         const maxDim = Math.max(size.x, size.y, size.z);
         const distance = maxDim * 2 + 5;
 
+        // Auto-fit sets a view relative to the object center
         cameraStateRef.current = {
             distance: Math.max(distance, 5),
             theta: Math.PI / 4,
             phi: Math.PI / 3,
             target: center.clone()
+        };
+        updateCameraPosition();
+    }, [updateCameraPosition]);
+
+    // Set camera to fixed default position (2, 2, 2) looking at (0, 0, 0)
+    const setCameraToDefault = useCallback(() => {
+        const defaultTarget = new THREE.Vector3(0, 0, 0);
+        const defaultPos = new THREE.Vector3(1.5, 1.5, 1.5);
+
+        // Calculate spherical coordinates for (2, 2, 2)
+        const distance = defaultPos.distanceTo(defaultTarget); // ~346.41
+
+        // theta = atan2(y, x)
+        // Note: In our current setup, x/y plane checks:
+        // x = distance * sin(phi) * cos(theta)
+        // y = distance * sin(phi) * sin(theta)
+        // z = distance * cos(phi)
+
+        const theta = Math.atan2(defaultPos.y, defaultPos.x);
+
+        // phi = acos(z / r)
+        const phi = Math.acos(defaultPos.z / distance);
+
+        cameraStateRef.current = {
+            distance: distance,
+            theta: theta,
+            phi: phi,
+            target: defaultTarget
         };
         updateCameraPosition();
     }, [updateCameraPosition]);
@@ -364,14 +390,14 @@ const Scene3D = ({
 
         // Only reset camera if we haven't initialized it yet and we have objects to focus on
         if (!hasInitializedCameraRef.current && objects.length > 0) {
-            resetCamera();
+            setCameraToDefault();
             hasInitializedCameraRef.current = true;
         }
         // If objects become empty, we might want to allow re-initialization next time objects arrive
         if (objects.length === 0) {
             hasInitializedCameraRef.current = false;
         }
-    }, [objects, createObjects, resetCamera]);
+    }, [objects, createObjects, setCameraToDefault]);
 
     // Get clientX/Y from either mouse or touch event
     const getClientCoords = useCallback((e) => {
@@ -549,7 +575,7 @@ const Scene3D = ({
             <div style={resetButtonStyle}>
                 <Button
                     label="Reset"
-                    onClick={resetCamera}
+                    onClick={setCameraToDefault}
                     style={resetButtonColors}
                 />
             </div>
