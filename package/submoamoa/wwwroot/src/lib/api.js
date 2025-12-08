@@ -3,8 +3,8 @@
  * Centralized module for all API communications
  */
 
-// Base URL for API calls - uses current hostname with port 8000
-const getBaseUrl = () => `http://${window.location.hostname}:8000`;
+// Base URL for API calls - uses current hostname with port 80
+const getBaseUrl = () => `http://${window.location.hostname}:80`;
 
 // Default timeout in milliseconds
 const DEFAULT_TIMEOUT = 5000;

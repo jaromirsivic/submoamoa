@@ -185,8 +185,8 @@
         "reticleSize": 1
     },
     "hotZone": {
-        "units": "cm",
-        "computationQuality": 28,
+        "units": "in",
+        "computationQuality": 30,
         "centerPole": {
             "micStickRadius": 50,
             "height": 40,
