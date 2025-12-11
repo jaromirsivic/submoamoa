@@ -81,53 +81,67 @@ const Layout = () => {
       </header>
 
       {isMenuOpen && (
-        <nav className="mobile-menu glass" style={{
-          position: 'fixed',
-          top: 'calc(var(--header-height) + var(--safe-area-top, 0px))',
-          right: 0,
-          width: '250px', // Increased width for icons
-          padding: '1rem',
-          paddingRight: 'calc(1rem + var(--safe-area-right, 0px))',
-          borderLeft: '1px solid var(--color-border)',
-          borderBottom: '1px solid var(--color-border)',
-          zIndex: 49,
-          maxHeight: 'calc(100vh - var(--header-height) - var(--safe-area-top, 0px))',
-          maxHeight: 'calc(100dvh - var(--header-height) - var(--safe-area-top, 0px))',
-          overflowY: 'auto'
-        }}>
-          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <li><MenuLink to="/" icon={mainPageIcon} label="Main Page" onClick={() => setIsMenuOpen(false)} /></li>
-            <li><MenuLink to="/manual-control" icon={manualControlIcon} label="Manual Control" onClick={() => setIsMenuOpen(false)} /></li>
-            <li><MenuLink to="/ai-agent" icon={aiAgentIcon} label="AI Agent" onClick={() => setIsMenuOpen(false)} /></li>
-            <li>
-              <div className="btn" style={{ justifyContent: 'flex-start', width: '100%', cursor: 'default', opacity: 0.8, gap: '0.75rem' }}>
-                <img src={settingsIcon} alt="" width="24" height="24" />
-                Settings
-              </div>
-              <ul style={{ listStyle: 'none', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                <li><MenuLink to="/settings/import-export" icon={importExportIcon} label="Import / Export" onClick={() => setIsMenuOpen(false)} /></li>
-                <li><MenuLink to="/settings/motors" icon={motorsIcon} label="Motors" onClick={() => setIsMenuOpen(false)} /></li>
-                <li><MenuLink to="/settings/ai-behavior" icon={aiBehaviorIcon} label="AI Behavior" onClick={() => setIsMenuOpen(false)} /></li>
-                <li><MenuLink to="/settings/hot-zone" icon={hotZoneIcon} label="Hot Zone" onClick={() => setIsMenuOpen(false)} /></li>
-                <li><MenuLink to="/settings/camera" icon={cameraIcon} label="Camera" onClick={() => setIsMenuOpen(false)} /></li>
-              </ul>
-            </li>
-            <li><MenuLink to="/tutorials" icon={tutorialsIcon} label="Tutorials" onClick={() => setIsMenuOpen(false)} /></li>
-            <li>
-              <div className="btn" style={{ justifyContent: 'flex-start', width: '100%', cursor: 'default', opacity: 0.8, gap: '0.75rem' }}>
-                <img src={manualControlIcon} alt="" width="24" height="24" />
-                Developers Sandbox
-              </div>
-              <ul style={{ listStyle: 'none', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                <li><MenuLink to="/sandbox/components-demo" icon={componentsDemoIcon} label="Components Demo" onClick={() => setIsMenuOpen(false)} /></li>
-                <li><MenuLink to="/sandbox/modal-windows-demo" icon={modalWindowsIcon} label="Modal Windows Demo" onClick={() => setIsMenuOpen(false)} /></li>
-                <li><MenuLink to="/sandbox/editable-chart" icon={componentsDemoIcon} label="Editable Chart" onClick={() => setIsMenuOpen(false)} /></li>
-                <li><MenuLink to="/sandbox/table-demo" icon={componentsDemoIcon} label="Table Demo" onClick={() => setIsMenuOpen(false)} /></li>
-              </ul>
-            </li>
-            <li><MenuLink to="/about" icon={aboutIcon} label="About" onClick={() => setIsMenuOpen(false)} /></li>
-          </ul>
-        </nav>
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 48
+            }}
+            onClick={() => setIsMenuOpen(false)}
+          />
+          <nav className="mobile-menu glass" style={{
+            position: 'fixed',
+            top: 'calc(var(--header-height) + var(--safe-area-top, 0px))',
+            right: 0,
+            width: '250px', // Increased width for icons
+            padding: '1rem',
+            paddingRight: 'calc(1rem + var(--safe-area-right, 0px))',
+            borderLeft: '1px solid var(--color-border)',
+            borderBottom: '1px solid var(--color-border)',
+            zIndex: 49,
+            maxHeight: 'calc(100vh - var(--header-height) - var(--safe-area-top, 0px))',
+            maxHeight: 'calc(100dvh - var(--header-height) - var(--safe-area-top, 0px))',
+            overflowY: 'auto'
+          }}>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <li><MenuLink to="/" icon={mainPageIcon} label="Main Page" onClick={() => setIsMenuOpen(false)} /></li>
+              <li><MenuLink to="/manual-control" icon={manualControlIcon} label="Manual Control" onClick={() => setIsMenuOpen(false)} /></li>
+              <li><MenuLink to="/ai-agent" icon={aiAgentIcon} label="AI Agent" onClick={() => setIsMenuOpen(false)} /></li>
+              <li>
+                <div className="btn" style={{ justifyContent: 'flex-start', width: '100%', cursor: 'default', opacity: 0.8, gap: '0.75rem' }}>
+                  <img src={settingsIcon} alt="" width="24" height="24" />
+                  Settings
+                </div>
+                <ul style={{ listStyle: 'none', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <li><MenuLink to="/settings/import-export" icon={importExportIcon} label="Import / Export" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/settings/motors" icon={motorsIcon} label="Motors" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/settings/ai-behavior" icon={aiBehaviorIcon} label="AI Behavior" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/settings/hot-zone" icon={hotZoneIcon} label="Hot Zone" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/settings/camera" icon={cameraIcon} label="Camera" onClick={() => setIsMenuOpen(false)} /></li>
+                </ul>
+              </li>
+              <li><MenuLink to="/tutorials" icon={tutorialsIcon} label="Tutorials" onClick={() => setIsMenuOpen(false)} /></li>
+              <li>
+                <div className="btn" style={{ justifyContent: 'flex-start', width: '100%', cursor: 'default', opacity: 0.8, gap: '0.75rem' }}>
+                  <img src={manualControlIcon} alt="" width="24" height="24" />
+                  Developers Sandbox
+                </div>
+                <ul style={{ listStyle: 'none', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <li><MenuLink to="/sandbox/components-demo" icon={componentsDemoIcon} label="Components Demo" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/sandbox/modal-windows-demo" icon={modalWindowsIcon} label="Modal Windows Demo" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/sandbox/editable-chart" icon={componentsDemoIcon} label="Editable Chart" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/sandbox/table-demo" icon={componentsDemoIcon} label="Table Demo" onClick={() => setIsMenuOpen(false)} /></li>
+                </ul>
+              </li>
+              <li><MenuLink to="/about" icon={aboutIcon} label="About" onClick={() => setIsMenuOpen(false)} /></li>
+            </ul>
+          </nav>
+        </>
       )}
 
       <main className="main-content">
