@@ -464,3 +464,11 @@ Update the table component. There are following issues:
 13. Add onCut event to the table component. It should be triggered when user cuts cell(s) value(s) to other cell(s).
 14. Add onPaste event to the table component. It should be triggered when user pastes cell(s) value(s) to other cell(s).
 Demonstrate changes in the sandbox.
+
+
+NumericInput component when used on a modal window (for example on Settings -> Motors) is not in the same row
+as the label. Fix it.
+
+Update the menu component in a way that when the menu is displayed the content area has a gray overlay,
+the same way as it is done when the modal window is displayed. When user clicks anywhere 
+else except the menu, the menu should be closed.

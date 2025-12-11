@@ -79,7 +79,7 @@ const Motors = () => {
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            
+
             // Update the motors list with the edited motor
             const updatedMotors = motors.map((m, index) =>
                 index === editingMotorIndex ? editingMotor : m
@@ -356,6 +356,7 @@ const Motors = () => {
 
                         <NumericInput
                             label="Movement Smoothness"
+                            labelPosition="left"
                             value={editingMotor.movementSmoothness}
                             onChange={(val) => updateMotorField('movementSmoothness', val)}
                             step={0.1}
@@ -400,6 +401,7 @@ const Motors = () => {
 
                             <NumericInput
                                 label="MCP3008 Forward Pin"
+                                labelPosition="left"
                                 value={editingMotor.mcp3008ForwardPin}
                                 onChange={(val) => updateMotorField('mcp3008ForwardPin', val)}
                                 min={0}
@@ -408,6 +410,7 @@ const Motors = () => {
                             />
                             <NumericInput
                                 label="MCP3008 Reverse Pin"
+                                labelPosition="left"
                                 value={editingMotor.mcp3008ReversePin}
                                 onChange={(val) => updateMotorField('mcp3008ReversePin', val)}
                                 min={0}
@@ -425,6 +428,7 @@ const Motors = () => {
                             />
                             <NumericInput
                                 label="Max Running Time (s)"
+                                labelPosition="left"
                                 value={editingMotor.dutyCycle.maxRunningTimeSeconds}
                                 onChange={(val) => updateDutyCycleField('maxRunningTimeSeconds', val)}
                                 min={0}
@@ -432,6 +436,7 @@ const Motors = () => {
                             />
                             <NumericInput
                                 label="Min Rest Time (s)"
+                                labelPosition="left"
                                 value={editingMotor.dutyCycle.minRestTimeSeconds}
                                 onChange={(val) => updateDutyCycleField('minRestTimeSeconds', val)}
                                 min={0}

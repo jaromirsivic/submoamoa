@@ -2,6 +2,7 @@ import React from 'react';
 
 const NumericInput = ({
     label,
+    labelPosition = 'top',
     value,
     onChange,
     min,
@@ -82,8 +83,11 @@ const NumericInput = ({
 
     const containerStyle = {
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: labelPosition === 'top' ? 'column' : 'row',
         alignItems: 'center', // Center label and input block
+        justifyContent: labelPosition === 'top' ? 'flex-start' : 'space-between',
+        width: '100%',
+        gap: labelPosition === 'left' ? '0.5rem' : '0',
         ...style
     };
 
@@ -165,8 +169,14 @@ const NumericInput = ({
     };
 
     return (
-        <div className="custom-numeric-input responsive-input-container" style={containerStyle}>
-            {label && <label className="numeric-input-label" style={{ display: 'block', marginBottom: '0.25rem', whiteSpace: 'nowrap', width: '100%', textAlign: 'start' }}>{label}</label>}
+        <div className={`custom-numeric-input responsive-input-container ${labelPosition === 'top' ? 'top-label' : ''}`} style={containerStyle}>
+            {label && <label className="numeric-input-label" style={{
+                display: 'block',
+                marginBottom: labelPosition === 'top' ? '0.25rem' : '0',
+                whiteSpace: 'nowrap',
+                textAlign: 'start',
+                width: labelPosition === 'top' ? '100%' : 'auto'
+            }}>{label}</label>}
 
             <div style={flexWrapperStyle}>
                 <input
