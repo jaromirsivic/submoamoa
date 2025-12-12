@@ -1,0 +1,35 @@
+sudo apt update
+sudo apt upgrade
+
+sudo apt install python-setuptools python3-setuptools
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make
+sudo make install
+
+cd /lib/systemd/system
+sudo nano pigpiod.service
+
+edit the file:
+
+[Unit]
+Description=Daemon required to control GPIO pins via pigpio
+[Service]
+ExecStart=/usr/local/bin/pigpiod
+ExecStop=/bin/systemctl kill -s SIGKILL pigpiod
+Type=forking
+[Install]
+WantedBy=multi-user.target
+
+save the file
+
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+
+sudo apt install python3-pip
+sudo apt install python3-dev
+sudo apt install libssl-dev
+sudo apt install libffi-dev
+sudo apt install build-essential
+sudo apt install python3-venv

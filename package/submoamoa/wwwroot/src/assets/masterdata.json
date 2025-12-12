@@ -35,7 +35,7 @@
     },
     {
       "index": 3,
-      "name": "GPIO 2 (SDA)",
+      "name": "GPIO 2 (I2C SDA)",
       "isGPIO": true,
       "isSPI": false,
       "isPWM": false
@@ -49,7 +49,7 @@
     },
     {
       "index": 5,
-      "name": "GPIO 3 (SCL)",
+      "name": "GPIO 3 (I2C SCL)",
       "isGPIO": true,
       "isSPI": false,
       "isPWM": false
@@ -203,14 +203,14 @@
     },
     {
       "index": 27,
-      "name": "ID_SD (I2C)",
+      "name": "GPIO 0 (I2C SDA)",
       "isGPIO": false,
       "isSPI": false,
       "isPWM": false
     },
     {
       "index": 28,
-      "name": "ID_SC (I2C)",
+      "name": "GPIO 1 (I2C SCL)",
       "isGPIO": false,
       "isSPI": false,
       "isPWM": false
