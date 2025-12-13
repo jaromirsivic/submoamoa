@@ -2,77 +2,26 @@ from copy import deepcopy
 from .common import epsilon
 
 class SpeedHistogram:
-    def __init__(self, *, speed_histogram: list[dict], steps: int = 100):
-        self._steps = steps
+    def __init__(self, *, speed_histogram: list[dict], resolution: int = 1000):
+        if resolution < 2:
+            raise ValueError("Resolution must be at least 2")
+        self._resolution = resolution
         self._speed_histogram = deepcopy(speed_histogram)
         self._forward_speed_histogram = []
         self._reverse_speed_histogram = []
+        self.max_forward_speed_seconds = 0
+        self.max_reverse_speed_seconds = 0
         self._init_speed_histograms()
 
-    # def _interpolate_between_two_points(self, *, index: int):
-    #     if index < 0 or index >= len(self._speed_histogram):
-    #         raise ValueError("Index out of range")
-    #     if not self._speed_histogram[index]["interpolated"]:
-    #         return
-    #     if index == 0:
-    #         return
-    #     if index == len(self._speed_histogram) - 1:
-    #         return
-    #     # search for the index of previous not interpolated point
-    #     previous_index = index - 1
-    #     while previous_index >= 0 and self._speed_histogram[previous_index]["interpolated"]:
-    #         previous_index -= 1
-    #     if previous_index < 0:
-    #         return  
-    #     # search for the index of next not interpolated point
-    #     next_index = index + 1
-    #     while next_index < len(self._speed_histogram) and self._speed_histogram[next_index]["interpolated"]:
-    #         next_index += 1
-    #     if next_index >= len(self._speed_histogram):
-    #         return
-    #     # get my relative position between previous and next point
-    #     my_relative_position = (index - previous_index) / (next_index - previous_index)
-    #     # interpolate forward seconds
-    #     self._speed_histogram[index]["forward_seconds"] = self._speed_histogram[previous_index]["forward_seconds"] + \
-    #                                                       (self._speed_histogram[next_index]["forward_seconds"] - \
-    #                                                       self._speed_histogram[previous_index]["forward_seconds"]) * \
-    #                                                       my_relative_position
-    #     # interpolate reverse seconds
-    #     self._speed_histogram[index]["reverse_seconds"] = self._speed_histogram[previous_index]["reverse_seconds"] + \
-    #                                                       (self._speed_histogram[next_index]["reverse_seconds"] - \
-    #                                                       self._speed_histogram[previous_index]["reverse_seconds"]) * \
-    #                                                       my_relative_position
-        
-
-    # def _interpolate_speed_histogram(self, *, steps: int = 100):
-    #     # create new speed histogram which will have exactly steps items
-    #     new_speed_histogram = []
-    #     # index of the processed item from self._speed_histogram
-    #     processing_index = 0
-    #     for i in range(0, steps + 1):
-    #         if processing_index >= len(self._speed_histogram):
-    #             break
-    #         if self._speed_histogram[processing_index]["pwm_multiplier"] == i / steps:
-    #             new_speed_histogram.append(self._speed_histogram[processing_index])
-    #             processing_index += 1
-    #         else:
-    #             new_speed_histogram.append({
-    #                 "pwm_multiplier": i / steps,
-    #                 "forward_seconds": None,
-    #                 "reverse_seconds": None,
-    #                 "interpolated": True
-    #             })
-    #     # set updated speed histogram
-    #     self._speed_histogram = new_speed_histogram
-    #     # interpolate items in the speed histogram
-    #     for i in range(0, len(self._speed_histogram)):
-    #         self._interpolate_between_two_points(index=i)
+    @property
+    def resolution(self):
+        return self._resolution
     
-    def _init_speed_histograms(self, *, steps: int = 100):
+    def _init_speed_histograms(self):
         """
         Initialize speed histograms in following way:
         It transforms speed histogram to two lists of forward and reverse using linear interpolation.
-        It uses given steps as number of items in forward and reverse lists. Each item in the list
+        It uses given resolution as number of items in forward and reverse lists. Each item in the list
         is a dictionary with pwm_multiplier and distance traveled in one second. Distance is relative
         to the length of the actuator.
         """
@@ -104,8 +53,8 @@ class SpeedHistogram:
         # compute forward and reverse pwm histograms
         self._forward_speed_histogram.append(0)
         self._reverse_speed_histogram.append(0)
-        for i in range(1, steps):
-            speed = i / steps
+        for i in range(1, self._resolution):
+            speed = i / self._resolution
             forward_pwm = self._compute_pwm(speed=speed, which_type_of_speed="forward")
             reverse_pwm = self._compute_pwm(speed=speed, which_type_of_speed="reverse")
             self._forward_speed_histogram.append(forward_pwm)
@@ -113,47 +62,33 @@ class SpeedHistogram:
         self._forward_speed_histogram.append(1)
         self._reverse_speed_histogram.append(1)
 
-    
-    # def create_forward_speed_histogram(self, *, steps: int = 100):
-    #     # get max forward and reverse seconds
-    #     max_forward_speed_seconds = self._speed_histogram[-1]["forward_seconds"]
-    #     max_reverse_speed_seconds = self._speed_histogram[-1]["reverse_seconds"]    
-    #     # create forward pwm histogram
-    #     forward_pwm_histogram = []
-    #     for i in range(0, len(self._speed_histogram)):
-    #         if self._speed_histogram[i]["forward_seconds"] == 0:
-    #             forward_pwm_histogram.append(0)
-    #         else:
-    #             forward_pwm_histogram.append(max_forward_speed_seconds / self._speed_histogram[i]["forward_seconds"])
-    #     # transpose the histogram in the way that indexes represent the speed between 0 and 1 and values represent the pwm multiplier
-    #     # interpolate missing pwm values linearly
-    #     forward_speed_histogram = []
-    #     for i in range(0, len(forward_pwm_histogram)):
-    #         forward_speed_histogram.append()
-    #     return forward_speed_histogram
-
     def _normalize_speed(self):
         # get max forward and reverse seconds
-        max_forward_speed_seconds = self._speed_histogram[-1]["forward_seconds"]
-        max_reverse_speed_seconds = self._speed_histogram[-1]["reverse_seconds"]
-        # normalize speed histogram
+        self.max_forward_speed_seconds = self._speed_histogram[-1]["forward_seconds"]
+        self.max_reverse_speed_seconds = self._speed_histogram[-1]["reverse_seconds"]
+        # normalize speed histogram adds new parameter forward_speed and reverse_speed
         for i in range(0, len(self._speed_histogram)):
             if self._speed_histogram[i]["forward_seconds"] == 0:
                 self._speed_histogram[i]["forward_speed"] = 0
             else:
-                self._speed_histogram[i]["forward_speed"] = max_forward_speed_seconds / self._speed_histogram[i]["forward_seconds"]
+                self._speed_histogram[i]["forward_speed"] = self.max_forward_speed_seconds / self._speed_histogram[i]["forward_seconds"]
             if self._speed_histogram[i]["reverse_seconds"] == 0:
                 self._speed_histogram[i]["reverse_speed"] = 0
             else:
-                self._speed_histogram[i]["reverse_speed"] = max_reverse_speed_seconds / self._speed_histogram[i]["reverse_seconds"]
+                self._speed_histogram[i]["reverse_speed"] = self.max_reverse_speed_seconds / self._speed_histogram[i]["reverse_seconds"]
     
-    def _compute_pwm(self, *, speed: float, which_type_of_speed: str="forward"):
+    def get_speed_index(self, *, speed: float, which_type_of_speed: str="forward"):
         # find the index of the item with pwm_multiplier closest to the given speed
         index = 0
         for i in range(0, len(self._speed_histogram)):
             if self._speed_histogram[i][which_type_of_speed + "_speed"] > speed:
                 index = i
                 break
+        return index
+    
+    def _compute_pwm(self, *, speed: float, which_type_of_speed: str="forward"):
+        # find the index of the item with pwm_multiplier closest to the given speed
+        index = self.get_speed_index(speed=speed, which_type_of_speed=which_type_of_speed)
         # if the index is 0 then return the first item
         if index <= 0:
             return self._speed_histogram[0]["pwm_multiplier"]
@@ -177,12 +112,12 @@ class SpeedHistogram:
         pwm_delta = higher_pwm - lower_pwm
         result = lower_pwm + pwm_delta * speed_position
         return result
-        
 
-
-    def __str__(self):
-        forward_speed_histogram = ""
-        reverse_speed_histogram = ""
-        for item in self._speed_histogram:
-            forward_speed_histogram += f"{item['pwm_multiplier']}: {item['forward_seconds']}\n"
-            reverse_speed_histogram += f"{item['pwm_multiplier']}: {item['reverse_seconds']}\n"
+    def pwm_of_forward_speed(self, *, speed: float):
+        index = round(speed * self._resolution)
+        return self._forward_speed_histogram[index]
+    
+    def pwm_of_reverse_speed(self, *, speed: float):
+        speed = abs(speed)
+        index = round(speed * self._resolution)
+        return self._reverse_speed_histogram[index]      

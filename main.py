@@ -3,8 +3,12 @@ from gpiozero import PWMOutputDevice
 from time import time, sleep
 import datetime
 import math
+from package.src.submoamoa.pin import Pin
 from package.src.submoamoa.j8 import J8
 from package.src.submoamoa.speedhistogram import SpeedHistogram
+from package.src.submoamoa.motorlinear import MotorLinear
+import random
+
 
 def speed(led, value):
    original_value = led.value
@@ -18,7 +22,7 @@ def speed(led, value):
 
 
 def test():
-   pin = J8(host="192.168.68.53", port=8888)
+   pin = J8(host="192.168.68.55", port=8888)
    while True:
       pin[12].value = 1
       sleep(1)
@@ -36,11 +40,24 @@ def main():
    {"pwm_multiplier": 1, "forward_seconds": 7, "reverse_seconds": 7, "interpolated": False}])
    print(f'forward pwm histogram: {speed_histogram._forward_speed_histogram}\n\n')
    print(f'reverse pwm histogram: {speed_histogram._reverse_speed_histogram}\n\n')
+   pins = J8(host="192.168.68.55", port=8888)
+   forward_pin = pins[12]
+   reverse_pin = pins[32]
+   motor = MotorLinear(forward_pin=forward_pin, reverse_pin=reverse_pin, speed_histogram=speed_histogram, inertia=1)
+   while True:
+      print(motor.position)
+      motor.move(speed=1)
+      while motor.current_speed != motor.target_speed:
+         motor.go()
+      print(motor.position)
+      motor.move(speed=-1)
+      while motor.current_speed != motor.target_speed:
+         motor.go()
    return
 
-   led12 = PWMOutputDevice("J8:12", initial_value=0,frequency=4000) #ringer starts ringing
-   led31 = PWMOutputDevice("J8:31", initial_value=0,frequency=4000) #ringer starts ringing
-   led32 = PWMOutputDevice("J8:32", initial_value=0,frequency=4000) #ringer starts ringing
+   led12 = PWMOutputDevice("J8:12", initial_value=0,frequency=4000)
+   led31 = PWMOutputDevice("J8:31", initial_value=0,frequency=4000)
+   led32 = PWMOutputDevice("J8:32", initial_value=0,frequency=4000)
    led12.off()
    led31.off()
    led32.off()
