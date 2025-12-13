@@ -4,6 +4,7 @@ from time import time, sleep
 import datetime
 import math
 from package.src.submoamoa.j8 import J8
+from package.src.submoamoa.speedhistogram import SpeedHistogram
 
 def speed(led, value):
    original_value = led.value
@@ -29,7 +30,12 @@ def test():
 
 def main():
    print("fsdfsdfds")
-   test()
+   speed_histogram = SpeedHistogram(speed_histogram=[{"pwm_multiplier": 0, "forward_seconds": 0, "reverse_seconds": 0, "interpolated": False},
+   {"pwm_multiplier": 0.3, "forward_seconds": 15, "reverse_seconds": 15, "interpolated": False},
+   {"pwm_multiplier": 0.8, "forward_seconds": 10, "reverse_seconds": 10, "interpolated": False},
+   {"pwm_multiplier": 1, "forward_seconds": 7, "reverse_seconds": 7, "interpolated": False}])
+   print(f'forward pwm histogram: {speed_histogram._forward_speed_histogram}\n\n')
+   print(f'reverse pwm histogram: {speed_histogram._reverse_speed_histogram}\n\n')
    return
 
    led12 = PWMOutputDevice("J8:12", initial_value=0,frequency=4000) #ringer starts ringing
