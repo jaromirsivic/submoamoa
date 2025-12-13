@@ -14,7 +14,7 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "inertia": 0.1,
+            "inertia": 0.82,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -42,7 +42,35 @@
                     "reverseSeconds": 25
                 }
             ],
-            "automaticCalibrationEnabled": true
+            "automaticCalibrationEnabled": true,
+            "speedHistogram": {
+                "pwmMultiplier": 1,
+                "defaultState": "stop",
+                "histogram": [
+                    [
+                        {
+                            "value": "0.00"
+                        },
+                        {
+                            "value": "0"
+                        },
+                        {
+                            "value": "0"
+                        }
+                    ],
+                    [
+                        {
+                            "value": "1.00"
+                        },
+                        {
+                            "value": "10"
+                        },
+                        {
+                            "value": "10"
+                        }
+                    ]
+                ]
+            }
         },
         {
             "enabled": true,

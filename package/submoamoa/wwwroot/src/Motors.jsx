@@ -378,14 +378,15 @@ const Motors = () => {
                             disabled={true}
                         />
 
-                        <NumericInput
+                        <Slider
                             label="Inertia"
-                            labelPosition="left"
                             value={editingMotor.inertia}
-                            onChange={(val) => updateMotorField('inertia', val)}
-                            step={0.1}
+                            onChange={(val) => updateMotorField('inertia', Math.round(val * 100) / 100)}
                             min={0}
-                            max={1}
+                            max={2}
+                            step={0.01}
+                            allowManualInput={true}
+                            decimalPlaces={2}
                         />
 
                         <HorizontalSeparator label="Pins" fullWidth={true} bleed="1rem" />
@@ -468,8 +469,12 @@ const Motors = () => {
                             />
                         </ColumnLayout>
 
-                        <HorizontalSeparator label="Speed Histogram" fullWidth={true} bleed="1rem" />
+                        <HorizontalSeparator label="Histogram Quick Test" fullWidth={true} bleed="1rem" />
                         <ColumnLayout gap="1rem">
+                            <p style={{ fontSize: '0.9rem', color: '#666', margin: 0 }}>
+                                Use "PWM Multiplier" and "Reverse" / "Forward" buttons to test how long it takes to extend the stroke of linear actuator
+                                from fully retracted position to fully extended position and vice versa.
+                            </p>
                             <Slider
                                 label="PWM Multiplier"
                                 value={editingMotor.speedHistogram.pwmMultiplier}
@@ -495,6 +500,7 @@ const Motors = () => {
                                 />
                             </div>
 
+                            <HorizontalSeparator label="Speed Histogram" fullWidth={true} bleed="1rem" />
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <StaticText text="Histogram" />
                                 <Table
