@@ -4,7 +4,7 @@ from .common import epsilon, pwm_frequency, motor_frame
 from .speedhistogram import SpeedHistogram
 from .pin import Pin
 
-class MotorLinear(Motor):
+class LinearMotor(Motor):
     def __init__(self, *, forward_pin: Pin, reverse_pin: Pin, 
                 speed_histogram: SpeedHistogram, inertia: float):
         self._forward_pin = forward_pin
@@ -75,7 +75,7 @@ class MotorLinear(Motor):
         speed = round(speed * self._speed_histogram.resolution) / self._speed_histogram.resolution
         self._target_speed = min(max(speed, -1), 1)
     
-    def go(self):
+    def go(self) -> bool:
         """
         This function is called periodically as quickly as possible.
         It is used to set pwm values of forward or reverse pin on Raspberry Pi
@@ -85,43 +85,37 @@ class MotorLinear(Motor):
         now = time()
         delta = now - self._last_time
         if delta < motor_frame:
-            return
+            return False
         # if speed is not changed then do nothing
         if abs(self._target_speed - self._current_speed) < epsilon:
             self._current_speed = self._target_speed
-            return
-        # if speed is close to the target speed then set pwm
-        if abs(self._target_speed - self._current_speed) < (self._speed_step + epsilon):
-            if abs(self._target_speed) < epsilon:
-                self._reverse_pin.value = 0
-                self._forward_pin.value = 0
-            elif self._target_speed < 0:
-                reverse_pwm = self._speed_histogram.pwm_of_reverse_speed(speed=self._target_speed)
-                self._reverse_pin.value = reverse_pwm
-                self._forward_pin.value = 0
+            # compute position
+            now = time()
+            delta = now - self._last_time
+            if self._current_speed < 0:
+                self._position += (1 / self.speed_histogram.max_reverse_speed_seconds) * self._current_speed * delta
             else:
-                forward_pwm = self._speed_histogram.pwm_of_forward_speed(speed=self._target_speed)
-                self._reverse_pin.value = 0
-                self._forward_pin.value = forward_pwm
-            self._current_speed = self._target_speed
-            return
-        # save current speed
+                self._position += (1 / self.speed_histogram.max_forward_speed_seconds) * self._current_speed * delta
+            self._last_time = now
+            return True
+        # compute direction
         direction = 1 if self._target_speed > self._current_speed else -1
+        # save current speed
         old_current_speed = self._current_speed
         # compute new current speed
         new_current_speed = self._current_speed + self._speed_step * direction
-        new_current_speed = max(min(new_current_speed, 1), -1)
+        if abs(self._target_speed - self._current_speed) < (self._speed_step + epsilon):
+            new_current_speed = self._target_speed
         # if speed crosses through zero then stop both pwms
         if (old_current_speed <= 0 and new_current_speed >= 0) or \
            (old_current_speed >= 0 and new_current_speed <= 0):
             self._forward_pin.value = 0
             self._reverse_pin.value = 0
         # save new current speed
-        self._current_speed = new_current_speed 
+        self._current_speed = new_current_speed
 
-        if self._current_speed < self._target_speed and self._current_speed < 0:
-            # compute new current speed
-            #self._current_speed = max(min(0, self._current_speed + self._speed_step), -1)
+        # update position and pin pwm
+        if self._current_speed < 0:
             # compute reverse pwm
             reverse_pwm = self._speed_histogram.pwm_of_reverse_speed(speed=self._current_speed)
             # compute position
@@ -131,9 +125,7 @@ class MotorLinear(Motor):
             self._last_time = now
             # set reverse pin to new pwm value
             self._reverse_pin.value = reverse_pwm
-        elif self._current_speed < self._target_speed and self._current_speed > 0:
-            # compute new current speed
-            #self._current_speed = min(max(0, self._current_speed + self._speed_step), 1)
+        elif self._current_speed > 0:
             # compute forward pwm
             forward_pwm = self._speed_histogram.pwm_of_forward_speed(speed=self._current_speed)
             # compute position
@@ -143,28 +135,5 @@ class MotorLinear(Motor):
             self._last_time = now
             # set forward pin to new pwm value
             self._forward_pin.value = forward_pwm
-        elif self._current_speed > self._target_speed and self._current_speed < 0:
-            # compute new current speed
-            #self._current_speed = max(min(0, self._current_speed - self._speed_step), -1)
-            # compute reverse pwm
-            reverse_pwm = self._speed_histogram.pwm_of_reverse_speed(speed=self._current_speed)
-            # compute position
-            now = time()
-            delta = now - self._last_time
-            self._position += (1 / self.speed_histogram.max_reverse_speed_seconds) * old_current_speed * delta
-            self._last_time = now
-            # set reverse pin to new pwm value
-            self._reverse_pin.value = reverse_pwm
-        elif self._current_speed > self._target_speed and self._current_speed > 0:
-            # compute new current speed
-            #self._current_speed = min(max(0, self._current_speed - self._speed_step), 1)
-            # compute forward pwm
-            forward_pwm = self._speed_histogram.pwm_of_forward_speed(speed=self._current_speed)
-            # compute position
-            now = time()
-            delta = now - self._last_time
-            self._position += (1 / self.speed_histogram.max_forward_speed_seconds) * old_current_speed * delta
-            self._last_time = now
-            # set forward pin to new pwm value
-            self._forward_pin.value = forward_pwm        
+        return False        
         

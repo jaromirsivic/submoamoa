@@ -6,7 +6,7 @@ import math
 from package.src.submoamoa.pin import Pin
 from package.src.submoamoa.j8 import J8
 from package.src.submoamoa.speedhistogram import SpeedHistogram
-from package.src.submoamoa.motorlinear import MotorLinear
+from package.src.submoamoa.linearmotor import LinearMotor
 import random
 
 
@@ -35,24 +35,29 @@ def test():
 def main():
    print("fsdfsdfds")
    speed_histogram = SpeedHistogram(speed_histogram=[{"pwm_multiplier": 0, "forward_seconds": 0, "reverse_seconds": 0, "interpolated": False},
-   {"pwm_multiplier": 0.3, "forward_seconds": 15, "reverse_seconds": 15, "interpolated": False},
-   {"pwm_multiplier": 0.8, "forward_seconds": 10, "reverse_seconds": 10, "interpolated": False},
-   {"pwm_multiplier": 1, "forward_seconds": 7, "reverse_seconds": 7, "interpolated": False}])
-   print(f'forward pwm histogram: {speed_histogram._forward_speed_histogram}\n\n')
-   print(f'reverse pwm histogram: {speed_histogram._reverse_speed_histogram}\n\n')
+   {"pwm_multiplier": 0.3, "forward_seconds": 15, "reverse_seconds": 9, "interpolated": False},
+   {"pwm_multiplier": 0.8, "forward_seconds": 10, "reverse_seconds": 8.7, "interpolated": False},
+   {"pwm_multiplier": 1, "forward_seconds": 7, "reverse_seconds": 7.5, "interpolated": False}])
+   for value in speed_histogram._forward_speed_histogram:
+      print(value)
+   print("")
+   for value in speed_histogram._reverse_speed_histogram:
+      print(value)
    pins = J8(host="192.168.68.55", port=8888)
    forward_pin = pins[12]
    reverse_pin = pins[32]
-   motor = MotorLinear(forward_pin=forward_pin, reverse_pin=reverse_pin, speed_histogram=speed_histogram, inertia=1)
+   motor = LinearMotor(forward_pin=forward_pin, reverse_pin=reverse_pin, speed_histogram=speed_histogram, inertia=1)
    while True:
       print(motor.position)
       motor.move(speed=1)
-      while motor.current_speed != motor.target_speed:
-         motor.go()
+      while not motor.go():
+         pass
       print(motor.position)
       motor.move(speed=-1)
-      while motor.current_speed != motor.target_speed:
-         motor.go()
+      while not motor.go():
+         pass
+      while motor.position > 0:
+         motor.go()      
    return
 
    led12 = PWMOutputDevice("J8:12", initial_value=0,frequency=4000)
