@@ -501,3 +501,6 @@ The timer is updated every 100ms and its value is displayed below the
 "Motor Action" MultiSwitch component.
 3. On the backend side the action triggers creation and reset of J8 component. The J8[pin_index] should be set to pwm_multiplier.
 4. The J8 is reset when user clicks on the "Stop" button or when the modal window is closed. 
+
+Relocate/move the ./package/submoamoa folder and all its content to ./package/src/submoamoa. Be careful to all config files
+and dependencies.
