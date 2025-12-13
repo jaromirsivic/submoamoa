@@ -473,22 +473,10 @@ Update the menu component in a way that when the menu is displayed the content a
 the same way as it is done when the modal window is displayed. When user clicks anywhere 
 else except the menu, the menu should be closed.
 
-
-implement the functionality of the speedhistogram2.py. There will be a function or a set of function which do the following:
-User will send a speed histogram as a list of dictionaries. Each dictionary will have the following keys:
-- pwm_multiplier
-- forward_seconds
-- reverse_seconds
-{pwm_multiplier: 1.0, forward_seconds: 7.5, reverse_seconds: 8.3}
-The list is already sorted by pwm_multiplier. There will be a function to create forward_speed_histogram and reverse_speed_histogram.
-The forward_speed_histogram will take a parameter "items" indicating the number of items in the returned histogram.
-the returned value should be a list of values with following logic:
-if the entry list looked like this:
-[
-	{pwm_multiplier: 0.0, forward_seconds: 0, reverse_seconds: 0}, 
-	{pwm_multiplier: 0.1, forward_seconds: 0, reverse_seconds: 0},
-	{pwm_multiplier: 0.6, forward_seconds: 10, reverse_seconds: 15}, 
-	{pwm_multiplier: 1, forward_seconds: 5, reverse_seconds: 10}
-]
-The result for the function with items = 6 should look like this:
-[0, 0, 10, 15, 5, 10]
+Update Settings -> Motors page. Edit modal window.
+Add new section under the duty cycle section. The section should be named "Speed histogram". There will be following components:
+PWM Multiplier: Slider with range from 0 to 1. The value should be rounded to 2 decimal places.
+MultiSwitch component. It should have 3 options: Revers, Stop, Forward. The default value should be Stop.
+Histogram: Table component. It should have 3 columns: PWM Multiplier, Forward seconds, Reverse seconds.
+User is not able to add columns to the table. User can add rows to the table. There should be at most 20 rows in the table.
+User can delete rows from the talbe. There must remain at least 2 rows in the table.

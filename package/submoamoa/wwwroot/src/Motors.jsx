@@ -5,6 +5,9 @@ import ModalWindow from './components/ModalWindow';
 import Textbox from './components/Textbox';
 import NumericInput from './components/NumericInput';
 import Switch from './components/Switch';
+import MultiSwitch from './components/MultiSwitch';
+import Slider from './components/Slider';
+import Table from './components/Table';
 import ComboBox from './components/ComboBox';
 import ColumnLayout from './components/ColumnLayout';
 import StaticText from './components/StaticText';
@@ -65,6 +68,17 @@ const Motors = () => {
         if (motorCopy.automaticCalibrationEnabled === undefined) {
             motorCopy.automaticCalibrationEnabled = true;
         }
+        // Initialize speedHistogram if not present
+        if (!motorCopy.speedHistogram) {
+            motorCopy.speedHistogram = {
+                pwmMultiplier: 1.0,
+                defaultState: 'stop',
+                histogram: [
+                    [{ value: '0.00' }, { value: '0' }, { value: '0' }],
+                    [{ value: '1.00' }, { value: '10' }, { value: '10' }]
+                ]
+            };
+        }
         setEditingMotor(motorCopy);
         setEditingMotorIndex(index);
         setIsModalOpen(true);
@@ -119,6 +133,16 @@ const Motors = () => {
             ...prev,
             dutyCycle: {
                 ...prev.dutyCycle,
+                [field]: value
+            }
+        }));
+    };
+
+    const updateSpeedHistogramField = (field, value) => {
+        setEditingMotor(prev => ({
+            ...prev,
+            speedHistogram: {
+                ...prev.speedHistogram,
                 [field]: value
             }
         }));
@@ -442,6 +466,55 @@ const Motors = () => {
                                 min={0}
                                 disabled={!editingMotor.dutyCycle.enabled}
                             />
+                        </ColumnLayout>
+
+                        <HorizontalSeparator label="Speed Histogram" fullWidth={true} bleed="1rem" />
+                        <ColumnLayout gap="1rem">
+                            <Slider
+                                label="PWM Multiplier"
+                                value={editingMotor.speedHistogram.pwmMultiplier}
+                                onChange={(val) => updateSpeedHistogramField('pwmMultiplier', val)}
+                                min={0}
+                                max={1}
+                                step={0.01}
+                                allowManualInput={true}
+                                decimalPlaces={2}
+                            />
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <StaticText text="Default State" />
+                                <MultiSwitch
+                                    options={[
+                                        { label: 'Reverse', value: 'reverse' },
+                                        { label: 'Stop', value: 'stop' },
+                                        { label: 'Forward', value: 'forward' }
+                                    ]}
+                                    value={editingMotor.speedHistogram.defaultState}
+                                    onChange={(val) => updateSpeedHistogramField('defaultState', val)}
+                                    orientation="horizontal"
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <StaticText text="Histogram" />
+                                <Table
+                                    width="100%"
+                                    height={300}
+                                    columnsHeaders={[
+                                        { name: 'PWM Multiplier', width: 120, align: 'center' },
+                                        { name: 'Forward seconds', width: 120, align: 'center' },
+                                        { name: 'Reverse seconds', width: 120, align: 'center' }
+                                    ]}
+                                    cells={editingMotor.speedHistogram.histogram}
+                                    onCellsChange={(newCells) => updateSpeedHistogramField('histogram', newCells)}
+                                    canAddRows={true}
+                                    canDeleteRows={true}
+                                    canAddColumns={false}
+                                    canDeleteColumns={false}
+                                    maxRows={20}
+                                    minRows={2}
+                                />
+                            </div>
                         </ColumnLayout>
                     </ColumnLayout>
                 </ModalWindow>

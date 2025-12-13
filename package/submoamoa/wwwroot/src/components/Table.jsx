@@ -10,6 +10,7 @@ const Table = ({
     canDeleteColumns = false,
     maxColumns = null,
     maxRows = null,
+    minRows = 0,
     cellsEditable = true,
     columnsHeaders: initialColumnsHeaders = null,
     rowsHeaders: initialRowsHeaders = null,
@@ -54,7 +55,7 @@ const Table = ({
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [clipboard, setClipboard] = useState(null);
     const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
-    
+
     // Column/row resize state
     const [isResizingCol, setIsResizingCol] = useState(false);
     const [resizingColIndex, setResizingColIndex] = useState(null);
@@ -64,7 +65,7 @@ const Table = ({
     const [resizingRowIndex, setResizingRowIndex] = useState(null);
     const [resizeRowStartY, setResizeRowStartY] = useState(0);
     const [resizeRowStartHeight, setResizeRowStartHeight] = useState(0);
-    
+
     const tableRef = useRef(null);
     const inputRef = useRef(null);
     const scrollContainerRef = useRef(null);
@@ -307,7 +308,7 @@ const Table = ({
         e.preventDefault();
         e.stopPropagation();
         if (!canResizeColumn(colIndex)) return;
-        
+
         setIsResizingCol(true);
         setResizingColIndex(colIndex);
         setResizeColStartX(e.clientX);
@@ -316,17 +317,17 @@ const Table = ({
 
     const handleColumnResizeMouseMove = useCallback((e) => {
         if (!isResizingCol || resizingColIndex === null) return;
-        
+
         const delta = e.clientX - resizeColStartX;
         let newWidth = resizeColStartWidth + delta;
-        
+
         // Apply min/max constraints
         const header = columnsHeaders[resizingColIndex];
         const minWidth = header?.minWidth ?? 30;
         const maxWidth = header?.maxWidth ?? 1000;
         newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-        
-        const newHeaders = columnsHeaders.map((h, i) => 
+
+        const newHeaders = columnsHeaders.map((h, i) =>
             i === resizingColIndex ? { ...h, width: newWidth } : h
         );
         updateColumnsHeaders(newHeaders);
@@ -346,7 +347,7 @@ const Table = ({
         e.preventDefault();
         e.stopPropagation();
         if (!canResizeRow(rowIndex)) return;
-        
+
         setIsResizingRow(true);
         setResizingRowIndex(rowIndex);
         setResizeRowStartY(e.clientY);
@@ -355,17 +356,17 @@ const Table = ({
 
     const handleRowResizeMouseMove = useCallback((e) => {
         if (!isResizingRow || resizingRowIndex === null) return;
-        
+
         const delta = e.clientY - resizeRowStartY;
         let newHeight = resizeRowStartHeight + delta;
-        
+
         // Apply min/max constraints
         const header = rowsHeaders[resizingRowIndex];
         const minHeight = header?.minHeight ?? 20;
         const maxHeight = header?.maxHeight ?? 200;
         newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
-        
-        const newHeaders = rowsHeaders.map((h, i) => 
+
+        const newHeaders = rowsHeaders.map((h, i) =>
             i === resizingRowIndex ? { ...h, height: newHeight } : h
         );
         updateRowsHeaders(newHeaders);
@@ -406,15 +407,15 @@ const Table = ({
     // Apply fill operation
     const applyFill = () => {
         if (!selection.start || !fillDragEnd) return;
-        
+
         const sourceValue = getCellValue(selection.start.row, selection.start.col);
         const sourceCell = cells[selection.start.row]?.[selection.start.col] || {};
-        
+
         const minRow = Math.min(fillDragStart.row, fillDragEnd.row);
         const maxRow = Math.max(fillDragStart.row, fillDragEnd.row);
         const minCol = Math.min(fillDragStart.col, fillDragEnd.col);
         const maxCol = Math.max(fillDragStart.col, fillDragEnd.col);
-        
+
         const newCells = cells.map((row, ri) =>
             row.map((cell, ci) => {
                 if (ri >= minRow && ri <= maxRow && ci >= minCol && ci <= maxCol) {
@@ -425,7 +426,7 @@ const Table = ({
                 return cell;
             })
         );
-        
+
         updateCells(newCells);
     };
 
@@ -462,28 +463,28 @@ const Table = ({
     // Handle context menu - position at screen coordinates for portal
     const handleContextMenu = (e) => {
         e.preventDefault();
-        
+
         // Use screen coordinates since we'll render via portal
         const menuWidth = 180;
         const menuHeight = 280;
-        
+
         let x = e.clientX;
         let y = e.clientY;
-        
+
         // Check if menu would go off right edge
         if (x + menuWidth > window.innerWidth) {
             x = e.clientX - menuWidth;
         }
-        
+
         // Check if menu would go off bottom edge
         if (y + menuHeight > window.innerHeight) {
             y = e.clientY - menuHeight;
         }
-        
+
         // Ensure menu doesn't go off top or left
         x = Math.max(0, x);
         y = Math.max(0, y);
-        
+
         setContextMenu({
             visible: true,
             x: x,
@@ -577,7 +578,7 @@ const Table = ({
         // Arrow keys for navigation
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !editingCell) {
             e.preventDefault();
-            
+
             if (e.shiftKey) {
                 // Extend selection from the current end point (or start if no end)
                 const currentEnd = selection.end || selection.start;
@@ -681,7 +682,7 @@ const Table = ({
         try {
             const text = await navigator.clipboard?.readText();
             if (text) {
-                dataToPaste = text.split('\n').map(row => 
+                dataToPaste = text.split('\n').map(row =>
                     row.split('\t').map(value => ({ value }))
                 );
             }
@@ -765,22 +766,22 @@ const Table = ({
         if (!canAddRows) return;
         const bounds = getSelectionBounds();
         if (!bounds) return;
-        
+
         const numRowsToAdd = bounds.maxRow - bounds.minRow + 1;
         const insertAfterRow = bounds.maxRow;
-        
+
         if (maxRows && cells.length + numRowsToAdd > maxRows) return;
-        
-        const newRows = Array(numRowsToAdd).fill(null).map(() => 
+
+        const newRows = Array(numRowsToAdd).fill(null).map(() =>
             Array(numCols).fill(null).map(() => ({ value: '' }))
         );
-        
+
         const newCells = [
             ...cells.slice(0, insertAfterRow + 1),
             ...newRows,
             ...cells.slice(insertAfterRow + 1)
         ];
-        
+
         updateCells(newCells);
         closeContextMenu();
 
@@ -795,12 +796,12 @@ const Table = ({
         if (!canAddColumns) return;
         const bounds = getSelectionBounds();
         if (!bounds) return;
-        
+
         const numColsToAdd = bounds.maxCol - bounds.minCol + 1;
         const insertAfterCol = bounds.maxCol;
-        
+
         if (maxColumns && numCols + numColsToAdd > maxColumns) return;
-        
+
         const newCells = cells.map(row => {
             const newCellsForRow = Array(numColsToAdd).fill(null).map(() => ({ value: '' }));
             return [
@@ -809,7 +810,7 @@ const Table = ({
                 ...row.slice(insertAfterCol + 1)
             ];
         });
-        
+
         updateCells(newCells);
         closeContextMenu();
 
@@ -819,15 +820,21 @@ const Table = ({
         }
     }, [canAddColumns, selection, cells, numCols, maxColumns, updateCells, onAddColumn]);
 
-    // Delete selected rows
     const deleteSelectedRows = useCallback(() => {
         if (!canDeleteRows) return;
         const bounds = getSelectionBounds();
         if (!bounds) return;
-        
+
         const numRowsToDelete = bounds.maxRow - bounds.minRow + 1;
-        if (cells.length - numRowsToDelete < 1) return;
-        
+
+        // Check minRows constraint
+        const minRowsLimit = minRows !== null ? minRows : 0;
+        if (cells.length - numRowsToDelete < minRowsLimit) return;
+
+        if (cells.length - numRowsToDelete < 1 && minRowsLimit < 1) return; // Always keep at least 1 row if minRows is 0/null? No, let's respect minRows explicitly or default logic.
+        // Actually, if clear logic:
+        if (cells.length - numRowsToDelete < minRowsLimit) return;
+
         const newCells = cells.filter((_, i) => i < bounds.minRow || i > bounds.maxRow);
         updateCells(newCells);
         updateSelection({ start: null, end: null });
@@ -835,18 +842,18 @@ const Table = ({
         if (onDeleteRow) {
             onDeleteRow({ deletedRows: bounds.maxRow - bounds.minRow + 1, startRow: bounds.minRow });
         }
-    }, [canDeleteRows, selection, cells, updateCells, onDeleteRow, updateSelection]);
+    }, [canDeleteRows, selection, cells, updateCells, onDeleteRow, updateSelection, minRows]);
 
     // Delete selected columns
     const deleteSelectedColumns = useCallback(() => {
         if (!canDeleteColumns) return;
         const bounds = getSelectionBounds();
         if (!bounds) return;
-        
+
         const numColsToDelete = bounds.maxCol - bounds.minCol + 1;
         if (numCols - numColsToDelete < 1) return;
-        
-        const newCells = cells.map(row => 
+
+        const newCells = cells.map(row =>
             row.filter((_, i) => i < bounds.minCol || i > bounds.maxCol)
         );
         updateCells(newCells);
@@ -884,7 +891,7 @@ const Table = ({
     // Effect for keyboard events
     useEffect(() => {
         const handleGlobalKeyDown = (e) => {
-            if (tableRef.current?.contains(document.activeElement) || 
+            if (tableRef.current?.contains(document.activeElement) ||
                 tableRef.current === document.activeElement) {
                 handleKeyDown(e);
             }
@@ -902,8 +909,8 @@ const Table = ({
     // Effect to close context menu on click outside
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (contextMenu.visible && tableRef.current && 
-                !tableRef.current.contains(e.target) && 
+            if (contextMenu.visible && tableRef.current &&
+                !tableRef.current.contains(e.target) &&
                 !(contextMenuRef.current && contextMenuRef.current.contains(e.target))) {
                 closeContextMenu();
             }
@@ -1127,11 +1134,11 @@ const Table = ({
     // Render context menu via portal
     const renderContextMenu = () => {
         if (!contextMenu.visible) return null;
-        
+
         return ReactDOM.createPortal(
-            <div 
+            <div
                 ref={contextMenuRef}
-                style={contextMenuStyle} 
+                style={contextMenuStyle}
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
@@ -1159,9 +1166,9 @@ const Table = ({
                 >
                     Paste &nbsp;&nbsp;(Ctrl + V)
                 </button>
-                
+
                 <div style={contextMenuSeparatorStyle} />
-                
+
                 <button
                     style={contextMenuItemStyle(!canAddColumns || (maxColumns && numCols + selectedColCount > maxColumns))}
                     onClick={canAddColumns && (!maxColumns || numCols + selectedColCount <= maxColumns) ? addColumns : undefined}
@@ -1224,13 +1231,13 @@ const Table = ({
                             flexShrink: 0
                         }} />
                     )}
-                    <div 
+                    <div
                         ref={headerScrollRef}
-                        style={{ 
-                            flex: 1, 
-                            overflow: 'hidden', 
-                            display: 'flex', 
-                            flexDirection: 'row' 
+                        style={{
+                            flex: 1,
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'row'
                         }}
                     >
                         {columnsHeaders.map((header, i) => (
@@ -1239,7 +1246,7 @@ const Table = ({
                                     {header.name}
                                 </span>
                                 {canResizeColumn(i) && (
-                                    <div 
+                                    <div
                                         style={columnResizeHandleStyle}
                                         onMouseDown={(e) => handleColumnResizeMouseDown(i, e)}
                                     />
@@ -1261,7 +1268,7 @@ const Table = ({
                                     {header.name}
                                 </span>
                                 {canResizeRow(i) && (
-                                    <div 
+                                    <div
                                         style={rowResizeHandleStyle}
                                         onMouseDown={(e) => handleRowResizeMouseDown(i, e)}
                                     />
@@ -1311,12 +1318,12 @@ const Table = ({
                                     )}
                                     {/* Fill handle */}
                                     {selection.start?.row === ri && selection.start?.col === ci &&
-                                     (!selection.end || (selection.end.row === ri && selection.end.col === ci)) && (
-                                        <div
-                                            style={fillHandleStyle}
-                                            onMouseDown={handleFillHandleMouseDown}
-                                        />
-                                    )}
+                                        (!selection.end || (selection.end.row === ri && selection.end.col === ci)) && (
+                                            <div
+                                                style={fillHandleStyle}
+                                                onMouseDown={handleFillHandleMouseDown}
+                                            />
+                                        )}
                                 </div>
                             ))}
                         </div>
