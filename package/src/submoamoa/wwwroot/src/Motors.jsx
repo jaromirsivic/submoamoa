@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Panel from './components/Panel';
 import Button from './components/Button';
 import ModalWindow from './components/ModalWindow';
@@ -13,7 +13,7 @@ import ColumnLayout from './components/ColumnLayout';
 import StaticText from './components/StaticText';
 import HorizontalSeparator from './components/HorizontalSeparator';
 
-import { getMotorsSettings, saveMotorsSettings } from './lib/api';
+import { getMotorsSettings, saveMotorsSettings, startMotorAction, stopMotorAction } from './lib/api';
 import masterData from './assets/masterdata.json';
 
 import linearIcon from './assets/icons/linear.svg';
@@ -27,6 +27,12 @@ const Motors = () => {
     const [editingMotorIndex, setEditingMotorIndex] = useState(-1);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Histogram Quick Test Timer state
+    const [motorActionTimer, setMotorActionTimer] = useState(0); // timer in ms
+    const [motorActionActive, setMotorActionActive] = useState(false);
+    const timerIntervalRef = useRef(null);
+    const activeMotorPinRef = useRef(null); // track which pin is active for cleanup
 
     // Load initial data from API
     useEffect(() => {
@@ -99,7 +105,44 @@ const Motors = () => {
         setIsModalOpen(true);
     };
 
-    const handleCloseModal = () => {
+    // Timer management functions
+    const startMotorActionTimer = () => {
+        // Clear any existing interval
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+        }
+        // Reset timer to 0
+        setMotorActionTimer(0);
+        setMotorActionActive(true);
+        // Start new interval
+        timerIntervalRef.current = setInterval(() => {
+            setMotorActionTimer(prev => prev + 100);
+        }, 100);
+    };
+
+    const stopMotorActionTimer = () => {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+        setMotorActionActive(false);
+    };
+
+    const handleCloseModal = async () => {
+        // Stop timer and reset J8 if motor action was active
+        if (motorActionActive && activeMotorPinRef.current !== null) {
+            stopMotorActionTimer();
+            try {
+                await stopMotorAction(activeMotorPinRef.current);
+            } catch (error) {
+                console.error('Failed to stop motor action on modal close:', error);
+            }
+        }
+        // Reset timer state
+        setMotorActionTimer(0);
+        setMotorActionActive(false);
+        activeMotorPinRef.current = null;
+
         setIsModalOpen(false);
         setEditingMotor(null);
         setEditingMotorIndex(-1);
@@ -510,17 +553,59 @@ const Motors = () => {
                                 decimalPlaces={2}
                             />
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <StaticText text="Default State" />
-                                <MultiSwitch
-                                    options={[
-                                        { label: 'Reverse', value: 'reverse' },
-                                        { label: 'Stop', value: 'stop' },
-                                        { label: 'Forward', value: 'forward' }
-                                    ]}
-                                    value={editingMotor.speedHistogram.defaultState}
-                                    onChange={(val) => updateSpeedHistogramField('defaultState', val)}
-                                    orientation="horizontal"
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <StaticText text="Motor Action" />
+                                    <MultiSwitch
+                                        options={[
+                                            { label: 'Reverse', value: 'reverse' },
+                                            { label: 'Stop', value: 'stop' },
+                                            { label: 'Forward', value: 'forward' }
+                                        ]}
+                                        value={editingMotor.speedHistogram.defaultState}
+                                        onChange={async (val) => {
+                                            updateSpeedHistogramField('defaultState', val);
+
+                                            if (val === 'forward' || val === 'reverse') {
+                                                // Determine which pin to use based on direction
+                                                const pinIndex = val === 'forward'
+                                                    ? editingMotor.forwardPin
+                                                    : editingMotor.reversePin;
+                                                const pwmMultiplier = editingMotor.speedHistogram.pwmMultiplier;
+
+                                                try {
+                                                    // Call API and wait for response
+                                                    await startMotorAction(pinIndex, pwmMultiplier);
+                                                    // Store active pin for cleanup
+                                                    activeMotorPinRef.current = pinIndex;
+                                                    // Reset and start timer after successful API response
+                                                    startMotorActionTimer();
+                                                } catch (error) {
+                                                    console.error('Failed to start motor action:', error);
+                                                }
+                                            } else if (val === 'stop') {
+                                                // Stop the motor and timer
+                                                stopMotorActionTimer();
+                                                if (activeMotorPinRef.current !== null) {
+                                                    try {
+                                                        await stopMotorAction(activeMotorPinRef.current);
+                                                    } catch (error) {
+                                                        console.error('Failed to stop motor action:', error);
+                                                    }
+                                                    activeMotorPinRef.current = null;
+                                                }
+                                            }
+                                        }}
+                                        orientation="horizontal"
+                                    />
+                                </div>
+                                <StaticText
+                                    text={`Timer: ${(motorActionTimer / 1000).toFixed(2)}s`}
+                                    style={{
+                                        fontSize: '0.9rem',
+                                        color: motorActionActive ? '#22c55e' : '#666',
+                                        fontWeight: motorActionActive ? 'bold' : 'normal'
+                                    }}
                                 />
                             </div>
 

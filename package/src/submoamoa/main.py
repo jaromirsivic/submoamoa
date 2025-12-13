@@ -9,8 +9,8 @@ from .camera import CameraController
 
 async def onload():
     print("Server loaded")
-    cameras = CameraController().list_cameras()
-    print(cameras)
+    # cameras = CameraController().list_cameras()
+    #print(cameras)
 
 
 @asynccontextmanager
@@ -86,6 +86,54 @@ async def save_hot_zone_settings_endpoint(hot_zone_settings: dict[str, Any]):
     settings["hotZone"] = hot_zone_settings
     return await settingscontroller.save_settings(settings)
 
-app.mount("/", StaticFiles(directory=BASE_DIR / "wwwroot/dist", html=True), name="static")
+# ============================================
+# Motor Action API
+# ============================================
 
+from pydantic import BaseModel
+from fastapi import HTTPException
+
+class MotorActionStartRequest(BaseModel):
+    pin_index: int
+    pwm_multiplier: float
+
+class MotorActionStopRequest(BaseModel):
+    pin_index: int
+
+# Lazy J8 instance
+_j8_instance = None
+
+def get_j8():
+    """Get or create the J8 singleton instance"""
+    global _j8_instance
+    if _j8_instance is None:
+        from .j8 import J8
+        # Initialize J8 with remote pigpio connection
+        _j8_instance = J8(host="192.168.68.55", port=8888)
+    return _j8_instance
+
+@app.post("/api/motors/action/start")
+async def start_motor_action(request: MotorActionStartRequest):
+    """Start motor action: set J8[pin_index] to pwm_multiplier"""
+    try:
+        j8 = get_j8()
+        j8.reset()
+        j8[request.pin_index].value = request.pwm_multiplier
+        return {"success": True, "message": f"Pin {request.pin_index} set to {request.pwm_multiplier}"}
+    except Exception as e:
+        print(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/motors/action/stop")
+async def stop_motor_action(request: MotorActionStopRequest):
+    """Stop motor action: reset J8[pin_index]"""
+    try:
+        j8 = get_j8()
+        j8[request.pin_index].reset()
+        return {"success": True, "message": f"Pin {request.pin_index} reset"}
+    except Exception as e:
+        print(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+app.mount("/", StaticFiles(directory=BASE_DIR / "wwwroot/dist", html=True), name="static")
 

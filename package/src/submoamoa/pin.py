@@ -11,13 +11,13 @@ class PinType(Enum):
     INPUT = 2
 
 class Pin:
-    def __init__(self, *, index: int, name:str, pin_type=PinType.OUTPUT, pin_factory=None):
+    def __init__(self, *, index: int, name:str, pin_factory=None):
         """
         Initialize the pin
         """
         self._index = index
         self._name = name
-        self._pin_type = pin_type
+        self._pin_type = None
         self._pin_factory = pin_factory
         self._isDummyPin = not(self._name.startswith("GPIO"))
         self._frequency = pwm_frequency
@@ -34,7 +34,8 @@ class Pin:
         self._frequency = pwm_frequency
         self._value = 0
         self._pwm = None
-        self.pin_type = self._pin_type
+        self._pin_type = None
+        self.pin_type = PinType.OUTPUT
 
     def __del__(self):
         self._release_pwm()

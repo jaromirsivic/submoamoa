@@ -146,6 +146,29 @@ export const saveAllSettings = async (settings) => {
 };
 
 // ============================================
+// Motor Action API
+// ============================================
+
+/**
+ * Start motor action - set J8[pin_index] to pwm_multiplier
+ * @param {number} pin_index - Pin index to control
+ * @param {number} pwm_multiplier - PWM multiplier value (0-1)
+ * @returns {Promise<object>} Response from server
+ */
+export const startMotorAction = async (pin_index, pwm_multiplier) => {
+    return post('/api/motors/action/start', { pin_index, pwm_multiplier });
+};
+
+/**
+ * Stop motor action - reset J8[pin_index]
+ * @param {number} pin_index - Pin index to reset
+ * @returns {Promise<object>} Response from server
+ */
+export const stopMotorAction = async (pin_index) => {
+    return post('/api/motors/action/stop', { pin_index });
+};
+
+// ============================================
 // Hot Zone Settings API
 // ============================================
 
@@ -172,6 +195,8 @@ export default {
     saveCameraSettings,
     getMotorsSettings,
     saveMotorsSettings,
+    startMotorAction,
+    stopMotorAction,
     getHotZoneSettings,
     saveHotZoneSettings,
     getAllSettings,
