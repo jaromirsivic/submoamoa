@@ -14,30 +14,32 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "movementSmoothness": 0.1,
-            "strokeConfiguration": {
-                "enabled": true,
-                "fullExtensionTime": 10,
-                "strokeLength": 250
-            },
-            "forwardSpeedHistogram": [
+            "inertia": 0.1,
+            "histogram": [
                 {
-                    "speed": 0,
-                    "pwmMultiplier": 0
+                    "pwmMultiplier": 0,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
                 },
                 {
-                    "speed": 1,
-                    "pwmMultiplier": 1
-                }
-            ],
-            "reverseSpeedHistogram": [
-                {
-                    "speed": 0,
-                    "pwmMultiplier": 0
+                    "pwmMultiplier": 0.1,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
                 },
                 {
-                    "speed": 1,
-                    "pwmMultiplier": 1
+                    "pwmMultiplier": 0.5,
+                    "forwardSeconds": 55,
+                    "reverseSeconds": 55
+                },
+                {
+                    "pwmMultiplier": 0.75,
+                    "forwardSeconds": 40,
+                    "reverseSeconds": 40
+                },
+                {
+                    "pwmMultiplier": 1,
+                    "forwardSeconds": 25,
+                    "reverseSeconds": 25
                 }
             ],
             "automaticCalibrationEnabled": true
@@ -56,32 +58,35 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "movementSmoothness": 0.1,
-            "strokeConfiguration": {
-                "enabled": true,
-                "fullExtensionTime": 10,
-                "strokeLength": 250
-            },
-            "forwardSpeedHistogram": [
+            "inertia": 0.1,
+            "histogram": [
                 {
-                    "speed": 0,
-                    "pwmMultiplier": 0
+                    "pwmMultiplier": 0,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
                 },
                 {
-                    "speed": 1,
-                    "pwmMultiplier": 1
+                    "pwmMultiplier": 0.1,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
+                },
+                {
+                    "pwmMultiplier": 0.5,
+                    "forwardSeconds": 55,
+                    "reverseSeconds": 55
+                },
+                {
+                    "pwmMultiplier": 0.75,
+                    "forwardSeconds": 40,
+                    "reverseSeconds": 40
+                },
+                {
+                    "pwmMultiplier": 1,
+                    "forwardSeconds": 25,
+                    "reverseSeconds": 25
                 }
             ],
-            "reverseSpeedHistogram": [
-                {
-                    "speed": 0,
-                    "pwmMultiplier": 0
-                },
-                {
-                    "speed": 1,
-                    "pwmMultiplier": 1
-                }
-            ]
+            "automaticCalibrationEnabled": true
         },
         {
             "enabled": false,
@@ -97,32 +102,35 @@
                 "maxRunningTimeSeconds": 0,
                 "minRestTimeSeconds": 0
             },
-            "movementSmoothness": 0.1,
-            "strokeConfiguration": {
-                "enabled": false,
-                "fullExtensionTime": 0,
-                "strokeLength": 0
-            },
-            "forwardSpeedHistogram": [
+            "inertia": 0.1,
+            "histogram": [
                 {
-                    "speed": 0,
-                    "pwmMultiplier": 0
+                    "pwmMultiplier": 0,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
                 },
                 {
-                    "speed": 1,
-                    "pwmMultiplier": 1
+                    "pwmMultiplier": 0.1,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
+                },
+                {
+                    "pwmMultiplier": 0.5,
+                    "forwardSeconds": 55,
+                    "reverseSeconds": 55
+                },
+                {
+                    "pwmMultiplier": 0.75,
+                    "forwardSeconds": 40,
+                    "reverseSeconds": 40
+                },
+                {
+                    "pwmMultiplier": 1,
+                    "forwardSeconds": 25,
+                    "reverseSeconds": 25
                 }
             ],
-            "reverseSpeedHistogram": [
-                {
-                    "speed": 0,
-                    "pwmMultiplier": 0
-                },
-                {
-                    "speed": 1,
-                    "pwmMultiplier": 1
-                }
-            ]
+            "automaticCalibrationEnabled": true
         },
         {
             "enabled": false,
@@ -138,32 +146,35 @@
                 "maxRunningTimeSeconds": 0,
                 "minRestTimeSeconds": 0
             },
-            "movementSmoothness": 0.1,
-            "strokeConfiguration": {
-                "enabled": false,
-                "fullExtensionTime": 0,
-                "strokeLength": 0
-            },
-            "forwardSpeedHistogram": [
+            "inertia": 0.1,
+            "histogram": [
                 {
-                    "speed": 0,
-                    "pwmMultiplier": 0
+                    "pwmMultiplier": 0,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
                 },
                 {
-                    "speed": 1,
-                    "pwmMultiplier": 1
+                    "pwmMultiplier": 0.1,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
+                },
+                {
+                    "pwmMultiplier": 0.5,
+                    "forwardSeconds": 55,
+                    "reverseSeconds": 55
+                },
+                {
+                    "pwmMultiplier": 0.75,
+                    "forwardSeconds": 40,
+                    "reverseSeconds": 40
+                },
+                {
+                    "pwmMultiplier": 1,
+                    "forwardSeconds": 25,
+                    "reverseSeconds": 25
                 }
             ],
-            "reverseSpeedHistogram": [
-                {
-                    "speed": 0,
-                    "pwmMultiplier": 0
-                },
-                {
-                    "speed": 1,
-                    "pwmMultiplier": 1
-                }
-            ]
+            "automaticCalibrationEnabled": true
         }
     ],
     "camera": {

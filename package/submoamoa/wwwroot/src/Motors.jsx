@@ -312,7 +312,7 @@ const Motors = () => {
                                 <StaticText text={<>Enabled: <span style={{ fontWeight: 'bold' }}>{motor.enabled ? 'Yes' : 'No'}</span></>} />
                                 <StaticText text={<>Type: <span style={{ fontWeight: 'bold' }}>{motor.type}</span></>} />
                                 <StaticText text={<>Role: <span style={{ fontWeight: 'bold' }}>{motor.role}</span></>} />
-                                <StaticText text={<>Movement Smoothness: <span style={{ fontWeight: 'bold' }}>{motor.movementSmoothness}</span></>} />
+                                <StaticText text={<>Inertia: <span style={{ fontWeight: 'bold' }}>{motor.inertia}</span></>} />
 
                                 <HorizontalSeparator label="Pins" fullWidth={true} bleed="1.5rem" />
                                 <StaticText text={<>Forward: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.forwardPin)}</span></>} />
@@ -379,10 +379,10 @@ const Motors = () => {
                         />
 
                         <NumericInput
-                            label="Movement Smoothness"
+                            label="Inertia"
                             labelPosition="left"
-                            value={editingMotor.movementSmoothness}
-                            onChange={(val) => updateMotorField('movementSmoothness', val)}
+                            value={editingMotor.inertia}
+                            onChange={(val) => updateMotorField('inertia', val)}
                             step={0.1}
                             min={0}
                             max={1}
@@ -502,8 +502,8 @@ const Motors = () => {
                                     height={300}
                                     columnsHeaders={[
                                         { name: 'PWM Multiplier', width: 120, align: 'center' },
-                                        { name: 'Forward seconds', width: 120, align: 'center' },
-                                        { name: 'Reverse seconds', width: 120, align: 'center' }
+                                        { name: 'Forward sec.', width: 120, align: 'center' },
+                                        { name: 'Reverse sec.', width: 120, align: 'center' }
                                     ]}
                                     cells={editingMotor.speedHistogram.histogram}
                                     onCellsChange={(newCells) => updateSpeedHistogramField('histogram', newCells)}

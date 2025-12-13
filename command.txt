@@ -480,3 +480,11 @@ MultiSwitch component. It should have 3 options: Revers, Stop, Forward. The defa
 Histogram: Table component. It should have 3 columns: PWM Multiplier, Forward seconds, Reverse seconds.
 User is not able to add columns to the table. User can add rows to the table. There should be at most 20 rows in the table.
 User can delete rows from the talbe. There must remain at least 2 rows in the table.
+
+Update motors modal window.
+1. Inertia should be a slider with range from 0 to 2. The value should be rounded to 2 decimal places.
+2. The section "Speed Histogram" should be renamed to "Histogram Quick Test".
+3. In section "Histogram Quick Test" and above the Slider "PWM Multiplier" there should be a text:
+    Use "PWM Multiplier and "Reverse" / "Forward" buttons to test how long it takes to extend the stroke of linear actuator
+    from fully retracted position to fully extended position and vice versa.
+4. Before the Table component "Histogram" there should be HorizontalSeparator named "Speed Histogram".
