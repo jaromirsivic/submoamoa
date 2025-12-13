@@ -37,6 +37,11 @@
                     "reverseSeconds": 40
                 },
                 {
+                    "pwmMultiplier": 0.8,
+                    "forwardSeconds": 29,
+                    "reverseSeconds": 28
+                },
+                {
                     "pwmMultiplier": 1,
                     "forwardSeconds": 25,
                     "reverseSeconds": 25
@@ -49,24 +54,68 @@
                 "histogram": [
                     [
                         {
-                            "value": "0.00"
+                            "value": 0
                         },
                         {
-                            "value": "0"
+                            "value": 0
                         },
                         {
-                            "value": "0"
+                            "value": 0
                         }
                     ],
                     [
                         {
-                            "value": "1.00"
+                            "value": 0.1
                         },
                         {
-                            "value": "10"
+                            "value": 0
                         },
                         {
-                            "value": "10"
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.5
+                        },
+                        {
+                            "value": 55
+                        },
+                        {
+                            "value": 55
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.75
+                        },
+                        {
+                            "value": 40
+                        },
+                        {
+                            "value": 40
+                        }
+                    ],
+                    [
+                        {
+                            "value": "0.8"
+                        },
+                        {
+                            "value": "29"
+                        },
+                        {
+                            "value": "28"
+                        }
+                    ],
+                    [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 25
                         }
                     ]
                 ]

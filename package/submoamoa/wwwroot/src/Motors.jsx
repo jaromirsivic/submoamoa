@@ -64,21 +64,36 @@ const Motors = () => {
 
     const handleEdit = (motor, index) => {
         const motorCopy = JSON.parse(JSON.stringify(motor)); // Deep copy
+
         // Initialize automaticCalibrationEnabled if not present (backward compatibility)
         if (motorCopy.automaticCalibrationEnabled === undefined) {
             motorCopy.automaticCalibrationEnabled = true;
         }
-        // Initialize speedHistogram if not present
+
+        // Initialize/Sync speedHistogram UI state from histogram data
         if (!motorCopy.speedHistogram) {
             motorCopy.speedHistogram = {
                 pwmMultiplier: 1.0,
                 defaultState: 'stop',
-                histogram: [
-                    [{ value: '0.00' }, { value: '0' }, { value: '0' }],
-                    [{ value: '1.00' }, { value: '10' }, { value: '10' }]
-                ]
+                histogram: []
             };
         }
+
+        // If histogram data exists, populate the UI table from it
+        if (motorCopy.histogram && Array.isArray(motorCopy.histogram)) {
+            motorCopy.speedHistogram.histogram = motorCopy.histogram.map(item => [
+                { value: item.pwmMultiplier !== undefined ? item.pwmMultiplier : 0 },
+                { value: item.forwardSeconds !== undefined ? item.forwardSeconds : 0 },
+                { value: item.reverseSeconds !== undefined ? item.reverseSeconds : 0 }
+            ]);
+        } else if (!motorCopy.speedHistogram.histogram || !Array.isArray(motorCopy.speedHistogram.histogram)) {
+            // Default if no data anywhere
+            motorCopy.speedHistogram.histogram = [
+                [{ value: '0.00' }, { value: '0' }, { value: '0' }],
+                [{ value: '1.00' }, { value: '10' }, { value: '10' }]
+            ];
+        }
+
         setEditingMotor(motorCopy);
         setEditingMotorIndex(index);
         setIsModalOpen(true);
@@ -93,6 +108,15 @@ const Motors = () => {
     const handleSave = async () => {
         try {
             setIsSaving(true);
+
+            // Sync UI table data back to histogram property
+            if (editingMotor.speedHistogram && Array.isArray(editingMotor.speedHistogram.histogram)) {
+                editingMotor.histogram = editingMotor.speedHistogram.histogram.map(row => ({
+                    pwmMultiplier: Number(row[0]?.value || 0),
+                    forwardSeconds: Number(row[1]?.value || 0),
+                    reverseSeconds: Number(row[2]?.value || 0)
+                }));
+            }
 
             // Update the motors list with the edited motor
             const updatedMotors = motors.map((m, index) =>
