@@ -60,6 +60,10 @@ class J8(list):
         self._pins.append(Pin(index=39, name="GND", pin_type=PinType.OUTPUT, pin_factory=self._pin_factory))
         self._pins.append(Pin(index=40, name="GPIO 21", pin_type=PinType.OUTPUT, pin_factory=self._pin_factory))
 
+    def reset(self):
+        for pin in self._pins:
+            pin.reset()
+
     def __getitem__(self, key):
         return self._pins[key]
 

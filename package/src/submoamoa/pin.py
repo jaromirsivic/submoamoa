@@ -17,13 +17,24 @@ class Pin:
         """
         self._index = index
         self._name = name
+        self._pin_type = pin_type
+        self._pin_factory = pin_factory
         self._isDummyPin = not(self._name.startswith("GPIO"))
-        self._pin_type = None
         self._frequency = pwm_frequency
         self._value = 0
-        self._pin_factory = pin_factory
         self._pwm = None
-        self.pin_type = pin_type
+        self.reset()
+
+    def reset(self):
+        """
+        Reset the pin
+        """
+        self._release_pwm()
+        self._isDummyPin = not(self._name.startswith("GPIO"))
+        self._frequency = pwm_frequency
+        self._value = 0
+        self._pwm = None
+        self.pin_type = self._pin_type
 
     def __del__(self):
         self._release_pwm()
@@ -95,5 +106,5 @@ class Pin:
         """
         Release the pwm object
         """
-        if self._pin_type == PinType.OUTPUT and not self._isDummyPin:
+        if self._pin_type == PinType.OUTPUT and not self._isDummyPin and self._pwm is not None:
             self._pwm.close()

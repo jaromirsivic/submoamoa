@@ -490,3 +490,14 @@ Update motors modal window.
 4. Before the Table component "Histogram" there should be HorizontalSeparator named "Speed Histogram".
 
 Update the Motors page and rest api to support loading/saving of the motors Histogram data.
+
+1. On the Motors page in the modal window rename "Default State" multiSwitch to "Motor Action".
+2. When user clicks in the motors modal window on the "Motor Action" component on "Reverse" or "Forward" button, the application
+will call rest api with parameters: "pin_index", "pwm_multiplier". The application will wait for the response
+from the rest api and it will reset internal timer called "Histogram Quick Test Timer". The timer should
+be reset every time user clicks on the "Reverse" or "Forward" button. The timmer should be stopped when
+user clicks on the "Stop" button or when the modal window is closed. 
+The timer is updated every 100ms and its value is displayed below the
+"Motor Action" MultiSwitch component.
+3. On the backend side the action triggers creation and reset of J8 component. The J8[pin_index] should be set to pwm_multiplier.
+4. The J8 is reset when user clicks on the "Stop" button or when the modal window is closed. 

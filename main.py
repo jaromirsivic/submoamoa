@@ -44,6 +44,7 @@ def main():
    for value in speed_histogram._reverse_speed_histogram:
       print(value)
    pins = J8(host="192.168.68.55", port=8888)
+   pins.reset()
    forward_pin = pins[12]
    reverse_pin = pins[32]
    motor = LinearMotor(forward_pin=forward_pin, reverse_pin=reverse_pin, speed_histogram=speed_histogram, inertia=1)
