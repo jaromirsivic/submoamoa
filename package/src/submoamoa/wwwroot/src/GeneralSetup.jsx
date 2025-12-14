@@ -71,7 +71,7 @@ const GeneralSetup = () => {
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            await saveGeneralSettings(editingSettings);
+            await saveGeneralSettings(editingSettings, 60000); // 60 seconds timeout
             console.log('General settings saved successfully');
             setSettings(editingSettings);
             handleCloseModal();

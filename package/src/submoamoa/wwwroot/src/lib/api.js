@@ -212,10 +212,11 @@ export const getGeneralSettings = async () => {
 /**
  * Save general settings to the server
  * @param {object} generalSettings - General settings to save
+ * @param {number} timeout - Optional timeout in milliseconds
  * @returns {Promise<object>} Response from server
  */
-export const saveGeneralSettings = async (generalSettings) => {
-    return post('/api/settings/general', generalSettings);
+export const saveGeneralSettings = async (generalSettings, timeout) => {
+    return post('/api/settings/general', generalSettings, timeout);
 };
 
 // Export default object with all API functions

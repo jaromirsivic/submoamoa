@@ -26,15 +26,14 @@ class J8(list):
         # initialize pins
         self.reset(host=host, port=port)
 
-    @timeout(seconds=3)
-    async def _get_pin_factory(self, *args, **kwargs) -> PiGPIOFactory | None:
+    def _get_pin_factory(self, *, host:str | None = None, port:int | None = None) -> PiGPIOFactory | None:
         """
         Try to get the pin factory.
         """
         try:
             return PiGPIOFactory(host=host, port=port)
-            return result
-        except Exception:
+        except Exception as e:
+            self._error_message += str(e)
             return None
 
     def reset(self, *, host:str | None = None, port:int | None = None):
