@@ -525,3 +525,12 @@ Create a Chart2D component which has the following features:
 12. Each dataset can have its own line style.
 
 Demonstrate usage of the Chart2D component in the sandbox.
+
+
+1. When zooming the through the chart the grid should zoom as well. There should be a props
+with zoom mode which switches the functionality to zoom only the x axis (y is not zoomed)
+or the second option as it is implemented right now it will zoom x and y axis.
+2. Points should not be visible. When user hovers the mouse near
+the line the point should appear and line perpendicular to x and y axis should
+appear as well going from the point to axes showing precise numbers of the point coordinates
+on the x and y axis.

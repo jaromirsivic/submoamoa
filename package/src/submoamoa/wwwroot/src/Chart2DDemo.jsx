@@ -11,6 +11,7 @@ const Chart2DDemo = () => {
     // Chart settings
     const [pannable, setPannable] = useState(true);
     const [zoomable, setZoomable] = useState(true);
+    const [zoomMode, setZoomMode] = useState('xy');
     const [scrollable, setScrollable] = useState(true);
     const [gridSize, setGridSize] = useState(10);
     const [backgroundColor, setBackgroundColor] = useState('#ffffff');
@@ -97,11 +98,17 @@ const Chart2DDemo = () => {
         { value: '#000000', label: 'Black' }
     ];
 
+    const zoomModeOptions = [
+        { value: 'xy', label: 'X and Y' },
+        { value: 'x', label: 'X Only' }
+    ];
+
     return (
         <div style={{ padding: '20px' }}>
             <h1>Chart2D Component Demo</h1>
             <p style={{ color: '#666', marginBottom: '20px' }}>
-                A versatile 2D charting component with support for multiple datasets, pan, zoom, and scroll functionality.
+                A versatile 2D charting component with support for multiple datasets, pan, zoom (X-only or X+Y), and scroll functionality.
+                Hover near data points to see coordinates with crosshair lines.
             </p>
 
             <RowLayout gap="20px" style={{ alignItems: 'flex-start' }}>
@@ -123,6 +130,7 @@ const Chart2DDemo = () => {
                             gridSize={gridSize}
                             pannable={pannable}
                             zoomable={zoomable}
+                            zoomMode={zoomMode}
                             scrollable={scrollable}
                             datasets={datasets}
                         />
@@ -177,6 +185,14 @@ const Chart2DDemo = () => {
                                 checked={zoomable}
                                 onChange={setZoomable}
                             />
+                            {zoomable && (
+                                <ComboBox
+                                    label="Zoom Mode"
+                                    value={zoomMode}
+                                    onChange={setZoomMode}
+                                    options={zoomModeOptions}
+                                />
+                            )}
                             <Switch
                                 label="Scrollable"
                                 checked={scrollable}

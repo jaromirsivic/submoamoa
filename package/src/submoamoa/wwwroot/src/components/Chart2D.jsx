@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 const Chart2D = ({
     title = '',
@@ -15,6 +15,7 @@ const Chart2D = ({
     gridSize = 10,
     pannable = false,
     zoomable = false,
+    zoomMode = 'xy', // 'xy' for both axes, 'x' for x-axis only
     scrollable = false,
     datasets = [],
     style = {}
@@ -33,9 +34,15 @@ const Chart2D = ({
     const [panStart, setPanStart] = useState({ x: 0, y: 0 });
     const [panViewStart, setPanViewStart] = useState({ xMin: 0, xMax: 0, yMin: 0, yMax: 0 });
 
+    // Hover state for showing point info
+    const [hoveredPoint, setHoveredPoint] = useState(null);
+
     const padding = { top: 50, right: 30, bottom: 50, left: 60 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
+
+    // Unique ID for clip path to avoid conflicts when multiple charts on page
+    const clipPathId = useMemo(() => `chart-area-${Math.random().toString(36).substr(2, 9)}`, []);
 
     // Reset view when bounds change
     useEffect(() => {
@@ -171,7 +178,50 @@ const Chart2D = ({
         }
     };
 
-    // Render datasets
+    // Find nearest point to mouse position
+    const findNearestPoint = useCallback((mouseX, mouseY) => {
+        const hoverThreshold = 20; // pixels
+        let nearestPoint = null;
+        let nearestDistance = Infinity;
+        let nearestDatasetIndex = -1;
+        let nearestColor = '#3b82f6';
+
+        datasets.forEach((dataset, datasetIndex) => {
+            const { data = [], color = '#3b82f6' } = dataset;
+            
+            data.forEach((point) => {
+                const svgX = toSVGX(point.x);
+                const svgY = toSVGY(point.y);
+                
+                // Check if point is within visible area
+                if (svgX >= padding.left && svgX <= width - padding.right &&
+                    svgY >= padding.top && svgY <= height - padding.bottom) {
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(mouseX - svgX, 2) + Math.pow(mouseY - svgY, 2)
+                    );
+                    
+                    if (distance < nearestDistance && distance < hoverThreshold) {
+                        nearestDistance = distance;
+                        nearestPoint = point;
+                        nearestDatasetIndex = datasetIndex;
+                        nearestColor = color;
+                    }
+                }
+            });
+        });
+
+        if (nearestPoint) {
+            return {
+                point: nearestPoint,
+                datasetIndex: nearestDatasetIndex,
+                color: nearestColor
+            };
+        }
+        return null;
+    }, [datasets, toSVGX, toSVGY, width, height, padding]);
+
+    // Render datasets (lines only, no points)
     const renderDatasets = () => {
         return datasets.map((dataset, datasetIndex) => {
             const {
@@ -206,28 +256,102 @@ const Chart2D = ({
                         strokeLinecap="round"
                         strokeLinejoin="round"
                     />
-                    {/* Render points */}
-                    {data.map((point, pointIndex) => {
-                        const svgX = toSVGX(point.x);
-                        const svgY = toSVGY(point.y);
-                        // Only render points that are within the visible area
-                        if (svgX >= padding.left && svgX <= width - padding.right &&
-                            svgY >= padding.top && svgY <= height - padding.bottom) {
-                            return (
-                                <circle
-                                    key={`point-${datasetIndex}-${pointIndex}`}
-                                    cx={svgX}
-                                    cy={svgY}
-                                    r={lineWidth + 2}
-                                    fill={color}
-                                />
-                            );
-                        }
-                        return null;
-                    })}
                 </g>
             );
         });
+    };
+
+    // Render hover point with crosshair lines
+    const renderHoverPoint = () => {
+        if (!hoveredPoint) return null;
+
+        const { point, color } = hoveredPoint;
+        const svgX = toSVGX(point.x);
+        const svgY = toSVGY(point.y);
+
+        // Check if point is within visible area
+        if (svgX < padding.left || svgX > width - padding.right ||
+            svgY < padding.top || svgY > height - padding.bottom) {
+            return null;
+        }
+
+        return (
+            <g>
+                {/* Vertical crosshair line (to X axis) */}
+                <line
+                    x1={svgX}
+                    y1={svgY}
+                    x2={svgX}
+                    y2={height - padding.bottom}
+                    stroke={color}
+                    strokeWidth={1}
+                    strokeDasharray="4,4"
+                    opacity={0.7}
+                />
+                {/* Horizontal crosshair line (to Y axis) */}
+                <line
+                    x1={padding.left}
+                    y1={svgY}
+                    x2={svgX}
+                    y2={svgY}
+                    stroke={color}
+                    strokeWidth={1}
+                    strokeDasharray="4,4"
+                    opacity={0.7}
+                />
+                {/* Point circle */}
+                <circle
+                    cx={svgX}
+                    cy={svgY}
+                    r={6}
+                    fill={color}
+                    stroke="#fff"
+                    strokeWidth={2}
+                />
+                {/* X value label on X axis */}
+                <g transform={`translate(${svgX}, ${height - padding.bottom + 5})`}>
+                    <rect
+                        x={-25}
+                        y={0}
+                        width={50}
+                        height={18}
+                        fill={color}
+                        rx={3}
+                    />
+                    <text
+                        x={0}
+                        y={13}
+                        textAnchor="middle"
+                        fontSize="11"
+                        fill="#fff"
+                        fontWeight="bold"
+                    >
+                        {point.x.toFixed(2)}
+                    </text>
+                </g>
+                {/* Y value label on Y axis */}
+                <g transform={`translate(${padding.left - 5}, ${svgY})`}>
+                    <rect
+                        x={-45}
+                        y={-9}
+                        width={45}
+                        height={18}
+                        fill={color}
+                        rx={3}
+                    />
+                    <text
+                        x={-22}
+                        y={5}
+                        textAnchor="middle"
+                        fontSize="11"
+                        fill="#fff"
+                        fontWeight="bold"
+                    >
+                        {point.y.toFixed(2)}
+                    </text>
+                </g>
+            </g>
+        );
     };
 
     // Render legend
@@ -290,21 +414,25 @@ const Chart2D = ({
             const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
             
             const newXRange = (viewXMax - viewXMin) * zoomFactor;
-            const newYRange = (viewYMax - viewYMin) * zoomFactor;
             
-            // Zoom centered on mouse position
+            // Zoom centered on mouse position for X axis
             const xRatio = (dataX - viewXMin) / (viewXMax - viewXMin);
-            const yRatio = (dataY - viewYMin) / (viewYMax - viewYMin);
-            
             const newXMin = dataX - xRatio * newXRange;
             const newXMax = dataX + (1 - xRatio) * newXRange;
-            const newYMin = dataY - yRatio * newYRange;
-            const newYMax = dataY + (1 - yRatio) * newYRange;
             
             setViewXMin(newXMin);
             setViewXMax(newXMax);
-            setViewYMin(newYMin);
-            setViewYMax(newYMax);
+
+            // Only zoom Y axis if zoomMode is 'xy'
+            if (zoomMode === 'xy') {
+                const newYRange = (viewYMax - viewYMin) * zoomFactor;
+                const yRatio = (dataY - viewYMin) / (viewYMax - viewYMin);
+                const newYMin = dataY - yRatio * newYRange;
+                const newYMax = dataY + (1 - yRatio) * newYRange;
+                
+                setViewYMin(newYMin);
+                setViewYMax(newYMax);
+            }
         } else if (scrollable) {
             // Scroll
             const xRange = viewXMax - viewXMin;
@@ -323,7 +451,7 @@ const Chart2D = ({
                 setViewYMax(viewYMax + delta);
             }
         }
-    }, [zoomable, scrollable, viewXMin, viewXMax, viewYMin, viewYMax, toDataX, toDataY]);
+    }, [zoomable, zoomMode, scrollable, viewXMin, viewXMax, viewYMin, viewYMax, toDataX, toDataY]);
 
     // Handle pan start
     const handleMouseDown = useCallback((e) => {
@@ -345,6 +473,20 @@ const Chart2D = ({
 
     // Handle pan move
     const handleMouseMove = useCallback((e) => {
+        const svg = svgRef.current;
+        const rect = svg.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Update hover state
+        if (!isPanning && mouseX >= padding.left && mouseX <= width - padding.right &&
+            mouseY >= padding.top && mouseY <= height - padding.bottom) {
+            const nearest = findNearestPoint(mouseX, mouseY);
+            setHoveredPoint(nearest);
+        } else if (!isPanning) {
+            setHoveredPoint(null);
+        }
+
         if (!isPanning) return;
         
         const deltaX = e.clientX - panStart.x;
@@ -361,11 +503,16 @@ const Chart2D = ({
         setViewXMax(panViewStart.xMax + dataDelataX);
         setViewYMin(panViewStart.yMin + dataDelataY);
         setViewYMax(panViewStart.yMax + dataDelataY);
-    }, [isPanning, panStart, panViewStart, chartWidth, chartHeight]);
+    }, [isPanning, panStart, panViewStart, chartWidth, chartHeight, findNearestPoint, width, height, padding]);
 
     // Handle pan end
     const handleMouseUp = useCallback(() => {
         setIsPanning(false);
+    }, []);
+
+    // Handle mouse leave
+    const handleMouseLeave = useCallback(() => {
+        setHoveredPoint(null);
     }, []);
 
     // Handle double click to reset view
@@ -416,6 +563,8 @@ const Chart2D = ({
                 height={height}
                 style={{ cursor: cursorStyle }}
                 onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
                 onDoubleClick={handleDoubleClick}
             >
                 {/* Background */}
@@ -438,7 +587,7 @@ const Chart2D = ({
                 
                 {/* Clip path for chart area */}
                 <defs>
-                    <clipPath id="chart-area">
+                    <clipPath id={clipPathId}>
                         <rect
                             x={padding.left}
                             y={padding.top}
@@ -449,7 +598,7 @@ const Chart2D = ({
                 </defs>
                 
                 {/* Grid */}
-                <g clipPath="url(#chart-area)">
+                <g clipPath={`url(#${clipPathId})`}>
                     {generateGridLines()}
                 </g>
                 
@@ -514,12 +663,15 @@ const Chart2D = ({
                 )}
                 
                 {/* Datasets */}
-                <g clipPath="url(#chart-area)">
+                <g clipPath={`url(#${clipPathId})`}>
                     {renderDatasets()}
                 </g>
                 
                 {/* Legend */}
                 {renderLegend()}
+                
+                {/* Hover point with crosshair */}
+                {renderHoverPoint()}
                 
                 {/* Border around chart area */}
                 <rect
@@ -537,7 +689,7 @@ const Chart2D = ({
             {(pannable || zoomable || scrollable) && (
                 <div style={{ fontSize: '11px', color: '#666', marginTop: '5px', textAlign: 'center' }}>
                     {pannable && <span>Drag to pan • </span>}
-                    {zoomable && <span>Ctrl+Scroll to zoom • </span>}
+                    {zoomable && <span>Ctrl+Scroll to zoom{zoomMode === 'x' ? ' (X only)' : ''} • </span>}
                     {scrollable && <span>Scroll to move • </span>}
                     <span>Double-click to reset</span>
                 </div>
