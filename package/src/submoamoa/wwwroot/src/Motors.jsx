@@ -32,6 +32,7 @@ const Motors = () => {
     const [motorActionTimer, setMotorActionTimer] = useState(0); // timer in ms
     const [motorActionActive, setMotorActionActive] = useState(false);
     const timerIntervalRef = useRef(null);
+    const startTimeRef = useRef(null); // stores the datetime when timer started
     const activeMotorPinRef = useRef(null); // track which pin is active for cleanup
 
     // Load initial data from API
@@ -111,12 +112,14 @@ const Motors = () => {
         if (timerIntervalRef.current) {
             clearInterval(timerIntervalRef.current);
         }
-        // Reset timer to 0
+        // Save current datetime and reset timer to 0
+        startTimeRef.current = Date.now();
         setMotorActionTimer(0);
         setMotorActionActive(true);
-        // Start new interval
+        // Start new interval - calculate elapsed time from saved datetime
         timerIntervalRef.current = setInterval(() => {
-            setMotorActionTimer(prev => prev + 100);
+            const elapsed = Date.now() - startTimeRef.current;
+            setMotorActionTimer(elapsed);
         }, 100);
     };
 

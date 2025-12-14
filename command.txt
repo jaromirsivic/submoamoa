@@ -504,3 +504,8 @@ The timer is updated every 100ms and its value is displayed below the
 
 Relocate/move the ./package/submoamoa folder and all its content to ./package/src/submoamoa. Be careful to all config files
 and dependencies.
+
+It seems that the timer on the modal window in the motors page does not work properly. The logic should be that when user
+clicks on the "Reverse" or "Forward" button, the timer should be reset meaning the algorithm will save current datetime.
+Then every 100ms the timer should be updated and the difference between the current datetime and the saved datetime should be displayed.
+When user clicks on the "Stop" button or when the modal window is closed, the timer should be stopped.
