@@ -581,3 +581,21 @@ remote host and remote port from settings.json.
 on the panel "Controller Setup" with the label "Error: " and the "error_message" of the j8.
 5. If the property "initialized" of the j8 is True after the reset then display a green TextField
 on the panel "Controller Setup" with the label "Initialized: OK".
+
+Add new business validations to the Motors edit button Modal Window.
+There should be following validations for the Speed Histogram table:
+1. Table should contain at least two rows.
+2. Each cell in the table must be a number with at most 3 decimal places.
+3. All values in the column "PWM Multiplier" must be between 0.0 and 1.0.
+4. The first row (column "PWM Multiplier") should be 0.0.
+5. The last row (column "PWM Multiplier") should be 1.0.
+6. All values in the column "Forward sec." and "Reverse sec." must be between 0 and 10000.
+7. Each value in the column "PWM Multiplier" at each row except the first one must be greater than the value at the previous row.
+8. Each value in the column "Forward sec." at each row except the first one must be lower than the value at the previous row.
+9. Each value in the column "Reverse sec." at each row except the first one must be lower than the value at the previous row.
+If one or more of the business validations above are not met then user will not be able to save the settings and display
+a red Error button. When user clicks on the Error button the red modal window with the error
+message should open (same behavior like already implemented with other business validations).
+Other already implemented business validations should work the same way and should nicely integrate
+with the new business validations.
+

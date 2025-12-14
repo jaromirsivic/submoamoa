@@ -287,6 +287,124 @@ const Motors = () => {
             }
         }
 
+        // Speed Histogram Validations
+        if (editingMotor.speedHistogram && Array.isArray(editingMotor.speedHistogram.histogram)) {
+            const histogram = editingMotor.speedHistogram.histogram;
+
+            // 1. Table should contain at least two rows.
+            if (histogram.length < 2) {
+                errors.push('Speed Histogram must strictly contain at least two rows');
+            } else {
+                let previousPwm = -1;
+                let previousForward = 10001; // higher than max
+                let previousReverse = 10001; // higher than max
+
+                for (let i = 0; i < histogram.length; i++) {
+                    const row = histogram[i];
+                    const pwmStr = String(row[0]?.value || '');
+                    const forwardStr = String(row[1]?.value || '');
+                    const reverseStr = String(row[2]?.value || '');
+
+                    const pwm = Number(pwmStr);
+                    const forward = Number(forwardStr);
+                    const reverse = Number(reverseStr);
+
+                    // const isPwmNumber = !isNaN(pwm) && pwmStr.trim() !== '';
+                    // const isForwardNumber = !isNaN(forward) && forwardStr.trim() !== '';
+                    // const isReverseNumber = !isNaN(reverse) && reverseStr.trim() !== '';
+
+                    // // 2. Each cell in the table must be a number...
+                    // if (!isPwmNumber) {
+                    //     errors.push(`Row ${i + 1}: "PWM Multiplier" must be a valid number`);
+                    // }
+                    // if (!isForwardNumber) {
+                    //     errors.push(`Row ${i + 1}: "Forward sec." must be a valid number`);
+                    // }
+                    // if (!isReverseNumber) {
+                    //     errors.push(`Row ${i + 1}: "Reverse sec." must be a valid number`);
+                    // }
+
+                    // ...with at most 3 decimal places.
+                    const decimalPlaces = (numStr) => {
+                        if (numStr.includes('.')) {
+                            return numStr.split('.')[1].length;
+                        }
+                        return 0;
+                    };
+                    if (decimalPlaces(pwmStr) > 3) {
+                        errors.push(`Row ${i + 1}: "PWM Multiplier" cannot have more than 3 decimal places`);
+                    }
+                    if (decimalPlaces(forwardStr) > 3) {
+                        errors.push(`Row ${i + 1}: \"Forward sec.\" cannot have more than 3 decimal places`);
+                    }
+                    if (decimalPlaces(reverseStr) > 3) {
+                        errors.push(`Row ${i + 1}: \"Reverse sec.\" cannot have more than 3 decimal places`);
+                    }
+
+                    // 3. All values in the column "PWM Multiplier" must be between 0.0 and 1.0.
+                    if (pwm < 0.0 || pwm > 1.0) {
+                        errors.push(`Row ${i + 1}: \"PWM Multiplier\" must be between 0.0 and 1.0`);
+                    }
+
+                    // 6. All values in the column "Forward sec." and "Reverse sec." must be between 0 and 10000.
+                    if (forward < 0 || forward > 10000) {
+                        errors.push(`Row ${i + 1}: \"Forward sec.\" must be between 0 and 10000`);
+                    }
+                    if (reverse < 0 || reverse > 10000) {
+                        errors.push(`Row ${i + 1}: \"Reverse sec.\" must be between 0 and 10000`);
+                    }
+
+                    // 4. The first row (column "PWM Multiplier") should be 0.0.
+                    if (i === 0) {
+                        if (pwm !== 0.0) {
+                            errors.push('PWM Multiplier in the first row must be 0.0');
+                        }
+                    }
+
+                    // 5. The last row (column "PWM Multiplier") should be 1.0.
+                    if (i === histogram.length - 1) {
+                        if (pwm !== 1.0) {
+                            errors.push('PWM Multiplier in the last row must be 1.0');
+                        }
+                    }
+
+                    // Check strict ordering (except first row)
+                    if (i > 0) {
+                        // 7. Each value in the column "PWM Multiplier" at each row except the first one must be greater than the value at the previous row.
+                        if (pwm <= previousPwm) {
+                            errors.push(`Row ${i + 1}: \"PWM Multiplier\" must be greater than the value in the cell above`);
+                        }
+
+                        // 8. Each value in the column "Forward sec." at each row except the first one must be lower than the value at the previous row, once a non-zero value is encountered.
+                        if (previousForward !== 0 && forward >= previousForward) {
+                            errors.push(`Row ${i + 1}: \"Forward sec.\" must be lower than the value in the cell above`);
+                        }
+
+                        // 9. Each value in the column "Reverse sec." at each row except the first one must be lower than the value at the previous row, once a non-zero value is encountered.
+                        if (previousReverse !== 0 && reverse >= previousReverse) {
+                            errors.push(`Row ${i + 1}: \"Reverse sec.\" must be lower than the value in the cell above`);
+                        }
+                    }
+
+                    if (i > 0) {
+                        // 8. Each value in the column "Forward sec." at each row except the first one must be lower than the value at the previous row, once a non-zero value is encountered.
+                        if (previousForward != 0 && forward === 0) {
+                            errors.push(`Row ${i + 1}: \"Forward sec.\" must not be 0 if the value in the cell above is non-zero`);
+                        }
+
+                        // 9. Each value in the column "Reverse sec." at each row except the first one must be lower than the value at the previous row, once a non-zero value is encountered.
+                        if (previousReverse != 0 && reverse === 0) {
+                            errors.push(`Row ${i + 1}: \"Reverse sec.\" must not be 0 if the value in the cell above is non-zero`);
+                        }
+                    }
+
+                    previousPwm = pwm;
+                    previousForward = forward;
+                    previousReverse = reverse;
+                }
+            }
+        }
+
         return errors;
     };
 

@@ -22,8 +22,8 @@
                     "reverseSeconds": 0
                 },
                 {
-                    "pwmMultiplier": 0.1,
-                    "forwardSeconds": 80,
+                    "pwmMultiplier": 0.4,
+                    "forwardSeconds": 0,
                     "reverseSeconds": 0
                 },
                 {
@@ -60,10 +60,10 @@
                     ],
                     [
                         {
-                            "value": 0.1
+                            "value": 0.4
                         },
                         {
-                            "value": "80"
+                            "value": 0
                         },
                         {
                             "value": 0
