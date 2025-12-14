@@ -549,3 +549,20 @@ as datasets for the Chart2D component. The datasets should be named "Forward" an
 1. The histogram should take 100% width of the parent panel.
 2. Currently the Histogram displays two datasets forward and reverse. Use two histograms instead. The first one will display data for forward dataset and the second will display data for reverse dataset. Hide the legend for each Histogram. Use title for the first histogram: "Forward Speed Histogram". Use title for the second histogram: "Reverse Speed Histogram".
 3. Make the background of both histograms transparent not white.
+
+Created new web page "General Setup" in the Settings and put it under the "Import / Export". There is one panel
+the same style as in the Motors page. There are following text fields on the panel:
+Section "Controller Setup"
+1. Controller: MultiSwitch component (button1="Localhost Raspberry Pi", button2="Remote pigpio daemon").
+By default it is selected "Localhost Raspberry Pi".
+2. Remote host: TextField component. By default the address is 192.168.0.1.
+3. Remote port: TextField component. By default the port is 8888.
+There is an Edit button in the header of the panel (similar like it is on the Motors Page). When user clicks on the Edit button 
+the modal window should open. The modal window should have the same style as in the Motors page.
+The modal window should have the following components:
+1. Controller: MultiSwitch component (button1="Localhost Raspberry Pi", button2="Remote pigpio daemon").
+2. Remote host: TextBox component. By default the address is 192.168.0.1.
+3. Remote port: NumericInput component(min=0, max=65535). By default the port is 8888.
+4. Save button. When user clicks on the Save button the modal window should close. The setup should be saved to settings.json
+and the panel should be updated.
+If the user selects "Localhost Raspberry Pi" the remote host and remote port should be disabled.

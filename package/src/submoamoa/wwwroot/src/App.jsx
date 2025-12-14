@@ -9,6 +9,7 @@ import Tutorials from './Tutorials';
 import About from './About';
 import AIAgent from './AIAgent';
 import ImportExport from './ImportExport';
+import GeneralSetup from './GeneralSetup';
 import Motors from './Motors';
 import AIBehavior from './AIBehavior';
 import Camera from './Camera';
@@ -29,6 +30,7 @@ function App() {
           <Route path="ai-agent" element={<AIAgent />} />
           <Route path="settings" element={<Settings />}>
             <Route path="import-export" element={<ImportExport />} />
+            <Route path="general-setup" element={<GeneralSetup />} />
             <Route path="motors" element={<Motors />} />
             <Route path="ai-behavior" element={<AIBehavior />} />
             <Route path="hot-zone" element={<HotZone />} />

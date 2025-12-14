@@ -86,6 +86,19 @@ async def save_hot_zone_settings_endpoint(hot_zone_settings: dict[str, Any]):
     settings["hotZone"] = hot_zone_settings
     return await settingscontroller.save_settings(settings)
 
+@app.get("/api/settings/general")
+async def get_general_settings_endpoint():
+    """Get general settings from settings.json file"""
+    settings = await settingscontroller.get_settings()
+    return settings.get("general", {})
+
+@app.post("/api/settings/general")
+async def save_general_settings_endpoint(general_settings: dict[str, Any]):
+    """Save general settings to settings.json file"""
+    settings = await settingscontroller.get_settings()
+    settings["general"] = general_settings
+    return await settingscontroller.save_settings(settings)
+
 # ============================================
 # Motor Action API
 # ============================================

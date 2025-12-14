@@ -197,6 +197,27 @@ export const saveHotZoneSettings = async (hotZoneSettings) => {
     return post('/api/settings/hot-zone', hotZoneSettings);
 };
 
+// ============================================
+// General Settings API
+// ============================================
+
+/**
+ * Get general settings from the server
+ * @returns {Promise<object>} General settings object
+ */
+export const getGeneralSettings = async () => {
+    return get('/api/settings/general');
+};
+
+/**
+ * Save general settings to the server
+ * @param {object} generalSettings - General settings to save
+ * @returns {Promise<object>} Response from server
+ */
+export const saveGeneralSettings = async (generalSettings) => {
+    return post('/api/settings/general', generalSettings);
+};
+
 // Export default object with all API functions
 export default {
     getCameraSettings,
@@ -208,6 +229,8 @@ export default {
     getSpeedHistogram,
     getHotZoneSettings,
     saveHotZoneSettings,
+    getGeneralSettings,
+    saveGeneralSettings,
     getAllSettings,
     saveAllSettings
 };

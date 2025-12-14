@@ -28,6 +28,7 @@ const Layout = () => {
     if (path === '/ai-agent') return { title: 'AI Agent', icon: aiAgentIcon };
     if (path.startsWith('/settings')) {
       if (path === '/settings/import-export') return { title: 'Import / Export', icon: importExportIcon };
+      if (path === '/settings/general-setup') return { title: 'General Setup', icon: settingsIcon };
       if (path === '/settings/motors') return { title: 'Motors', icon: motorsIcon };
       if (path === '/settings/ai-behavior') return { title: 'AI Behavior', icon: aiBehaviorIcon };
       if (path === '/settings/ai-behavior') return { title: 'AI Behavior', icon: aiBehaviorIcon };
@@ -120,6 +121,7 @@ const Layout = () => {
                 </div>
                 <ul style={{ listStyle: 'none', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                   <li><MenuLink to="/settings/import-export" icon={importExportIcon} label="Import / Export" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/settings/general-setup" icon={settingsIcon} label="General Setup" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/settings/motors" icon={motorsIcon} label="Motors" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/settings/ai-behavior" icon={aiBehaviorIcon} label="AI Behavior" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/settings/hot-zone" icon={hotZoneIcon} label="Hot Zone" onClick={() => setIsMenuOpen(false)} /></li>

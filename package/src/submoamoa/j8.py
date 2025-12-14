@@ -18,6 +18,12 @@ class J8(list):
         self._pin_factory = PiGPIOFactory(host=host, port=port)
         # initialize the pins
         self._pins = []
+        self.init_pins()
+
+    def init_pins(self):
+        for pin in self._pins:
+            del pin
+        self._pins = []
         self._pins.append(Pin(index=0, name="Dummy GPIO", pin_factory=self._pin_factory))
         self._pins.append(Pin(index=1, name="3v3 Power", pin_factory=self._pin_factory))
         self._pins.append(Pin(index=2, name="5v Power", pin_factory=self._pin_factory))
@@ -59,10 +65,14 @@ class J8(list):
         self._pins.append(Pin(index=38, name="GPIO 20", pin_factory=self._pin_factory))
         self._pins.append(Pin(index=39, name="GND", pin_factory=self._pin_factory))
         self._pins.append(Pin(index=40, name="GPIO 21", pin_factory=self._pin_factory))
-
+    
     def reset(self):
         for pin in self._pins:
             pin.reset()
+
+    def __del__(self):
+        for pin in self._pins:
+            pin.close()
 
     def __getitem__(self, key):
         return self._pins[key]
