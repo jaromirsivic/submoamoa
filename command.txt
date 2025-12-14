@@ -566,3 +566,6 @@ The modal window should have the following components:
 4. Save button. When user clicks on the Save button the modal window should close. The setup should be saved to settings.json
 and the panel should be updated.
 If the user selects "Localhost Raspberry Pi" the remote host and remote port should be disabled.
+
+If "Localhost Raspberry Pi" is selected then TextFields on the panel should be disabled and grayed out.
+If "Remote pigpio daemon" is selected then TextFields on the panel should be enabled and not grayed out.

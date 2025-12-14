@@ -84,6 +84,7 @@ const GeneralSetup = () => {
     };
 
     const isRemoteMode = editingSettings?.controllerSetup?.controller === 'remote';
+    const isCurrentRemoteMode = settings.controllerSetup.controller === 'remote';
 
     // Show loading state
     if (isLoading) {
@@ -116,8 +117,14 @@ const GeneralSetup = () => {
                 >
                     <ColumnLayout gap="0.5rem">
                         <StaticText text={<>Controller: <span style={{ fontWeight: 'bold' }}>{getControllerDisplayName(settings.controllerSetup.controller)}</span></>} />
-                        <StaticText text={<>Remote Host: <span style={{ fontWeight: 'bold' }}>{settings.controllerSetup.remoteHost}</span></>} />
-                        <StaticText text={<>Remote Port: <span style={{ fontWeight: 'bold' }}>{settings.controllerSetup.remotePort}</span></>} />
+                        <StaticText
+                            text={<>Remote Host: <span style={{ fontWeight: 'bold' }}>{settings.controllerSetup.remoteHost}</span></>}
+                            disabled={!isCurrentRemoteMode}
+                        />
+                        <StaticText
+                            text={<>Remote Port: <span style={{ fontWeight: 'bold' }}>{settings.controllerSetup.remotePort}</span></>}
+                            disabled={!isCurrentRemoteMode}
+                        />
                     </ColumnLayout>
                 </Panel>
             </div>
