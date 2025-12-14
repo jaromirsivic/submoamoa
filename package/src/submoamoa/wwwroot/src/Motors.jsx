@@ -694,9 +694,9 @@ const Motors = () => {
                                     width="100%"
                                     height={300}
                                     columnsHeaders={[
-                                        { name: 'PWM Multiplier', width: 120, align: 'center' },
-                                        { name: 'Forward sec.', width: 120, align: 'center' },
-                                        { name: 'Reverse sec.', width: 120, align: 'center' }
+                                        { name: 'PWM Multiplier', width: 120, align: 'center', canResize: true },
+                                        { name: 'Forward sec.', width: 120, align: 'center', canResize: true },
+                                        { name: 'Reverse sec.', width: 120, align: 'center', canResize: true }
                                     ]}
                                     cells={editingMotor.speedHistogram.histogram}
                                     onCellsChange={(newCells) => updateSpeedHistogramField('histogram', newCells)}
