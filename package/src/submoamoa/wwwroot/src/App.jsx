@@ -17,6 +17,7 @@ import Sandbox from './Sandbox';
 import ModalWindowsDemo from './ModalWindowsDemo';
 import EditableChartDemo from './EditableChartDemo';
 import TableDemo from './TableDemo';
+import Chart2DDemo from './Chart2DDemo';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
             <Route path="modal-windows-demo" element={<ModalWindowsDemo />} />
             <Route path="editable-chart" element={<EditableChartDemo />} />
             <Route path="table-demo" element={<TableDemo />} />
+            <Route path="chart2d" element={<Chart2DDemo />} />
           </Route>
           <Route path="about" element={<About />} />
         </Route>

@@ -509,3 +509,19 @@ It seems that the timer on the modal window in the motors page does not work pro
 clicks on the "Reverse" or "Forward" button, the timer should be reset meaning the algorithm will save current datetime.
 Then every 100ms the timer should be updated and the difference between the current datetime and the saved datetime should be displayed.
 When user clicks on the "Stop" button or when the modal window is closed, the timer should be stopped.
+
+Create a Chart2D component which has the following features:
+1. It should have x and y axis.
+2. It should have a label for x and y axis.
+3. It should have a title.
+4. It should have a background color (default white) and a grid (default color light gray) with predefined grid size.
+5. It should be pannable if allowed in the props.
+6. It should be zoomable if allowed in the props.
+7. It should be scrollable if allowed in the props.
+8. It should have datasets displayed on the chart.
+9. Each dataset can have its own color.
+10. Each dataset can have its own label.
+11. Each dataset can have its own line width.
+12. Each dataset can have its own line style.
+
+Demonstrate usage of the Chart2D component in the sandbox.
