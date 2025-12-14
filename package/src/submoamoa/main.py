@@ -97,7 +97,15 @@ async def save_general_settings_endpoint(general_settings: dict[str, Any]):
     """Save general settings to settings.json file"""
     settings = await settingscontroller.get_settings()
     settings["general"] = general_settings
-    return await settingscontroller.save_settings(settings)
+    await settingscontroller.save_settings(settings)
+    
+    # Reset controller with new settings
+    try:
+        await reset_j8_controller()
+    except Exception as e:
+        print(f"Failed to reset controller after settings save: {e}")
+        
+    return {"success": True}
 
 # ============================================
 # Motor Action API
@@ -116,21 +124,68 @@ class MotorActionStopRequest(BaseModel):
 # Lazy J8 instance
 _j8_instance = None
 
-def get_j8():
-    """Get or create the J8 singleton instance"""
+async def get_j8():
+    """Get or create the J8 singleton instance using settings.json"""
     global _j8_instance
     if _j8_instance is None:
         from .j8 import J8
-        # Initialize J8 with remote pigpio connection
-        _j8_instance = J8(host="192.168.68.55", port=8888)
+        # Get settings to determine host/port
+        settings = await settingscontroller.get_settings()
+        general_settings = settings.get("general", {})
+        controller_setup = general_settings.get("controllerSetup", {})
+        
+        mode = controller_setup.get("controller", "localhost")
+        if mode == "remote":
+            host = controller_setup.get("remoteHost", "192.168.0.1")
+            port = int(controller_setup.get("remotePort", 8888))
+            _j8_instance = J8(host=host, port=port)
+        else:
+             # localhost
+            _j8_instance = J8(host=None, port=None)
+            
     return _j8_instance
+
+async def reset_j8_controller():
+    """Reset J8 controller with latest settings"""
+    j8 = await get_j8()
+    
+    # Reload settings to get latest host/port
+    settings = await settingscontroller.get_settings()
+    general_settings = settings.get("general", {})
+    controller_setup = general_settings.get("controllerSetup", {})
+    
+    mode = controller_setup.get("controller", "localhost")
+    if mode == "remote":
+        host = controller_setup.get("remoteHost", "192.168.0.1")
+        port = int(controller_setup.get("remotePort", 8888))
+        j8.reset(host=host, port=port)
+    else:
+        j8.reset(host=None, port=None)
+    return j8
+
+@app.get("/api/controller/status")
+async def get_controller_status_endpoint():
+    """Get J8 controller initialization status"""
+    try:
+        j8 = await get_j8()
+        return {
+            "initialized": j8.initialized,
+            "error_message": j8.error_message
+        }
+    except Exception as e:
+        return {
+            "initialized": False,
+            "error_message": str(e)
+        }
 
 @app.post("/api/motors/action/start")
 async def start_motor_action(request: MotorActionStartRequest):
     """Start motor action: set J8[pin_index] to pwm_multiplier"""
     try:
-        j8 = get_j8()
-        j8.reset()
+        j8 = await get_j8()
+        # Reset with current settings before action to ensure clean state
+        await reset_j8_controller()
+        
         j8[request.pin_index].value = request.pwm_multiplier
         return {"success": True, "message": f"Pin {request.pin_index} set to {request.pwm_multiplier}"}
     except Exception as e:
@@ -141,7 +196,7 @@ async def start_motor_action(request: MotorActionStartRequest):
 async def stop_motor_action(request: MotorActionStopRequest):
     """Stop motor action: reset J8[pin_index]"""
     try:
-        j8 = get_j8()
+        j8 = await get_j8()
         j8[request.pin_index].reset()
         return {"success": True, "message": f"Pin {request.pin_index} reset"}
     except Exception as e:

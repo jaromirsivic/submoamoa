@@ -11,6 +11,7 @@ import HorizontalSeparator from './components/HorizontalSeparator';
 
 import { getGeneralSettings, saveGeneralSettings } from './lib/api';
 import editIcon from './assets/icons/edit.svg';
+import TextField from './components/TextField';
 
 const GeneralSetup = () => {
     const [settings, setSettings] = useState({
@@ -24,6 +25,18 @@ const GeneralSetup = () => {
     const [editingSettings, setEditingSettings] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [controllerStatus, setControllerStatus] = useState({ initialized: false, error_message: '' });
+
+    const fetchControllerStatus = async () => {
+        try {
+            const response = await fetch('/api/controller/status');
+            const data = await response.json();
+            setControllerStatus(data);
+        } catch (error) {
+            console.error('Failed to fetch controller status:', error);
+            setControllerStatus({ initialized: false, error_message: 'Failed to fetch status' });
+        }
+    };
 
     // Load initial data from API
     useEffect(() => {
@@ -34,6 +47,7 @@ const GeneralSetup = () => {
                 if (data && data.controllerSetup) {
                     setSettings(data);
                 }
+                await fetchControllerStatus();
             } catch (error) {
                 console.error('Failed to load general settings:', error);
             } finally {
@@ -61,6 +75,8 @@ const GeneralSetup = () => {
             console.log('General settings saved successfully');
             setSettings(editingSettings);
             handleCloseModal();
+            // Refresh status after save (backend triggers reset)
+            await fetchControllerStatus();
         } catch (error) {
             console.error('Error saving settings:', error);
             alert(`Failed to save settings: ${error.message}`);
@@ -125,6 +141,19 @@ const GeneralSetup = () => {
                             text={<>Remote Port: <span style={{ fontWeight: 'bold' }}>{settings.controllerSetup.remotePort}</span></>}
                             disabled={!isCurrentRemoteMode}
                         />
+                        {controllerStatus.initialized ? (
+                            <TextField
+                                text="Initialized: OK"
+                                color="green"
+                                fontWeight="bold"
+                            />
+                        ) : (
+                            <TextField
+                                text={`Error: ${controllerStatus.error_message || 'Unknown error'}`}
+                                color="red"
+                                fontWeight="bold"
+                            />
+                        )}
                     </ColumnLayout>
                 </Panel>
             </div>

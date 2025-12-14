@@ -3,6 +3,7 @@ import React from 'react';
 const TextField = ({
     text,
     fontSize = 14,
+    color,
     fontColor = '#000000',
     fontFamily = 'Arial, sans-serif',
     fontStyle = 'normal',
@@ -11,7 +12,7 @@ const TextField = ({
 }) => {
     const computedStyle = {
         fontSize: `${fontSize}px`,
-        color: fontColor,
+        color: color || fontColor,
         fontFamily: fontFamily,
         fontStyle: fontStyle,
         fontWeight: fontWeight,

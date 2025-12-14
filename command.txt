@@ -569,3 +569,15 @@ If the user selects "Localhost Raspberry Pi" the remote host and remote port sho
 
 If "Localhost Raspberry Pi" is selected then TextFields on the panel should be disabled and grayed out.
 If "Remote pigpio daemon" is selected then TextFields on the panel should be enabled and not grayed out.
+
+1. Update the get_j8 function in main.py to use the remote host and remote port from settings.json.
+2. There should be as well a function to reset in the main.py. The reset function will reset j8 with
+remote host and remote port from settings.json. The reset function should be called when user clicks
+on the "Save" button in the modal window.
+3. Take a look into the motors page edit modal window. At the moment the forward and reverse buttons
+call backend api which resets the j8. This reset should as well be updated to include 
+remote host and remote port from settings.json.
+4. If the property "initialized" of the j8 is False after the reset then display a red TextField
+on the panel "Controller Setup" with the label "Error: " and the "error_message" of the j8.
+5. If the property "initialized" of the j8 is True after the reset then display a green TextField
+on the panel "Controller Setup" with the label "Initialized: OK".

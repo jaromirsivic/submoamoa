@@ -1,6 +1,8 @@
 from gpiozero import PWMOutputDevice
 from gpiozero.pins.pigpio import PiGPIOFactory
 from .pin import Pin, PinType
+from .common import timeout
+import asyncio
 
 
 # the singleton instance of J8
@@ -22,9 +24,23 @@ class J8(list):
         self._initialized = False
         self._error_message = ""
         # initialize pins
-        self.init_pins(host=host, port=port)
+        self.reset(host=host, port=port)
 
-    def init_pins(self, *, host:str | None = None, port:int | None = None):
+    @timeout(seconds=3)
+    async def _get_pin_factory(self, *args, **kwargs) -> PiGPIOFactory | None:
+        """
+        Try to get the pin factory.
+        """
+        try:
+            return PiGPIOFactory(host=host, port=port)
+            return result
+        except Exception:
+            return None
+
+    def reset(self, *, host:str | None = None, port:int | None = None):
+        """
+        Reset the J8.
+        """
         self._initialized = False
         self._error_message = ""
         # try to initialize pins
@@ -35,7 +51,15 @@ class J8(list):
             self._host = host
             self._port = port
             if host is not None and port is not None:
-                self._pin_factory = PiGPIOFactory(host=host, port=port)
+                self._pin_factory = self._get_pin_factory(host=host, port=port)
+                if self._pin_factory is None:
+                    self._error_message = f'Failed to connect to the pigpio daemon running at {host}:{port}. '
+                    self._error_message += 'Please check if the daemon is running. '
+                    self._error_message += 'Check firewall rules which might be blocking the connection. '
+                    self._error_message += 'Try to ping the host using "ping -c 1 {host}". '
+                    self._error_message += 'Try to run the daemon with sudo. '
+                    self._error_message += 'Try to restart the daemon with sudo pigpiod -x.'
+                    return False
             else:
                 self._pin_factory = None
             # setup the pins
@@ -92,10 +116,6 @@ class J8(list):
     @property
     def error_message(self):
         return self._error_message
-    
-    def reset(self):
-        for pin in self._pins:
-            pin.reset()
 
     def __del__(self):
         for pin in self._pins:
