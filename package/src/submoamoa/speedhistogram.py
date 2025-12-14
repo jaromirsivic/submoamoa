@@ -16,6 +16,14 @@ class SpeedHistogram:
     @property
     def resolution(self):
         return self._resolution
+
+    @property
+    def forward_speed_histogram(self):
+        return self._forward_speed_histogram
+
+    @property
+    def reverse_speed_histogram(self):
+        return self._reverse_speed_histogram
     
     def _init_speed_histograms(self):
         """

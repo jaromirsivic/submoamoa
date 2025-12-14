@@ -168,6 +168,14 @@ export const stopMotorAction = async (pin_index) => {
     return post('/api/motors/action/stop', { pin_index });
 };
 
+/**
+ * Get speed histogram data for Chart2D visualization
+ * @returns {Promise<array>} Array of histogram data per motor
+ */
+export const getSpeedHistogram = async () => {
+    return get('/api/motors/speedhistogram');
+};
+
 // ============================================
 // Hot Zone Settings API
 // ============================================
@@ -197,6 +205,7 @@ export default {
     saveMotorsSettings,
     startMotorAction,
     stopMotorAction,
+    getSpeedHistogram,
     getHotZoneSettings,
     saveHotZoneSettings,
     getAllSettings,

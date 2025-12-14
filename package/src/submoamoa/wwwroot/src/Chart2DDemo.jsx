@@ -16,6 +16,8 @@ const Chart2DDemo = () => {
     const [gridSize, setGridSize] = useState(10);
     const [backgroundColor, setBackgroundColor] = useState('#ffffff');
     const [gridColor, setGridColor] = useState('#e0e0e0');
+    const [showLegend, setShowLegend] = useState(true);
+    const [legendPosition, setLegendPosition] = useState('top-right');
 
     // Sample datasets
     const [datasets, setDatasets] = useState([
@@ -103,6 +105,14 @@ const Chart2DDemo = () => {
         { value: 'x', label: 'X Only' }
     ];
 
+    const legendPositionOptions = [
+        { value: 'top-right', label: 'Top Right' },
+        { value: 'top-left', label: 'Top Left' },
+        { value: 'bottom-right', label: 'Bottom Right' },
+        { value: 'bottom-left', label: 'Bottom Left' },
+        { value: 'bottom-outside', label: 'Bottom Outside' }
+    ];
+
     return (
         <div style={{ padding: '20px' }}>
             <h1>Chart2D Component Demo</h1>
@@ -132,6 +142,8 @@ const Chart2DDemo = () => {
                             zoomable={zoomable}
                             zoomMode={zoomMode}
                             scrollable={scrollable}
+                            showLegend={showLegend}
+                            legendPosition={legendPosition}
                             datasets={datasets}
                         />
                     </Panel>
@@ -206,6 +218,19 @@ const Chart2DDemo = () => {
                                 max={20}
                                 step={1}
                             />
+                            <Switch
+                                label="Show Legend"
+                                checked={showLegend}
+                                onChange={setShowLegend}
+                            />
+                            {showLegend && (
+                                <ComboBox
+                                    label="Legend Position"
+                                    value={legendPosition}
+                                    onChange={setLegendPosition}
+                                    options={legendPositionOptions}
+                                />
+                            )}
                         </ColumnLayout>
                     </Panel>
 

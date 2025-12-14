@@ -12,8 +12,9 @@ import ComboBox from './components/ComboBox';
 import ColumnLayout from './components/ColumnLayout';
 import StaticText from './components/StaticText';
 import HorizontalSeparator from './components/HorizontalSeparator';
+import Chart2D from './components/Chart2D';
 
-import { getMotorsSettings, saveMotorsSettings, startMotorAction, stopMotorAction } from './lib/api';
+import { getMotorsSettings, saveMotorsSettings, startMotorAction, stopMotorAction, getSpeedHistogram } from './lib/api';
 import masterData from './assets/masterdata.json';
 
 import linearIcon from './assets/icons/linear.svg';
@@ -27,6 +28,9 @@ const Motors = () => {
     const [editingMotorIndex, setEditingMotorIndex] = useState(-1);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Speed histogram data for Chart2D
+    const [speedHistogramData, setSpeedHistogramData] = useState([]);
 
     // Histogram Quick Test Timer state
     const [motorActionTimer, setMotorActionTimer] = useState(0); // timer in ms
@@ -50,6 +54,19 @@ const Motors = () => {
         };
         loadMotors();
     }, []);
+
+    // Load speed histogram data
+    useEffect(() => {
+        const loadSpeedHistogram = async () => {
+            try {
+                const data = await getSpeedHistogram();
+                setSpeedHistogramData(data || []);
+            } catch (error) {
+                console.error('Failed to load speed histogram:', error);
+            }
+        };
+        loadSpeedHistogram();
+    }, [motors]); // Reload when motors change
 
     // Prepare dropdown options
     const motorTypeOptions = masterData.motors.motorTypes.map(type => ({
@@ -394,6 +411,64 @@ const Motors = () => {
                                 <StaticText text={<>Enabled: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.enabled ? 'Yes' : 'No'}</span></>} />
                                 <StaticText text={<>Max Run: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.maxRunningTimeSeconds}s</span></>} />
                                 <StaticText text={<>Min Rest: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.minRestTimeSeconds}s</span></>} />
+
+                                <HorizontalSeparator label="Histogram" fullWidth={true} bleed="1.5rem" />
+                                {(() => {
+                                    const histogramData = speedHistogramData.find(h => h.motorName === motor.name);
+                                    if (!histogramData || histogramData.error) {
+                                        return <StaticText text={<span style={{ color: '#999' }}>{histogramData?.error || 'No histogram data available'}</span>} />;
+                                    }
+                                    return (
+                                        <div style={{ marginTop: '-10px', marginLeft: '-1.5rem', marginRight: '-1.5rem', width: 'calc(100% + 3rem)' }}>
+                                            <Chart2D
+                                                title="Forward Speed Histogram"
+                                                xLabel="Speed"
+                                                yLabel="PWM Multiplier"
+                                                xMin={0}
+                                                xMax={1}
+                                                yMin={0}
+                                                yMax={1}
+                                                width={310}
+                                                height={180}
+                                                gridSize={5}
+                                                showLegend={false}
+                                                backgroundColor="transparent"
+                                                datasets={[
+                                                    {
+                                                        label: 'Forward',
+                                                        color: '#3b82f6',
+                                                        lineWidth: 2,
+                                                        lineStyle: 'solid',
+                                                        data: histogramData.forward
+                                                    }
+                                                ]}
+                                            />
+                                            <Chart2D
+                                                title="Reverse Speed Histogram"
+                                                xLabel="Speed"
+                                                yLabel="PWM Multiplier"
+                                                xMin={0}
+                                                xMax={1}
+                                                yMin={0}
+                                                yMax={1}
+                                                width={310}
+                                                height={180}
+                                                gridSize={5}
+                                                showLegend={false}
+                                                backgroundColor="transparent"
+                                                datasets={[
+                                                    {
+                                                        label: 'Reverse',
+                                                        color: '#ef4444',
+                                                        lineWidth: 2,
+                                                        lineStyle: 'solid',
+                                                        data: histogramData.reverse
+                                                    }
+                                                ]}
+                                            />
+                                        </div>
+                                    );
+                                })()}
                             </ColumnLayout>
                         </div>
                     </Panel >

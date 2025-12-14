@@ -135,5 +135,60 @@ async def stop_motor_action(request: MotorActionStopRequest):
         print(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/motors/speedhistogram")
+async def get_speed_histogram_endpoint():
+    """Get speed histogram data for Chart2D visualization"""
+    from .speedhistogram import SpeedHistogram
+    settings = await settingscontroller.get_settings()
+    motors = settings.get("motors", [])
+    
+    result = []
+    for motor in motors:
+        histogram_data = motor.get("histogram", [])
+        if len(histogram_data) >= 2:
+            # Convert histogram data to format expected by SpeedHistogram
+            speed_histogram_input = [
+                {
+                    "pwm_multiplier": item.get("pwmMultiplier", 0),
+                    "forward_seconds": item.get("forwardSeconds", 0),
+                    "reverse_seconds": item.get("reverseSeconds", 0)
+                }
+                for item in histogram_data
+            ]
+            try:
+                speed_histogram = SpeedHistogram(speed_histogram=speed_histogram_input)
+                # Convert to Chart2D format: list of {x, y} points
+                resolution = speed_histogram.resolution
+                forward_data = [
+                    {"x": i / resolution, "y": speed_histogram.forward_speed_histogram[i]}
+                    for i in range(resolution + 1)
+                ]
+                reverse_data = [
+                    {"x": i / resolution, "y": speed_histogram.reverse_speed_histogram[i]}
+                    for i in range(resolution + 1)
+                ]
+                result.append({
+                    "motorName": motor.get("name", "Unknown"),
+                    "forward": forward_data,
+                    "reverse": reverse_data
+                })
+            except Exception as e:
+                print(f"Error processing histogram for motor {motor.get('name')}: {e}")
+                result.append({
+                    "motorName": motor.get("name", "Unknown"),
+                    "forward": [],
+                    "reverse": [],
+                    "error": str(e)
+                })
+        else:
+            result.append({
+                "motorName": motor.get("name", "Unknown"),
+                "forward": [],
+                "reverse": [],
+                "error": "Insufficient histogram data"
+            })
+    
+    return result
+
 app.mount("/", StaticFiles(directory=BASE_DIR / "wwwroot/dist", html=True), name="static")
 

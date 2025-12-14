@@ -23,7 +23,7 @@
                 },
                 {
                     "pwmMultiplier": 0.1,
-                    "forwardSeconds": 0,
+                    "forwardSeconds": 80,
                     "reverseSeconds": 0
                 },
                 {
@@ -63,7 +63,7 @@
                             "value": 0.1
                         },
                         {
-                            "value": 0
+                            "value": "80"
                         },
                         {
                             "value": 0

@@ -18,6 +18,8 @@ const Chart2D = ({
     zoomMode = 'xy', // 'xy' for both axes, 'x' for x-axis only
     scrollable = false,
     datasets = [],
+    showLegend = true,
+    legendPosition = 'top-right', // 'top-right', 'top-left', 'bottom-right', 'bottom-left', 'bottom-outside'
     style = {}
 }) => {
     const svgRef = useRef(null);
@@ -356,15 +358,43 @@ const Chart2D = ({
 
     // Render legend
     const renderLegend = () => {
-        if (datasets.length === 0) return null;
+        if (!showLegend || datasets.length === 0) return null;
+
+        // For bottom-outside position, render in a different location (handled in JSX)
+        if (legendPosition === 'bottom-outside') return null;
+
+        const legendWidth = 110;
+        const legendHeight = datasets.length * 25 + 10;
+
+        // Calculate position based on legendPosition prop
+        let legendX, legendY;
+        switch (legendPosition) {
+            case 'top-left':
+                legendX = padding.left + 10;
+                legendY = padding.top + 10;
+                break;
+            case 'bottom-left':
+                legendX = padding.left + 10;
+                legendY = height - padding.bottom - legendHeight - 10;
+                break;
+            case 'bottom-right':
+                legendX = width - padding.right - legendWidth - 10;
+                legendY = height - padding.bottom - legendHeight - 10;
+                break;
+            case 'top-right':
+            default:
+                legendX = width - padding.right - legendWidth - 10;
+                legendY = padding.top + 10;
+                break;
+        }
 
         return (
-            <g transform={`translate(${width - padding.right - 120}, ${padding.top})`}>
+            <g transform={`translate(${legendX}, ${legendY})`}>
                 <rect
                     x={0}
                     y={0}
-                    width={110}
-                    height={datasets.length * 25 + 10}
+                    width={legendWidth}
+                    height={legendHeight}
                     fill="rgba(255,255,255,0.9)"
                     stroke="#ccc"
                     strokeWidth={1}
@@ -391,6 +421,36 @@ const Chart2D = ({
                     );
                 })}
             </g>
+        );
+    };
+
+    // Render bottom-outside legend (as HTML below the SVG)
+    const renderBottomOutsideLegend = () => {
+        if (!showLegend || legendPosition !== 'bottom-outside' || datasets.length === 0) return null;
+
+        return (
+            <div style={{ 
+                display: 'flex', 
+                flexWrap: 'wrap',
+                gap: '10px 20px', 
+                marginTop: '5px',
+                paddingLeft: `${padding.left}px`
+            }}>
+                {datasets.map((dataset, index) => {
+                    const { color = '#3b82f6', label = `Dataset ${index + 1}`, lineStyle = 'solid' } = dataset;
+                    return (
+                        <div key={`legend-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{
+                                width: '20px',
+                                height: '2px',
+                                backgroundColor: color,
+                                borderStyle: lineStyle === 'dashed' ? 'dashed' : lineStyle === 'dotted' ? 'dotted' : 'solid'
+                            }} />
+                            <span style={{ fontSize: '12px', color: '#333' }}>{label}</span>
+                        </div>
+                    );
+                })}
+            </div>
         );
     };
 
@@ -684,6 +744,9 @@ const Chart2D = ({
                     strokeWidth={1}
                 />
             </svg>
+            
+            {/* Bottom-outside legend */}
+            {renderBottomOutsideLegend()}
             
             {/* Instructions */}
             {(pannable || zoomable || scrollable) && (

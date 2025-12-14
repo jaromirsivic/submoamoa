@@ -534,3 +534,18 @@ or the second option as it is implemented right now it will zoom x and y axis.
 the line the point should appear and line perpendicular to x and y axis should
 appear as well going from the point to axes showing precise numbers of the point coordinates
 on the x and y axis.
+
+On the motors page on the panel add a new section named "Histogram" below the section "Duty Cycle". The new section
+should have a Chart2D component displaying the speed histogram data.
+X axis should have a label "Speed" (from 0 to 1) and Y axis should have a label "PWM Multiplier" (from 0 to 1).
+The datasets should be named "Forward" and "Reverse". The datasets should have different colors. Forward will have
+blue color and Reverse will have red color. The datasets should have line width of 2.
+The datasets will be received via rest api. The rest api endpoint is /api/motors/speedhistogram.
+The rest api will load histogram data from assets/settings.json -> motors -> histogram. It will create
+a SpeedHistogram object (see speedhistogram.py). Use the loaded histogram from settings.json as a constructor
+parameter "speed_histogram". Then use properties "forward_speed_histogram" and "reverse_speed_histogram"
+as datasets for the Chart2D component. The datasets should be named "Forward" and "Reverse".
+
+1. The histogram should take 100% width of the parent panel.
+2. Currently the Histogram displays two datasets forward and reverse. Use two histograms instead. The first one will display data for forward dataset and the second will display data for reverse dataset. Hide the legend for each Histogram. Use title for the first histogram: "Forward Speed Histogram". Use title for the second histogram: "Reverse Speed Histogram".
+3. Make the background of both histograms transparent not white.
