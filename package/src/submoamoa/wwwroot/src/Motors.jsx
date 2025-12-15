@@ -13,6 +13,8 @@ import ColumnLayout from './components/ColumnLayout';
 import StaticText from './components/StaticText';
 import HorizontalSeparator from './components/HorizontalSeparator';
 import Chart2D from './components/Chart2D';
+import Polygon from './components/Polygon';
+import joystickTestIcon from './assets/joystick_test.svg';
 
 import { getMotorsSettings, saveMotorsSettings, startMotorAction, stopMotorAction, getSpeedHistogram } from './lib/api';
 import masterData from './assets/masterdata.json';
@@ -26,6 +28,11 @@ const Motors = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingMotor, setEditingMotor] = useState(null);
     const [editingMotorIndex, setEditingMotorIndex] = useState(-1);
+
+    // Test Motor Modal state
+    const [isTestModalOpen, setIsTestModalOpen] = useState(false);
+    const [testMotor, setTestMotor] = useState(null);
+
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -166,6 +173,16 @@ const Motors = () => {
         setIsModalOpen(false);
         setEditingMotor(null);
         setEditingMotorIndex(-1);
+    };
+
+    const handleOpenTestModal = (motor) => {
+        setTestMotor(motor);
+        setIsTestModalOpen(true);
+    };
+
+    const handleCloseTestModal = () => {
+        setIsTestModalOpen(false);
+        setTestMotor(null);
     };
 
     const handleSave = async () => {
@@ -519,11 +536,16 @@ const Motors = () => {
                                 <StaticText text={<>Role: <span style={{ fontWeight: 'bold' }}>{motor.role}</span></>} />
                                 <StaticText text={<>Inertia: <span style={{ fontWeight: 'bold' }}>{motor.inertia}</span></>} />
 
+                                <Button
+                                    label="Test Motor"
+                                    onClick={() => handleOpenTestModal(motor)}
+                                    color="#3b82f6"
+                                    style={{ marginTop: '0.5rem', width: '100%' }}
+                                />
+
                                 <HorizontalSeparator label="Pins" fullWidth={true} bleed="1.5rem" />
                                 <StaticText text={<>Forward: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.forwardPin)}</span></>} />
                                 <StaticText text={<>Reverse: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.reversePin)}</span></>} />
-                                <StaticText text={<>MCP3008 Fwd: <span style={{ fontWeight: 'bold' }}>{motor.mcp3008ForwardPin}</span></>} />
-                                <StaticText text={<>MCP3008 Rev: <span style={{ fontWeight: 'bold' }}>{motor.mcp3008ReversePin}</span></>} />
 
                                 <HorizontalSeparator label="Duty Cycle" fullWidth={true} bleed="1.5rem" />
                                 <StaticText text={<>Enabled: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.enabled ? 'Yes' : 'No'}</span></>} />
@@ -604,6 +626,7 @@ const Motors = () => {
                     validationErrors={getValidationErrors()}
                     validationWarnings={getValidationWarnings()}
                 >
+                    {/* ... Existing Edit Modal Content ... */}
                     <ColumnLayout gap="0.5rem">
                         <Switch
                             label="Enabled"
@@ -681,30 +704,6 @@ const Motors = () => {
                                 }}
                             />
 
-                            <Switch
-                                label="Automatic Calibration Enabled"
-                                value={editingMotor.automaticCalibrationEnabled ?? true}
-                                onChange={(val) => updateMotorField('automaticCalibrationEnabled', val)}
-                            />
-
-                            <NumericInput
-                                label="MCP3008 Forward Pin"
-                                labelPosition="left"
-                                value={editingMotor.mcp3008ForwardPin}
-                                onChange={(val) => updateMotorField('mcp3008ForwardPin', val)}
-                                min={0}
-                                max={7}
-                                disabled={!editingMotor.automaticCalibrationEnabled}
-                            />
-                            <NumericInput
-                                label="MCP3008 Reverse Pin"
-                                labelPosition="left"
-                                value={editingMotor.mcp3008ReversePin}
-                                onChange={(val) => updateMotorField('mcp3008ReversePin', val)}
-                                min={0}
-                                max={7}
-                                disabled={!editingMotor.automaticCalibrationEnabled}
-                            />
                         </ColumnLayout>
 
                         <HorizontalSeparator label="Duty Cycle" fullWidth={true} bleed="1rem" />
@@ -828,6 +827,38 @@ const Motors = () => {
                             </div>
                         </ColumnLayout>
                     </ColumnLayout>
+                </ModalWindow>
+            )}
+
+            {testMotor && (
+                <ModalWindow
+                    isOpen={isTestModalOpen}
+                    title={`Test Motor: ${testMotor.name}`}
+                    onCancel={handleCloseTestModal}
+                    cancelLabel="Close"
+                    okLabel=""
+                    okDisabled={true} // Hide OK button effectively
+                >
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem', width: '100%' }}>
+                        <div style={{ width: '100%', maxWidth: '400px', aspectRatio: '1/1' }}>
+                            <Polygon
+                                mode="joystick"
+                                joystickLineMaxLength={0.4}
+                                src={joystickTestIcon}
+                                showReticle={false}
+                                polygons={[]}
+                                border={0}
+                                stretchMode="fit"
+                                background="transparent"
+                                style={{ width: '100%', height: '100%' }}
+                                onJoystickMove={(offset) => {
+                                    // Implementation for joystick move can be added here if needed, 
+                                    // e.g., console.log(offset) or calling a motor API
+                                    // For now, it's just visual as requested.
+                                }}
+                            />
+                        </div>
+                    </div>
                 </ModalWindow>
             )}
         </div >

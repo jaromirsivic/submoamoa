@@ -599,3 +599,12 @@ message should open (same behavior like already implemented with other business 
 Other already implemented business validations should work the same way and should nicely integrate
 with the new business validations.
 
+On the Motors page into the Motors Panel, below the "Inertia" textfield add a new button with text Test Motor.
+When user clicks on the Test Motor button the modal window should open.
+The modal window should have the same style as in the Motors page.
+The modal window should have the following components:
+Polygon component with joystick behavior joystickLineMaxLength should be 0.4.
+User cannot add any vertices. The reticle is not displayed.
+background of the polygon component is joystick_test.svg.
+Polygon component will be a square. Width is the same as Modal Window width. Height is the same as width.
+Polygon component should be centered in the modal window.
