@@ -3,7 +3,7 @@
         {
             "enabled": true,
             "name": "linearMotor0",
-            "type": "linearActuator",
+            "type": "linear",
             "role": "leftArm",
             "forwardPin": 12,
             "reversePin": 32,
@@ -47,7 +47,7 @@
         {
             "enabled": true,
             "name": "linearMotor1",
-            "type": "linearActuator",
+            "type": "linear",
             "role": "rightArm",
             "forwardPin": 33,
             "reversePin": 35,
@@ -91,7 +91,7 @@
         {
             "enabled": false,
             "name": "linearMotor3",
-            "type": "linearActuator",
+            "type": "linear",
             "role": "general",
             "forwardPin": 11,
             "reversePin": 13,
@@ -135,7 +135,7 @@
         {
             "enabled": false,
             "name": "linearMotor4",
-            "type": "linearActuator",
+            "type": "linear",
             "role": "general",
             "forwardPin": 16,
             "reversePin": 18,

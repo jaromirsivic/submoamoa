@@ -608,3 +608,5 @@ User cannot add any vertices. The reticle is not displayed.
 background of the polygon component is joystick_test.svg.
 Polygon component will be a square. Width is the same as Modal Window width. Height is the same as width.
 Polygon component should be centered in the modal window.
+
+Update Motors page -> edit Modal Window. Change Type and Role components from Combobox to MultiSwitch.

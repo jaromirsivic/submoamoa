@@ -2,8 +2,8 @@
     "motors": [
         {
             "enabled": true,
-            "name": "linearMotor0",
-            "type": "linearActuator",
+            "name": "Left Arm",
+            "type": "linear",
             "role": "leftArm",
             "forwardPin": 12,
             "reversePin": 32,
@@ -107,8 +107,8 @@
         },
         {
             "enabled": true,
-            "name": "linearMotor1",
-            "type": "linearActuator",
+            "name": "Right Arm",
+            "type": "linear",
             "role": "rightArm",
             "forwardPin": 33,
             "reversePin": 35,
@@ -152,7 +152,7 @@
         {
             "enabled": true,
             "name": "linearMotor3",
-            "type": "linearActuator",
+            "type": "linear",
             "role": "general",
             "forwardPin": 11,
             "reversePin": 0,
@@ -257,7 +257,7 @@
         {
             "enabled": false,
             "name": "linearMotor4",
-            "type": "linearActuator",
+            "type": "linear",
             "role": "general",
             "forwardPin": 16,
             "reversePin": 18,

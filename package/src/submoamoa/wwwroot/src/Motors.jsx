@@ -453,8 +453,8 @@ const Motors = () => {
     };
 
     const getMotorIcon = (type) => {
-        if (type === 'linearActuator') return linearIcon;
-        if (type === 'stepperMotor') return stepperIcon;
+        if (type === 'linear') return linearIcon;
+        if (type === 'stepper') return stepperIcon;
         return null;
     };
 
@@ -648,21 +648,25 @@ const Motors = () => {
                             }}
                         />
 
-                        <ComboBox
-                            label="Type"
-                            items={motorTypeOptions}
-                            value={editingMotor.type}
-                            onChange={(val) => updateMotorField('type', val)}
-                            disabled={true}
-                        />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333' }}>Type</span>
+                            <MultiSwitch
+                                options={motorTypeOptions}
+                                value={editingMotor.type}
+                                onChange={(val) => updateMotorField('type', val)}
+                                disabled={true}
+                            />
+                        </div>
 
-                        <ComboBox
-                            label="Role"
-                            items={motorRoleOptions}
-                            value={editingMotor.role}
-                            onChange={(val) => updateMotorField('role', val)}
-                            disabled={true}
-                        />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333' }}>Role</span>
+                            <MultiSwitch
+                                options={motorRoleOptions}
+                                value={editingMotor.role}
+                                onChange={(val) => updateMotorField('role', val)}
+                                disabled={true}
+                            />
+                        </div>
 
                         <Slider
                             label="Inertia"

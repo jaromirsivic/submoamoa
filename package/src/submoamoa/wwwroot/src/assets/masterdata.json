@@ -1,14 +1,14 @@
 {
   "motors": {
     "motorTypes": [
-      "linearActuator",
-      "stepperMotor"
+      "linear",
+      "stepper",
+      "solenoid"
     ],
     "motorRoles": [
       "leftArm",
       "rightArm",
-      "general",
-      "notImplemented"
+      "general"
     ]
   },
   "pins": [
