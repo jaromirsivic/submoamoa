@@ -7,7 +7,7 @@ from .j8 import J8
 from .linearmotor import LinearMotor
 from .speedhistogram import SpeedHistogram
 from .pin import PinType
-from .common import motor_frame
+from .common import motor_frame, get_settings
 
 class MotorsController:
     def __init__(self):
@@ -37,13 +37,7 @@ class MotorsController:
             self._j8.reset()
             
             # Load settings
-            settings_path = os.path.join(os.path.dirname(__file__), 'wwwroot', 'src', 'assets', 'settings.json')
-            try:
-                with open(settings_path, 'r') as f:
-                    settings = json.load(f)
-            except Exception as e:
-                print(f"Error loading settings.json: {e}")
-                return
+            settings = get_settings()
 
             if "general" in settings and "controllerSetup" in settings["general"]:
                  setup = settings["general"]["controllerSetup"]

@@ -39,7 +39,10 @@ const Polygon = ({
     joystickLineColor1 = '#5555ffff', // color when dynamic on static
     joystickLineColor2 = '#ff0000ff', // color when at max distance
     joystickZeroRadius = 0.05, // dead zone radius (fraction of max length)
-    onJoystickMove // callback with { x, y } normalized offset from center
+    //joystickZeroRadius = 0.05, // dead zone radius (fraction of max length)
+    onJoystickMove, // callback with { x, y } normalized offset from center
+    onJoystickStart, // callback when joystick becomes active
+    onJoystickEnd // callback when joystick is released
 }) => {
     const [polygons, setPolygons] = useState(externalPolygons);
     const [currentPolygon, setCurrentPolygon] = useState(null); // Points being drawn (not yet closed)
@@ -447,6 +450,11 @@ const Polygon = ({
             setJoystickStatic(normCoords);
             setJoystickDynamic(normCoords);
             setIsJoystickActive(true);
+
+            if (onJoystickStart) {
+                onJoystickStart();
+            }
+
             e.preventDefault();
             return;
         }
@@ -510,7 +518,8 @@ const Polygon = ({
                 if (distRatio <= joystickZeroRadius) {
                     onJoystickMove({ x: 0, y: 0 });
                 } else {
-                    onJoystickMove({ x: offsetX, y: offsetY });
+                    // Invert Y axis: Up (smaller screen Y) should be positive
+                    onJoystickMove({ x: offsetX, y: -offsetY });
                 }
             }
             return;
@@ -569,6 +578,10 @@ const Polygon = ({
 
                     if (onJoystickMove) {
                         onJoystickMove({ x: 0, y: 0 });
+                    }
+
+                    if (onJoystickEnd) {
+                        onJoystickEnd();
                     }
                 }
             };

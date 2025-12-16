@@ -1,7 +1,7 @@
 from gpiozero import PWMOutputDevice
 from gpiozero.pins.pigpio import PiGPIOFactory
 from .pin import Pin, PinType
-from .common import timeout
+from .common import timeout, get_settings
 import asyncio
 import threading
 
@@ -65,6 +65,13 @@ class J8(list):
                 # setup the pin factory
                 self._host = host
                 self._port = port
+                # try to get the controller setup from settings.json
+                settings = get_settings()
+                controller_setup = settings.get('general', {}).get('controllerSetup', {})
+                controller = controller_setup.get('controller')
+                remote_host = controller_setup.get('remoteHost')
+                remote_port = controller_setup.get('remotePort')
+                # try to get the pin factory using host and port from the function parameters
                 if host is not None and port is not None:
                     self._pin_factory = self._get_pin_factory(host=host, port=port)
                     if self._pin_factory is None:
@@ -75,6 +82,18 @@ class J8(list):
                         self._error_message += 'Try to run the daemon with sudo. '
                         self._error_message += 'Try to restart the daemon with sudo pigpiod -x.'
                         return False
+                # try to get the pin factory using host and port from the settings.json
+                elif controller == "remote":
+                    self._pin_factory = self._get_pin_factory(host=remote_host, port=remote_port)
+                    if self._pin_factory is None:
+                        self._error_message = f'Failed to connect to the remote pigpio daemon running at {remote_host}:{remote_port}. '
+                        self._error_message += 'Please check if the daemon is running on the remote host. '
+                        self._error_message += 'Check firewall rules which might be blocking the connection. '
+                        self._error_message += 'Try to ping the remote host using "ping -c 1 {remote_host}". '
+                        self._error_message += 'Try to run the daemon with sudo on the remote host. '
+                        self._error_message += 'Try to restart the daemon with sudo pigpiod -x on the remote host.'
+                        return False
+                # there is no pin factory
                 else:
                     self._pin_factory = None
                 # setup the pins

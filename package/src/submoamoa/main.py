@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
@@ -170,6 +170,34 @@ async def stop_motor_action(request: MotorActionStopRequest):
     except Exception as e:
         print(str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.websocket("/ws/motors/control")
+async def websocket_motor_control(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_json()
+            motor_index = data.get("motorIndex")
+            speed = data.get("speed")
+            
+            if motor_index is not None and speed is not None:
+                # Access motors safely. 
+                # Note: motors_controller.motors returns the list.
+                # We assume no race condition on list length during operation 
+                # (reset() replaces the list, but list object reference might change or same list cleared? 
+                # MotorsController.reset implementation: self._motors = [])
+                # So we should probably capture the list reference or lock.
+                # But simple index access is likely okay if validation checks bounds.
+                
+                motors = motors_controller.motors
+                if 0 <= motor_index < len(motors):
+                    motors[motor_index].move(float(speed))
+                    
+    except WebSocketDisconnect:
+        # print("Client disconnected from motor control")
+        pass
+    except Exception as e:
+        print(f"WebSocket error: {e}")
 
 @app.get("/api/motors/speedhistogram")
 async def get_speed_histogram_endpoint():

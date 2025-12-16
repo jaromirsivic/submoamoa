@@ -620,3 +620,10 @@ call go method of each enabled motor in the array. There will be as well a stop 
 when the MotorsController is stopped or when the FastAPI server is stopped. This method will end the infinite loop
 and delete all motors from the array and release the j8. There will be as well a reset method which
 will delete all motors from the array, reset the j8 and create new motors based on settings.json.
+
+Update the Settings -> Motors page. In the "Test Motor" modal window If the user uses joystick
+and its position changes then send joystick y coordinates to the backend api. The backend api
+should call move method of the Motor with the proper motor index and pass
+the joystick y coordinates as the speed parameter. Since the coordinates change happens
+very often you may keep the connection to the backend api open and send the coordinates
+periodically until the joystick is released.
