@@ -148,6 +148,10 @@ class MotorActionStartRequest(BaseModel):
 class MotorActionStopRequest(BaseModel):
     pin_index: int
 
+class MotorSpeedRequest(BaseModel):
+    motor_index: int
+    speed: float
+
 async def get_j8():
     """Get the J8 instance from the motors controller"""
     return motors_controller.j8
@@ -191,33 +195,19 @@ async def stop_motor_action(request: MotorActionStopRequest):
         print(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.websocket("/ws/motors/control")
-async def websocket_motor_control(websocket: WebSocket):
-    await websocket.accept()
+@app.post("/api/motors/speed")
+async def set_motor_speed(request: MotorSpeedRequest):
+    """Set motor speed via REST API"""
     try:
-        while True:
-            data = await websocket.receive_json()
-            motor_index = data.get("motorIndex")
-            speed = data.get("speed")
-            
-            if motor_index is not None and speed is not None:
-                # Access motors safely. 
-                # Note: motors_controller.motors returns the list.
-                # We assume no race condition on list length during operation 
-                # (reset() replaces the list, but list object reference might change or same list cleared? 
-                # MotorsController.reset implementation: self._motors = [])
-                # So we should probably capture the list reference or lock.
-                # But simple index access is likely okay if validation checks bounds.
-                
-                motors = motors_controller.motors
-                if 0 <= motor_index < len(motors):
-                    motors[motor_index].move(speed=float(speed))
-                    
-    except WebSocketDisconnect:
-        # print("Client disconnected from motor control")
-        pass
+        motors = motors_controller.motors
+        if 0 <= request.motor_index < len(motors):
+            motors[request.motor_index].move(speed=float(request.speed))
+            return {"success": True, "motor_index": request.motor_index, "speed": request.speed}
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid motor index: {request.motor_index}")
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        print(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/motors/speedhistogram")
 async def get_speed_histogram_endpoint():

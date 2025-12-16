@@ -176,6 +176,16 @@ export const getSpeedHistogram = async () => {
     return get('/api/motors/speedhistogram');
 };
 
+/**
+ * Set motor speed
+ * @param {number} motorIndex - Motor index to control
+ * @param {number} speed - Speed value (-1 to 1)
+ * @returns {Promise<object>} Response from server
+ */
+export const setMotorSpeed = async (motorIndex, speed) => {
+    return post('/api/motors/speed', { motor_index: motorIndex, speed });
+};
+
 // ============================================
 // Hot Zone Settings API
 // ============================================
@@ -228,6 +238,7 @@ export default {
     startMotorAction,
     stopMotorAction,
     getSpeedHistogram,
+    setMotorSpeed,
     getHotZoneSettings,
     saveHotZoneSettings,
     getGeneralSettings,

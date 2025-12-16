@@ -16,7 +16,7 @@ import Chart2D from './components/Chart2D';
 import Polygon from './components/Polygon';
 import joystickTestIcon from './assets/joystick_test.svg';
 
-import { getMotorsSettings, saveMotorsSettings, startMotorAction, stopMotorAction, getSpeedHistogram } from './lib/api';
+import { getMotorsSettings, saveMotorsSettings, startMotorAction, stopMotorAction, getSpeedHistogram, setMotorSpeed } from './lib/api';
 import masterData from './assets/masterdata.json';
 
 import linearIcon from './assets/icons/linear.svg';
@@ -33,7 +33,6 @@ const Motors = () => {
     const [isTestModalOpen, setIsTestModalOpen] = useState(false);
     const [testMotor, setTestMotor] = useState(null);
     const [testMotorIndex, setTestMotorIndex] = useState(-1);
-    const wsRef = useRef(null); // WebSocket reference
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -183,49 +182,27 @@ const Motors = () => {
         setIsTestModalOpen(true);
     };
 
-    const handleCloseTestModal = () => {
+    const handleCloseTestModal = async () => {
+        // Stop motor when closing modal
+        if (testMotorIndex !== -1) {
+            try {
+                await setMotorSpeed(testMotorIndex, 0);
+            } catch (error) {
+                console.error('Failed to stop motor on modal close:', error);
+            }
+        }
         setIsTestModalOpen(false);
         setTestMotor(null);
         setTestMotorIndex(-1);
-        if (wsRef.current) {
-            wsRef.current.close();
-            wsRef.current = null;
-        }
     };
 
-    // WebSocket logic for joystick
-    useEffect(() => {
-        if (isTestModalOpen) {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/ws/motors/control`;
-
-            wsRef.current = new WebSocket(wsUrl);
-
-            wsRef.current.onopen = () => {
-                console.log('Motor control WebSocket connected');
-            };
-
-            wsRef.current.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
-
-            return () => {
-                if (wsRef.current) {
-                    wsRef.current.close();
-                    wsRef.current = null;
-                }
-            };
-        }
-    }, [isTestModalOpen]);
-
-    const handleJoystickMove = (coords) => {
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && testMotorIndex !== -1) {
-            // coords.y is now speed (up is positive)
-            // Send speed command
-            wsRef.current.send(JSON.stringify({
-                motorIndex: testMotorIndex,
-                speed: coords.y
-            }));
+    const handleJoystickMove = async (coords) => {
+        if (testMotorIndex !== -1) {
+            try {
+                await setMotorSpeed(testMotorIndex, coords.y);
+            } catch (error) {
+                console.error('Failed to set motor speed:', error);
+            }
         }
     };
 
@@ -887,22 +864,16 @@ const Motors = () => {
                     okLabel="Close"
                     onOk={handleCloseTestModal}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                        <p style={{ textAlign: 'center', color: '#666' }}>
-                            Use the joystick below to control motor speed directly.
-                            <br />Up/Down controls speed (Full extension / Full retraction).
-                        </p>
-                        <div style={{ width: '300px', height: '300px', border: '1px solid #ccc', borderRadius: '4px' }}>
-                            <Polygon
-                                mode="joystick"
-                                src={joystickTestIcon}
-                                border={0}
-                                joystickColor="#3b82f6"
-                                onJoystickMove={handleJoystickMove}
-                                onJoystickStart={() => console.log('Joystick Active')}
-                                onJoystickEnd={() => console.log('Joystick Released')}
-                            />
-                        </div>
+                    <div style={{ width: '100%', aspectRatio: '1 / 1' }}>
+                        <Polygon
+                            mode="joystick"
+                            src={joystickTestIcon}
+                            border={0}
+                            joystickColor="#3b82f6"
+                            onJoystickMove={handleJoystickMove}
+                            onJoystickStart={() => console.log('Joystick Active')}
+                            onJoystickEnd={() => console.log('Joystick Released')}
+                        />
                     </div>
                 </ModalWindow>
             )}

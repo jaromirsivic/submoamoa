@@ -634,3 +634,11 @@ or in case of rest API requests it forwards the request to the FastAPI server
 using port 8000. Why are there two web server instances running on different ports.
 FastAPI server according to configuration (line 2: import react from '@vitejs/plugin-react')
 should support React. Why is it not used? Everything should run under one web server instance.
+
+1. Update Motors page, "Test Motor" button, Modal Window. Do not use web sockets. Use Rest API
+calls when joystick moves. Update as well backend.
+2. There should be no text on the modal window. Currently there is:
+Use the joystick below to control motor speed directly. Up/Down controls speed (Full extension / Full retraction).
+Remove this text.
+3. The Polygon component should have same width and height. It should be square. It should cover
+the content area of the modal window.

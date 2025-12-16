@@ -4,6 +4,7 @@ import json
 import os
 from typing import List
 from .j8 import J8
+from .motor import Motor
 from .linearmotor import LinearMotor
 from .speedhistogram import SpeedHistogram
 from .pin import PinType
