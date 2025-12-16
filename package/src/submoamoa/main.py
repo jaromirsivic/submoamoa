@@ -6,6 +6,9 @@ from typing import Any
 from contextlib import asynccontextmanager
 from . import settingscontroller
 from .camera import CameraController
+from .motorscontroller import MotorsController
+
+motors_controller = MotorsController()
 
 async def onload():
     print("Server loaded")
@@ -17,11 +20,13 @@ async def onload():
 async def lifespan(app: FastAPI):
     # Startup logic goes here
     print("Server starting up...")
+    motors_controller.start()
     # You can call your onload function here
     await onload()
     yield
     # Shutdown logic goes here
     print("Server shutting down...")
+    motors_controller.stop()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -71,7 +76,9 @@ async def save_motors_settings_endpoint(motors_settings: list[dict[str, Any]]):
     """Save motors settings to settings.json file"""
     settings = await settingscontroller.get_settings()
     settings["motors"] = motors_settings
-    return await settingscontroller.save_settings(settings)
+    await settingscontroller.save_settings(settings)
+    motors_controller.reset()
+    return {"success": True}
 
 @app.get("/api/settings/hot-zone")
 async def get_hot_zone_settings_endpoint():
@@ -101,7 +108,7 @@ async def save_general_settings_endpoint(general_settings: dict[str, Any]):
     
     # Reset controller with new settings
     try:
-        await reset_j8_controller()
+        motors_controller.reset()
     except Exception as e:
         print(f"Failed to reset controller after settings save: {e}")
         
@@ -121,47 +128,9 @@ class MotorActionStartRequest(BaseModel):
 class MotorActionStopRequest(BaseModel):
     pin_index: int
 
-# Lazy J8 instance
-_j8_instance = None
-
 async def get_j8():
-    """Get or create the J8 singleton instance using settings.json"""
-    global _j8_instance
-    if _j8_instance is None:
-        from .j8 import J8
-        # Get settings to determine host/port
-        settings = await settingscontroller.get_settings()
-        general_settings = settings.get("general", {})
-        controller_setup = general_settings.get("controllerSetup", {})
-        
-        mode = controller_setup.get("controller", "localhost")
-        if mode == "remote":
-            host = controller_setup.get("remoteHost", "192.168.0.1")
-            port = int(controller_setup.get("remotePort", 8888))
-            _j8_instance = J8(host=host, port=port)
-        else:
-             # localhost
-            _j8_instance = J8(host=None, port=None)
-            
-    return _j8_instance
-
-async def reset_j8_controller():
-    """Reset J8 controller with latest settings"""
-    j8 = await get_j8()
-    
-    # Reload settings to get latest host/port
-    settings = await settingscontroller.get_settings()
-    general_settings = settings.get("general", {})
-    controller_setup = general_settings.get("controllerSetup", {})
-    
-    mode = controller_setup.get("controller", "localhost")
-    if mode == "remote":
-        host = controller_setup.get("remoteHost", "192.168.0.1")
-        port = int(controller_setup.get("remotePort", 8888))
-        j8.reset(host=host, port=port)
-    else:
-        j8.reset(host=None, port=None)
-    return j8
+    """Get the J8 instance from the motors controller"""
+    return motors_controller.j8
 
 @app.get("/api/controller/status")
 async def get_controller_status_endpoint():
@@ -183,8 +152,7 @@ async def start_motor_action(request: MotorActionStartRequest):
     """Start motor action: set J8[pin_index] to pwm_multiplier"""
     try:
         j8 = await get_j8()
-        # Reset with current settings before action to ensure clean state
-        await reset_j8_controller()
+        # Note: We do not reset the controller here because it would interrupt the automatic execution loop.
         
         j8[request.pin_index].value = request.pwm_multiplier
         return {"success": True, "message": f"Pin {request.pin_index} set to {request.pwm_multiplier}"}

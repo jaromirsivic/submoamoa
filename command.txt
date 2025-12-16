@@ -610,3 +610,13 @@ Polygon component will be a square. Width is the same as Modal Window width. Hei
 Polygon component should be centered in the modal window.
 
 Update Motors page -> edit Modal Window. Change Type and Role components from Combobox to MultiSwitch.
+
+Create a motorscontroller.py file with MotorsController class and necessary methods and functions.
+The MotorsController class should
+contain a j8 property of type J8, an array of motors created based on settings.json and an execute method
+which will be executed
+as a separate thread. Inside the execute method there should be an infinite loop which will
+call go method of each enabled motor in the array. There will be as well a stop method which will be called
+when the MotorsController is stopped or when the FastAPI server is stopped. This method will end the infinite loop
+and delete all motors from the array and release the j8. There will be as well a reset method which
+will delete all motors from the array, reset the j8 and create new motors based on settings.json.

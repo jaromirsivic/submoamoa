@@ -150,7 +150,7 @@
             "automaticCalibrationEnabled": true
         },
         {
-            "enabled": true,
+            "enabled": false,
             "name": "linearMotor3",
             "type": "linear",
             "role": "general",
