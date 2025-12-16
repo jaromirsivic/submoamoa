@@ -149,7 +149,7 @@ class MotorActionStopRequest(BaseModel):
     pin_index: int
 
 class MotorSpeedRequest(BaseModel):
-    motor_index: int
+    motor_name: str
     speed: float
 
 async def get_j8():
@@ -200,11 +200,11 @@ async def set_motor_speed(request: MotorSpeedRequest):
     """Set motor speed via REST API"""
     try:
         motors = motors_controller.motors
-        if 0 <= request.motor_index < len(motors):
-            motors[request.motor_index].move(speed=float(request.speed))
-            return {"success": True, "motor_index": request.motor_index, "speed": request.speed}
+        if request.motor_name in motors:
+            motors[request.motor_name].move(speed=float(request.speed))
+            return {"success": True, "motor_name": request.motor_name, "speed": request.speed}
         else:
-            raise HTTPException(status_code=400, detail=f"Invalid motor index: {request.motor_index}")
+            raise HTTPException(status_code=404, detail=f"Motor not found: {request.motor_name}")
     except Exception as e:
         print(str(e))
         raise HTTPException(status_code=500, detail=str(e))

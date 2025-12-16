@@ -13,7 +13,7 @@ from .common import motor_frame, get_settings
 class MotorsController:
     def __init__(self):
         self._j8 = J8()
-        self._motors: List[LinearMotor] = []
+        self._motors: dict[str, Motor] = {}
         self._running = False
         self._thread = None
         self._lock = threading.RLock()
@@ -24,7 +24,7 @@ class MotorsController:
         return self._j8
 
     @property
-    def motors(self) -> List[LinearMotor]:
+    def motors(self) -> dict[str, Motor]:
         with self._lock:
             return self._motors
 
@@ -34,8 +34,6 @@ class MotorsController:
         """
         with self._lock:
             self.stop()
-            self._motors = []
-            self._j8.reset()
             
             # Load settings
             settings = get_settings()
@@ -74,7 +72,7 @@ class MotorsController:
                                 speed_histogram=speed_hist, 
                                 inertia=inertia
                             )
-                            self._motors.append(motor)
+                            self._motors[motor_config.get('name')] = motor
                         except Exception as e:
                             print(f"Error creating motor {motor_config.get('name')}: {e}")
 
@@ -84,7 +82,7 @@ class MotorsController:
         """
         while self._running:
             with self._lock:
-                for motor in self._motors:
+                for name, motor in self._motors.items():
                     try:
                         motor.go()
                     except Exception as e:
@@ -98,6 +96,7 @@ class MotorsController:
         """
         if self._running:
             return
+        self.reset()
         self._running = True
         self._thread = threading.Thread(target=self.execute, daemon=True)
         self._thread.start()
@@ -113,6 +112,6 @@ class MotorsController:
         
         with self._lock:
             # Delete all motors
-            self._motors = []
+            self._motors = {}
             # Release J8
             self._j8.release()

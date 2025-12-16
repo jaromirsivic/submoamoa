@@ -642,3 +642,6 @@ Use the joystick below to control motor speed directly. Up/Down controls speed (
 Remove this text.
 3. The Polygon component should have same width and height. It should be square. It should cover
 the content area of the modal window.
+
+1. Update Motors page, "Test Motor" button, Modal Window. Whenever a joystick is moved
+the frontend should call the backend passing motorName not motorIndex. Update the front end and the backend.

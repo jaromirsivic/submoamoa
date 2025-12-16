@@ -178,12 +178,12 @@ export const getSpeedHistogram = async () => {
 
 /**
  * Set motor speed
- * @param {number} motorIndex - Motor index to control
+ * @param {string} motorName - Motor name to control
  * @param {number} speed - Speed value (-1 to 1)
  * @returns {Promise<object>} Response from server
  */
-export const setMotorSpeed = async (motorIndex, speed) => {
-    return post('/api/motors/speed', { motor_index: motorIndex, speed });
+export const setMotorSpeed = async (motorName, speed) => {
+    return post('/api/motors/speed', { motor_name: motorName, speed });
 };
 
 // ============================================

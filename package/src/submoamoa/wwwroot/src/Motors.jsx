@@ -32,7 +32,6 @@ const Motors = () => {
     // Test Motor Modal state
     const [isTestModalOpen, setIsTestModalOpen] = useState(false);
     const [testMotor, setTestMotor] = useState(null);
-    const [testMotorIndex, setTestMotorIndex] = useState(-1);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -176,30 +175,28 @@ const Motors = () => {
         setEditingMotorIndex(-1);
     };
 
-    const handleOpenTestModal = (motor, index) => {
+    const handleOpenTestModal = (motor) => {
         setTestMotor(motor);
-        setTestMotorIndex(index);
         setIsTestModalOpen(true);
     };
 
     const handleCloseTestModal = async () => {
         // Stop motor when closing modal
-        if (testMotorIndex !== -1) {
+        if (testMotor) {
             try {
-                await setMotorSpeed(testMotorIndex, 0);
+                await setMotorSpeed(testMotor.name, 0);
             } catch (error) {
                 console.error('Failed to stop motor on modal close:', error);
             }
         }
         setIsTestModalOpen(false);
         setTestMotor(null);
-        setTestMotorIndex(-1);
     };
 
     const handleJoystickMove = async (coords) => {
-        if (testMotorIndex !== -1) {
+        if (testMotor) {
             try {
-                await setMotorSpeed(testMotorIndex, coords.y);
+                await setMotorSpeed(testMotor.name, coords.y);
             } catch (error) {
                 console.error('Failed to set motor speed:', error);
             }
@@ -560,7 +557,7 @@ const Motors = () => {
 
                                 <Button
                                     label="Test Motor"
-                                    onClick={() => handleOpenTestModal(motor, index)}
+                                    onClick={() => handleOpenTestModal(motor)}
                                     color="#3b82f6"
                                     style={{ marginTop: '0.5rem', width: '100%' }}
                                 />

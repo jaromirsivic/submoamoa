@@ -14,7 +14,7 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "inertia": 0,
+            "inertia": 0.08,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
