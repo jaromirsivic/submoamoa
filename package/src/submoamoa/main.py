@@ -211,7 +211,7 @@ async def websocket_motor_control(websocket: WebSocket):
                 
                 motors = motors_controller.motors
                 if 0 <= motor_index < len(motors):
-                    motors[motor_index].move(float(speed))
+                    motors[motor_index].move(speed=float(speed))
                     
     except WebSocketDisconnect:
         # print("Client disconnected from motor control")
@@ -230,15 +230,8 @@ async def get_speed_histogram_endpoint():
     for motor in motors:
         histogram_data = motor.get("histogram", [])
         if len(histogram_data) >= 2:
-            # Convert histogram data to format expected by SpeedHistogram
-            speed_histogram_input = [
-                {
-                    "pwm_multiplier": item.get("pwmMultiplier", 0),
-                    "forward_seconds": item.get("forwardSeconds", 0),
-                    "reverse_seconds": item.get("reverseSeconds", 0)
-                }
-                for item in histogram_data
-            ]
+            # Use histogram data directly (already in camelCase format)
+            speed_histogram_input = histogram_data
             try:
                 speed_histogram = SpeedHistogram(speed_histogram=speed_histogram_input)
                 # Convert to Chart2D format: list of {x, y} points

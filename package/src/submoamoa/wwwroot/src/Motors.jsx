@@ -895,7 +895,7 @@ const Motors = () => {
                         <div style={{ width: '300px', height: '300px', border: '1px solid #ccc', borderRadius: '4px' }}>
                             <Polygon
                                 mode="joystick"
-                                background="#f0f8ff"
+                                src={joystickTestIcon}
                                 border={0}
                                 joystickColor="#3b82f6"
                                 onJoystickMove={handleJoystickMove}

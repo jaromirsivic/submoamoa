@@ -14,7 +14,7 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "inertia": 0.82,
+            "inertia": 0,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -22,7 +22,7 @@
                     "reverseSeconds": 0
                 },
                 {
-                    "pwmMultiplier": 0.4,
+                    "pwmMultiplier": 0.1,
                     "forwardSeconds": 0,
                     "reverseSeconds": 0
                 },
@@ -60,7 +60,7 @@
                     ],
                     [
                         {
-                            "value": 0.4
+                            "value": 0.1
                         },
                         {
                             "value": 0
@@ -147,7 +147,68 @@
                     "reverseSeconds": 25
                 }
             ],
-            "automaticCalibrationEnabled": true
+            "automaticCalibrationEnabled": true,
+            "speedHistogram": {
+                "pwmMultiplier": 1,
+                "defaultState": "stop",
+                "histogram": [
+                    [
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.1
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.5
+                        },
+                        {
+                            "value": 55
+                        },
+                        {
+                            "value": 55
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.75
+                        },
+                        {
+                            "value": 40
+                        },
+                        {
+                            "value": 40
+                        }
+                    ],
+                    [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 25
+                        }
+                    ]
+                ]
+            }
         },
         {
             "enabled": false,

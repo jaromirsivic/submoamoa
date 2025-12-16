@@ -5,7 +5,7 @@ IF NOT EXIST .venv\Scripts\activate (uv venv)
 call .venv\Scripts\activate
 rem uv pip install -U ultralytics
 rem uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-uv add fastapi
-uv add uvicorn
+uv add fastapi --extra standard
+uv add uvicorn --extra standard
 uv add gpiozero pigpio
 pause

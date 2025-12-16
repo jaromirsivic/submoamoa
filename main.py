@@ -34,10 +34,10 @@ def test():
 
 def main():
    print("fsdfsdfds")
-   speed_histogram = SpeedHistogram(speed_histogram=[{"pwm_multiplier": 0, "forward_seconds": 0, "reverse_seconds": 0, "interpolated": False},
-   {"pwm_multiplier": 0.3, "forward_seconds": 15, "reverse_seconds": 9, "interpolated": False},
-   {"pwm_multiplier": 0.8, "forward_seconds": 10, "reverse_seconds": 8.7, "interpolated": False},
-   {"pwm_multiplier": 1, "forward_seconds": 7, "reverse_seconds": 7.5, "interpolated": False}])
+   speed_histogram = SpeedHistogram(speed_histogram=[{"pwmMultiplier": 0, "forwardSeconds": 0, "reverseSeconds": 0, "interpolated": False},
+   {"pwmMultiplier": 0.3, "forwardSeconds": 15, "reverseSeconds": 9, "interpolated": False},
+   {"pwmMultiplier": 0.8, "forwardSeconds": 10, "reverseSeconds": 8.7, "interpolated": False},
+   {"pwmMultiplier": 1, "forwardSeconds": 7, "reverseSeconds": 7.5, "interpolated": False}])
    for value in speed_histogram._forward_speed_histogram:
       print(value)
    print("")

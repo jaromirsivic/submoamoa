@@ -40,3 +40,19 @@ Update modals shown after user clicks on an Edit button on a Motors page the fol
 2. Update behavior in the section Duty Cycle. If the Enabled switch is off then Max Running Time (s) and Min Rest Time (s) are disabled as well.
 3. Add business validation that Forward Pin must be different than Reverse Pin. If they are the same the warning is displayed.
 4. Add business validation that the Name is not Empty, Name is no longer than 128 characters. Name is composed only with alphanumeric characters, numbers, spaces, underscore and -. The name must be unique there must be no other motor with the same name.
+
+Update the SpeedHistogram.py and all other related documents which use
+"pwm_multiplier", "forward_seconds" and "reverse_seconds" in the histogram dictionary.
+This keys should be renamed:
+"pwm_multiplier" -> "pwmMultiplier",
+"forward_seconds" -> "forwardSeconds",
+"reverse_seconds" -> "reverseSeconds"
+
+Rename as well "forward_speed" to "forwardSpeed" and "reverse_speed" to "reverseSpeed".
+
+On the Motors page, "Test Motor" button, Modal Window there are following problems:
+1. Background image is not properly displayed the joystick_test.svg should be used as a background.
+2. When joystick moves the following error is displayed:
+WebSocket error: LinearMotor.move() takes 1 positional argument but 2 were given.
+Only y coordinates should be sent to the backend. X coordinates should be discarded.
+Fix the issues.
