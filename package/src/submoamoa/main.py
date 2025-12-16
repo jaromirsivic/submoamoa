@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from typing import Any
 from contextlib import asynccontextmanager
+from fastapi.responses import FileResponse, JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.requests import Request
 from . import settingscontroller
 from .camera import CameraController
 from .motorscontroller import MotorsController
@@ -36,8 +39,25 @@ app.add_middleware(
     allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
+
+@app.exception_handler(404)
+async def spa_fallback_handler(request: Request, exc: StarletteHTTPException):
+    """
+    Fallback handler for Single Page Application routing.
+    If a 404 occurs and the path is NOT an API endpoint, serve index.html.
+    This allows React Router to handle the routing client-side.
+    """
+    if request.url.path.startswith("/api") or request.url.path.startswith("/ws"):
+        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+    
+    # Serve index.html for SPA routes
+    index_path = BASE_DIR / "wwwroot/dist/index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    
+    return JSONResponse(status_code=404, content={"detail": "Not Found"})
 
 # Get the directory of the current file
 BASE_DIR = Path(__file__).resolve().parent

@@ -627,3 +627,10 @@ should call move method of the Motor with the proper motor index and pass
 the joystick y coordinates as the speed parameter. Since the coordinates change happens
 very often you may keep the connection to the backend api open and send the coordinates
 periodically until the joystick is released.
+
+At the moment, when users web browser contacts the sytem it uses port 80 (http).
+First it contacts NodeJS server which either responds to the request directly
+or in case of rest API requests it forwards the request to the FastAPI server
+using port 8000. Why are there two web server instances running on different ports.
+FastAPI server according to configuration (line 2: import react from '@vitejs/plugin-react')
+should support React. Why is it not used? Everything should run under one web server instance.
