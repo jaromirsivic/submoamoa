@@ -513,6 +513,10 @@ const Polygon = ({
         const { clientX, clientY } = getClientCoords(e);
 
         if (mode === 'joystick' && isJoystickActive && joystickStatic) {
+            // If joystick was released, don't process moves (animation might still be running)
+            if (joystickReleasedRef.current) {
+                return;
+            }
             if (isTouch) e.preventDefault(); // Prevent scrolling while using joystick
             const normCoords = screenToNormalized(clientX, clientY);
 

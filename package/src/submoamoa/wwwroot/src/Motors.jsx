@@ -193,15 +193,63 @@ const Motors = () => {
         setTestMotor(null);
     };
 
-    const handleJoystickMove = async (coords) => {
+
+    // State to control whether joystick move events can be processed; ref to persist across renders
+    const canProcessJoystickMoveRef = React.useRef(false);
+
+    /**
+     * Called when the joystick interaction starts for the test motor.
+     * Enables processing of joystickMove events.
+     */
+    const handleJoystickStart = async () => {
+        canProcessJoystickMoveRef.current = true;
         if (testMotor) {
             try {
-                await setMotorSpeed(testMotor.name, coords.y);
+                console.log('Joystick Started');
             } catch (error) {
                 console.error('Failed to set motor speed:', error);
             }
         }
     };
+
+    /**
+     * Called on joystick move.
+     * Only sends setMotorSpeed if canProcessJoystickMove is true.
+     */
+    const motorSpeedBeingSetRef = React.useRef(false);
+    const handleJoystickMove = async (coords) => {
+        if (!canProcessJoystickMoveRef.current || motorSpeedBeingSetRef.current) {
+            // Should not process moves unless the joystick is active and no motor speed is being set
+            return;
+        }
+        if (testMotor) {
+            try {
+                motorSpeedBeingSetRef.current = true;
+                await setMotorSpeed(testMotor.name, coords.y);
+                motorSpeedBeingSetRef.current = false;
+                console.log('Joystick Moved: ' + coords.y);
+            } catch (error) {
+                console.error('Failed to set motor speed:', error);
+            }
+        }
+    };
+
+    /**
+     * Called when the joystick interaction ends.
+     * Disables processing of further joystickMove events.
+     */
+    const handleJoystickEnd = async () => {
+        canProcessJoystickMoveRef.current = false;
+        if (testMotor) {
+            try {
+                await setMotorSpeed(testMotor.name, 0);
+                console.log('Joystick Released');
+            } catch (error) {
+                console.error('Failed to set motor speed:', error);
+            }
+        }
+    };
+
 
 
     const handleSave = async () => {
@@ -870,8 +918,8 @@ const Motors = () => {
                             joystickLineMaxLength={0.35} 
                             joystickMoveInterval={50}                           
                             onJoystickMove={handleJoystickMove}
-                            onJoystickStart={() => console.log('Joystick Active')}
-                            onJoystickEnd={() => console.log('Joystick Released')}
+                            onJoystickStart={handleJoystickStart}
+                            onJoystickEnd={handleJoystickEnd}
                         />
                     </div>
                 </ModalWindow>

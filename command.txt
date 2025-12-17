@@ -665,9 +665,27 @@ with "joystickMoveInterval" in case that user is rapidly moving the joystick,
 he releases it (so the movement stopped) in between two intervals. Aparently onJoystickEnd is triggered by
 the Polygon component but then after the time interval elapses it triggers onJoystickMove event.
 Correct behavior is this:
-//user clicks in the Polygon component
-onJoystickStart()
-onJoystickMove(x, y) - triggered when user moves the joystick
-//user releases the joystick
-onJoystickMove(0, 0) - if there was at least one movement after the onJoystickStart
-onJoystickEnd()
+	//user clicks in the Polygon component
+	onJoystickStart()
+	onJoystickMove(x, y) - triggered when user moves the joystick
+	//user releases the joystick
+	onJoystickMove(0, 0) - if there was at least one movement after the onJoystickStart
+	onJoystickEnd()
+	//another onJoystickMove must not be sent here it can be sent only after
+	//the user clicks again and it will contain proper coordinates
+
+Update the Polygon component. There is an issue with onJoystickMove after onJoystickEnd was called.
+When user mouse up happens (or on the mobile phone he is no longer pressing the screen). There should
+be one last onJoystickMove event triggered with x=0, y=0, then onJoystickEnd should be triggered
+and then no more onJoystickMoves should be called (unless user starts using joystick again by pressing
+mouse button). Animation may still happen even after onJoystickEnd, but that will not trigger onJoystickMove.
+Correct behavior of how events are triggered is this:
+	//user clicks in the Polygon component
+	onJoystickStart()
+	//user moves mouse cursor or finger on the screen
+	onJoystickMove(x, y)
+	//user releases the joystick
+	onJoystickMove(0, 0) - if there was at least one movement after the onJoystickStart
+	onJoystickEnd()
+	//another onJoystickMove must not be sent here even if the snap animation is being rendered.
+	//it can be sent only after the user clicks again and starts moving the mouse
