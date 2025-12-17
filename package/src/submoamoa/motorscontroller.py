@@ -75,6 +75,9 @@ class MotorsController:
                             self._motors[motor_config.get('name')] = motor
                         except Exception as e:
                             print(f"Error creating motor {motor_config.get('name')}: {e}")
+            
+            # starts the motor controller
+            self.start()
 
     def execute(self):
         """
@@ -96,7 +99,6 @@ class MotorsController:
         """
         if self._running:
             return
-        self.reset()
         self._running = True
         self._thread = threading.Thread(target=self.execute, daemon=True)
         self._thread.start()

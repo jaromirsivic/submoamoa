@@ -38,8 +38,7 @@ const Polygon = ({
     joystickSnapAnimationDuration = 0.1, // seconds
     joystickLineColor1 = '#5555ffff', // color when dynamic on static
     joystickLineColor2 = '#ff0000ff', // color when at max distance
-    joystickZeroRadius = 0.05, // dead zone radius (fraction of max length)
-    //joystickZeroRadius = 0.05, // dead zone radius (fraction of max length)
+    joystickZeroRadius = 0.01, // dead zone radius (fraction of max length)
     onJoystickMove, // callback with { x, y } normalized offset from center
     onJoystickStart, // callback when joystick becomes active
     onJoystickEnd // callback when joystick is released

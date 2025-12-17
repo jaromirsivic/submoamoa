@@ -81,7 +81,8 @@ class J8(list):
                         self._error_message += 'Try to ping the host using "ping -c 1 {host}". '
                         self._error_message += 'Try to run the daemon with sudo. '
                         self._error_message += 'Try to restart the daemon with sudo pigpiod -x.'
-                        return False
+                        return
+                    
                 # try to get the pin factory using host and port from the settings.json
                 elif controller == "remote":
                     self._pin_factory = self._get_pin_factory(host=remote_host, port=remote_port)
@@ -92,7 +93,7 @@ class J8(list):
                         self._error_message += 'Try to ping the remote host using "ping -c 1 {remote_host}". '
                         self._error_message += 'Try to run the daemon with sudo on the remote host. '
                         self._error_message += 'Try to restart the daemon with sudo pigpiod -x on the remote host.'
-                        return False
+                        return
                 # there is no pin factory
                 else:
                     self._pin_factory = None

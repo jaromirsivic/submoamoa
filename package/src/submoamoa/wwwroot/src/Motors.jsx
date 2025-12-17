@@ -866,7 +866,8 @@ const Motors = () => {
                             mode="joystick"
                             src={joystickTestIcon}
                             border={0}
-                            joystickColor="#3b82f6"
+                            joystickColor="#777777aa"
+                            joystickLineMaxLength={0.35}                            
                             onJoystickMove={handleJoystickMove}
                             onJoystickStart={() => console.log('Joystick Active')}
                             onJoystickEnd={() => console.log('Joystick Released')}

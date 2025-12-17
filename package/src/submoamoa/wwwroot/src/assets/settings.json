@@ -14,7 +14,7 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "inertia": 0.08,
+            "inertia": 0.78,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -23,8 +23,8 @@
                 },
                 {
                     "pwmMultiplier": 0.1,
-                    "forwardSeconds": 0,
-                    "reverseSeconds": 0
+                    "forwardSeconds": 150,
+                    "reverseSeconds": 150
                 },
                 {
                     "pwmMultiplier": 0.5,
@@ -63,10 +63,10 @@
                             "value": 0.1
                         },
                         {
-                            "value": 0
+                            "value": 150
                         },
                         {
-                            "value": 0
+                            "value": 150
                         }
                     ],
                     [
@@ -400,7 +400,7 @@
     "general": {
         "controllerSetup": {
             "controller": "remote",
-            "remoteHost": "192.168.68.54",
+            "remoteHost": "192.168.68.52",
             "remotePort": 8888
         }
     }

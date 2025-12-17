@@ -33,8 +33,10 @@ class LinearMotor(Motor):
     def _compute_speed_step_index_in_histogram(self):
         resolution = self._speed_histogram.resolution
         frames_to_reach_max_speed = self._inertia / motor_frame
+        # if inertia is very small then set speed step to a very large number
         if frames_to_reach_max_speed < epsilon:
-            result = 1
+            result = 1000000000
+        # if inertia is not very small then compute speed step
         else:
             result = resolution / frames_to_reach_max_speed
         return result
