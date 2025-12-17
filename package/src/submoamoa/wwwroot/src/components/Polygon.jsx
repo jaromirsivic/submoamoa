@@ -35,10 +35,12 @@ const Polygon = ({
     joystickSize = 48, // ~0.5 inches at 96 DPI
     joystickLineWidth = 2,
     joystickLineMaxLength = 0.25, // 25% of smaller dimension
+    joystickLineMaxLengthMultiplierMode = 'minWidthHeight', // 'minWidthHeight' | 'width' | 'height'
     joystickSnapAnimationDuration = 0.1, // seconds
     joystickLineColor1 = '#5555ffff', // color when dynamic on static
     joystickLineColor2 = '#ff0000ff', // color when at max distance
     joystickZeroRadius = 0.01, // dead zone radius (fraction of max length)
+    joystickMoveInterval = 0, // interval in ms to throttle onJoystickMove calls (0 = no throttle)
     onJoystickMove, // callback with { x, y } normalized offset from center
     onJoystickStart, // callback when joystick becomes active
     onJoystickEnd // callback when joystick is released
@@ -52,6 +54,14 @@ const Polygon = ({
     const [joystickDynamic, setJoystickDynamic] = useState(null); // { x, y } normalized
     const [isJoystickActive, setIsJoystickActive] = useState(false);
     const joystickAnimationRef = useRef(null);
+
+    // Joystick move throttling state
+    const lastJoystickMoveTimeRef = useRef(0);
+    const pendingJoystickMoveRef = useRef(null); // stores pending {x, y} to send
+    const joystickThrottleTimeoutRef = useRef(null);
+    const lastSentJoystickCoordsRef = useRef(null); // stores last sent {x, y}
+    const joystickReleasedRef = useRef(false); // prevents throttle callbacks after release
+    const joystickHadMovementRef = useRef(false); // tracks if there was movement since start
 
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
@@ -134,6 +144,19 @@ const Polygon = ({
             y: normY * rect.height + rect.top
         };
     }, []);
+
+    // Get reference dimension for joystick max length calculation based on mode
+    const getJoystickReferenceDimension = useCallback(() => {
+        switch (joystickLineMaxLengthMultiplierMode) {
+            case 'width':
+                return containerSize.width;
+            case 'height':
+                return containerSize.height;
+            case 'minWidthHeight':
+            default:
+                return Math.min(containerSize.width, containerSize.height);
+        }
+    }, [joystickLineMaxLengthMultiplierMode, containerSize]);
 
     // Check if screen point is near a normalized point
     const isNearPoint = (screenX, screenY, normPoint, threshold = 10) => {
@@ -320,8 +343,8 @@ const Polygon = ({
             const dx = dynamicPos.x - staticPos.x;
             const dy = dynamicPos.y - staticPos.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            const smallerDim = Math.min(containerSize.width, containerSize.height);
-            const maxDist = smallerDim * joystickLineMaxLength;
+            const referenceDim = getJoystickReferenceDimension();
+            const maxDist = referenceDim * joystickLineMaxLength;
             const distRatio = Math.min(1, dist / maxDist);
 
             // Interpolate line color
@@ -372,11 +395,20 @@ const Polygon = ({
 
             ctx.restore();
         }
-    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleColor, mode, joystickStatic, joystickDynamic, joystickColor, joystickSize, joystickLineWidth, joystickLineColor1, joystickLineColor2, joystickLineMaxLength, containerSize]);
+    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleColor, mode, joystickStatic, joystickDynamic, joystickColor, joystickSize, joystickLineWidth, joystickLineColor1, joystickLineColor2, joystickLineMaxLength, containerSize, getJoystickReferenceDimension]);
 
     useEffect(() => {
         draw();
     }, [draw]);
+
+    // Cleanup throttle timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (joystickThrottleTimeoutRef.current) {
+                clearTimeout(joystickThrottleTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Handle click
     const handleClick = (e) => {
@@ -445,6 +477,10 @@ const Polygon = ({
                 joystickAnimationRef.current = null;
             }
 
+            // Reset joystick session state
+            joystickReleasedRef.current = false;
+            joystickHadMovementRef.current = false;
+
             const normCoords = screenToNormalized(clientX, clientY);
             setJoystickStatic(normCoords);
             setJoystickDynamic(normCoords);
@@ -480,11 +516,9 @@ const Polygon = ({
             if (isTouch) e.preventDefault(); // Prevent scrolling while using joystick
             const normCoords = screenToNormalized(clientX, clientY);
 
-            // Calculate max length in normalized coordinates based on smaller dimension
-            const smallerDim = Math.min(containerSize.width, containerSize.height);
-            const maxLengthPx = smallerDim * joystickLineMaxLength;
-            const maxLengthNormX = maxLengthPx / containerSize.width;
-            const maxLengthNormY = maxLengthPx / containerSize.height;
+            // Calculate max length in normalized coordinates based on reference dimension
+            const referenceDim = getJoystickReferenceDimension();
+            const maxLengthPx = referenceDim * joystickLineMaxLength;
 
             // Calculate distance from static point
             const dx = normCoords.x - joystickStatic.x;
@@ -513,12 +547,68 @@ const Polygon = ({
                 const offsetY = (clampedCoords.y - joystickStatic.y) / (maxLengthPx / containerSize.height);
                 const distRatio = distPx / maxLengthPx;
 
-                // Apply dead zone - if within joystickZeroRadius, report 0,0
+                // Calculate the coords to send
+                let coordsToSend;
                 if (distRatio <= joystickZeroRadius) {
-                    onJoystickMove({ x: 0, y: 0 });
+                    coordsToSend = { x: 0, y: 0 };
                 } else {
                     // Invert Y axis: Up (smaller screen Y) should be positive
-                    onJoystickMove({ x: offsetX, y: -offsetY });
+                    coordsToSend = { x: offsetX, y: -offsetY };
+                }
+
+                // Mark that there was movement
+                joystickHadMovementRef.current = true;
+
+                // Throttling logic
+                if (joystickMoveInterval <= 0) {
+                    // No throttling - call immediately
+                    onJoystickMove(coordsToSend);
+                    lastSentJoystickCoordsRef.current = coordsToSend;
+                } else {
+                    const now = Date.now();
+                    const timeSinceLastCall = now - lastJoystickMoveTimeRef.current;
+
+                    if (timeSinceLastCall >= joystickMoveInterval) {
+                        // Interval has passed - call immediately
+                        onJoystickMove(coordsToSend);
+                        lastJoystickMoveTimeRef.current = now;
+                        lastSentJoystickCoordsRef.current = coordsToSend;
+                        pendingJoystickMoveRef.current = null;
+
+                        // Clear any pending timeout
+                        if (joystickThrottleTimeoutRef.current) {
+                            clearTimeout(joystickThrottleTimeoutRef.current);
+                            joystickThrottleTimeoutRef.current = null;
+                        }
+                    } else {
+                        // Store pending coords
+                        pendingJoystickMoveRef.current = coordsToSend;
+
+                        // Schedule callback if not already scheduled
+                        if (!joystickThrottleTimeoutRef.current) {
+                            const remainingTime = joystickMoveInterval - timeSinceLastCall;
+                            joystickThrottleTimeoutRef.current = setTimeout(() => {
+                                joystickThrottleTimeoutRef.current = null;
+
+                                // Don't fire if joystick was released
+                                if (joystickReleasedRef.current) {
+                                    pendingJoystickMoveRef.current = null;
+                                    return;
+                                }
+
+                                const pending = pendingJoystickMoveRef.current;
+                                const lastSent = lastSentJoystickCoordsRef.current;
+
+                                // Only call if position changed
+                                if (pending && (!lastSent || pending.x !== lastSent.x || pending.y !== lastSent.y)) {
+                                    onJoystickMove(pending);
+                                    lastJoystickMoveTimeRef.current = Date.now();
+                                    lastSentJoystickCoordsRef.current = pending;
+                                }
+                                pendingJoystickMoveRef.current = null;
+                            }, remainingTime);
+                        }
+                    }
                 }
             }
             return;
@@ -546,7 +636,32 @@ const Polygon = ({
     // Handle mouse/touch up
     const handlePointerUp = () => {
         if (mode === 'joystick' && isJoystickActive && joystickStatic && joystickDynamic) {
-            // Animate snap back
+            // Mark as released immediately to prevent throttle callbacks
+            joystickReleasedRef.current = true;
+
+            // Clear throttle timeout
+            if (joystickThrottleTimeoutRef.current) {
+                clearTimeout(joystickThrottleTimeoutRef.current);
+                joystickThrottleTimeoutRef.current = null;
+            }
+
+            // Reset throttling refs
+            pendingJoystickMoveRef.current = null;
+            lastSentJoystickCoordsRef.current = null;
+            lastJoystickMoveTimeRef.current = 0;
+
+            // Fire callbacks immediately (before animation)
+            // If there was movement, send final (0, 0) position
+            if (joystickHadMovementRef.current && onJoystickMove) {
+                onJoystickMove({ x: 0, y: 0 });
+            }
+
+            // Fire end callback
+            if (onJoystickEnd) {
+                onJoystickEnd();
+            }
+
+            // Animate snap back (visual only, no callbacks at end)
             const startTime = performance.now();
             const startPos = { ...joystickDynamic };
             const endPos = { ...joystickStatic };
@@ -574,14 +689,6 @@ const Polygon = ({
                     setJoystickDynamic(null);
                     setIsJoystickActive(false);
                     joystickAnimationRef.current = null;
-
-                    if (onJoystickMove) {
-                        onJoystickMove({ x: 0, y: 0 });
-                    }
-
-                    if (onJoystickEnd) {
-                        onJoystickEnd();
-                    }
                 }
             };
 

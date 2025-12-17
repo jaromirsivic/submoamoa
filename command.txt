@@ -645,3 +645,29 @@ the content area of the modal window.
 
 1. Update Motors page, "Test Motor" button, Modal Window. Whenever a joystick is moved
 the frontend should call the backend passing motorName not motorIndex. Update the front end and the backend.
+
+Update the Polygon component:
+1. Add new props "joystickMoveInterval" where user can specify the interval in miliseconds which
+limits how often is the onJoystickMove called. For example if the "joystickMoveInterval" is 500 then
+there can be at most two onJoystickMove calls. The "joystickMoveInterval" is non blocking which means
+that rendering of joystick is not affected and in case the joysctick moved slightly during the interval
+period another onJoystickMove will be triggered. On the other hand if joystick position did not change during
+last interval the onJoystickMove will not be triggered. Default value of "joystickMoveInterval" is 0.
+2. Add new props "joystickLineMaxLengthMultiplierMode" which defines how the real joystickLineMaxLength is computed.
+At the moment the real joystickLineMaxLength is computed out of joystickLineMaxLength props and min(width, height)
+of the Polygon component. This mode will be called "minWidthHeight" and it will be a default mode
+of the Polygon component. There will be as well mode "width" and mode "height". Mode "width" will take
+width of the polygon component into the computation of the real joystickLineMaxLength. Mode "height"
+will tak height of the polygon component into the computation of the real joystickLineMaxLength.
+
+Update the Polygon component. There is an issue with onJoystickMove in combination
+with "joystickMoveInterval" in case that user is rapidly moving the joystick,
+he releases it (so the movement stopped) in between two intervals. Aparently onJoystickEnd is triggered by
+the Polygon component but then after the time interval elapses it triggers onJoystickMove event.
+Correct behavior is this:
+//user clicks in the Polygon component
+onJoystickStart()
+onJoystickMove(x, y) - triggered when user moves the joystick
+//user releases the joystick
+onJoystickMove(0, 0) - if there was at least one movement after the onJoystickStart
+onJoystickEnd()
