@@ -60,13 +60,28 @@ const Cameras = () => {
     const [tempState, setTempState] = useState({});
 
     // ========================
-    // Rotation Options
+    // Options
     // ========================
     const rotateOptions = [
         { label: '0', value: '0' },
         { label: '90', value: '90' },
         { label: '180', value: '180' },
         { label: '270', value: '270' }
+    ];
+
+    const inputDeviceOptions = [
+        { label: '0', value: '0' },
+        { label: '1', value: '1' },
+        { label: '2', value: '2' },
+        { label: '3', value: '3' }
+    ];
+
+    const resolutionOptions = [
+        { label: '640 x 480', value: '640 x 480' },
+        { label: '800 x 600', value: '800 x 600' },
+        { label: '1280 x 720', value: '1280 x 720' },
+        { label: '1920 x 1080', value: '1920 x 1080' },
+        { label: '3840 x 2160', value: '3840 x 2160' }
     ];
 
     // ========================
@@ -241,25 +256,21 @@ const Cameras = () => {
                     okLabel="Save"
                 >
                     <ColumnLayout gap="0.75rem">
-                        <HorizontalSeparator label="General Setup" fullWidth={true} />
-                        <Textbox
+                        <HorizontalSeparator label="General Setup" fullWidth={true} bleed="1rem" />
+                        <ComboBox
                             label="Input Device Index"
+                            items={inputDeviceOptions}
                             value={tempState.inputDeviceIndex}
                             onChange={(val) => updateTempState('inputDeviceIndex', val)}
                         />
-                        <Textbox
+                        <ComboBox
                             label="Preferred resolution"
+                            items={resolutionOptions}
                             value={tempState.preferredResolution}
                             onChange={(val) => updateTempState('preferredResolution', val)}
                         />
-                        <Textbox
-                            label="Accepted Resolution"
-                            value={tempState.acceptedResolution}
-                            onChange={(val) => updateTempState('acceptedResolution', val)}
-                            disabled={true}
-                        />
 
-                        <HorizontalSeparator label="Flip and Rotate" fullWidth={true} />
+                        <HorizontalSeparator label="Flip and Rotate" fullWidth={true} bleed="1rem" />
                         <Switch
                             label="Flip Horizontally"
                             value={tempState.flipHorizontally}
@@ -292,7 +303,7 @@ const Cameras = () => {
                     okLabel="Save"
                 >
                     <ColumnLayout gap="0.75rem">
-                        <HorizontalSeparator label="Crop" fullWidth={true} />
+                        <HorizontalSeparator label="Crop" fullWidth={true} bleed="1rem" />
                         <Textbox
                             label="Top"
                             value={tempState.manualCropTop}
@@ -314,7 +325,7 @@ const Cameras = () => {
                             onChange={(val) => updateTempState('manualCropRight', val)}
                         />
 
-                        <HorizontalSeparator label="Stretch" fullWidth={true} />
+                        <HorizontalSeparator label="Stretch" fullWidth={true} bleed="1rem" />
                         <Textbox
                             label="Width"
                             value={tempState.manualStretchWidth}
@@ -341,7 +352,7 @@ const Cameras = () => {
                     okLabel="Save"
                 >
                     <ColumnLayout gap="0.75rem">
-                        <HorizontalSeparator label="Crop" fullWidth={true} />
+                        <HorizontalSeparator label="Crop" fullWidth={true} bleed="1rem" />
                         <Textbox
                             label="Top"
                             value={tempState.aiCropTop}
@@ -363,7 +374,7 @@ const Cameras = () => {
                             onChange={(val) => updateTempState('aiCropRight', val)}
                         />
 
-                        <HorizontalSeparator label="Stretch" fullWidth={true} />
+                        <HorizontalSeparator label="Stretch" fullWidth={true} bleed="1rem" />
                         <Textbox
                             label="Width"
                             value={tempState.aiStretchWidth}
@@ -382,4 +393,3 @@ const Cameras = () => {
 };
 
 export default Cameras;
-
