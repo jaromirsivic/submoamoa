@@ -739,3 +739,17 @@ a Modal Window will appear. There will be appropriate input controls in the wind
 and ComboBox components to plain TextFields (the Same approach and style like on the Motors page)
 3. Fix the following issue. When user tries to navigate to another page from the Camera page
 nothing happens. He still remains on the Camera page. Fix it.
+
+There are following issues on the Camera Page:
+1. When I click on the Menu Button in the Menu and then when I click on the Main Page
+the Main Page is not displayed, the url in the browser changes but I still see Camera page,
+there must be something wrong with the single page application that it does not render
+main page correctly and stays on the Camera Page.
+Expected behavior: the Main Page is displayed.
+
+Create a new web page Cameras.jsx. It will be placed in the menu just below the "Camera" row
+and its label will be "Camera(s)". The page will look almost like the "Camera" page, except
+there will be no "Preview" section in the first and second panel and no "Attention Area" in the third panel.
+Those sections should be removed as well from the Modal Windows.
+Make sure that user can correctly navigate to this page and from this page through the menu.
+Update all necessary files to add this new page.

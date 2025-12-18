@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import Panel from './components/Panel';
 import Button from './components/Button';
 import ComboBox from './components/ComboBox';
@@ -6,7 +6,6 @@ import Textbox from './components/Textbox';
 import Switch from './components/Switch';
 import ColumnLayout from './components/ColumnLayout';
 import HorizontalSeparator from './components/HorizontalSeparator';
-import Polygon from './components/Polygon';
 import ModalWindow from './components/ModalWindow';
 import StaticText from './components/StaticText';
 import editIcon from './assets/icons/edit.svg';
@@ -19,12 +18,9 @@ const RenderStaticField = ({ label, value }) => (
 );
 
 /**
- * Camera settings page with three panels:
- * 1. Camera - General settings, flip/rotate, and camera preview
- * 2. Manual Control - Input Img - Crop and stretch settings for manual control
- * 3. AI Agent - Input Img - Crop, stretch, and attention area settings for AI
+ * Cameras settings page (simplified version of Camera page without previews)
  */
-const Camera = () => {
+const Cameras = () => {
     // ========================
     // State: Camera Panel
     // ========================
@@ -54,9 +50,7 @@ const Camera = () => {
     const [aiCropRight, setAiCropRight] = useState('0% (0 pixels)');
     const [aiStretchWidth, setAiStretchWidth] = useState('640 pixels');
     const [aiStretchHeight, setAiStretchHeight] = useState('480 pixels');
-    const [attentionAreaEnabled, setAttentionAreaEnabled] = useState(false);
-    const [attentionAreaPolygons, setAttentionAreaPolygons] = useState([]);
-
+    
     // ========================
     // Modals State
     // ========================
@@ -64,14 +58,6 @@ const Camera = () => {
     
     // Temp state for editing
     const [tempState, setTempState] = useState({});
-
-    // Mount state to defer heavy components
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-        return () => setIsMounted(false);
-    }, []);
 
     // ========================
     // Rotation Options
@@ -110,14 +96,13 @@ const Camera = () => {
             state.aiCropRight = aiCropRight;
             state.aiStretchWidth = aiStretchWidth;
             state.aiStretchHeight = aiStretchHeight;
-            state.attentionAreaEnabled = attentionAreaEnabled;
         }
         setTempState(state);
         setActiveModal(modalName);
     }, [
         inputDeviceIndex, preferredResolution, acceptedResolution, flipHorizontally, flipVertically, rotateDegrees,
         manualCropTop, manualCropLeft, manualCropBottom, manualCropRight, manualStretchWidth, manualStretchHeight,
-        aiCropTop, aiCropLeft, aiCropBottom, aiCropRight, aiStretchWidth, aiStretchHeight, attentionAreaEnabled
+        aiCropTop, aiCropLeft, aiCropBottom, aiCropRight, aiStretchWidth, aiStretchHeight
     ]);
 
     const closeModal = useCallback(() => {
@@ -147,7 +132,6 @@ const Camera = () => {
             setAiCropRight(tempState.aiCropRight);
             setAiStretchWidth(tempState.aiStretchWidth);
             setAiStretchHeight(tempState.aiStretchHeight);
-            setAttentionAreaEnabled(tempState.attentionAreaEnabled);
         }
         closeModal();
     }, [activeModal, tempState, closeModal]);
@@ -155,40 +139,6 @@ const Camera = () => {
     const updateTempState = useCallback((key, value) => {
         setTempState(prev => ({ ...prev, [key]: value }));
     }, []);
-
-    const handleShowFullScreenCamera = useCallback(() => {
-        console.log('Show full screen camera preview');
-    }, []);
-
-    const handleShowFullScreenManual = useCallback(() => {
-        console.log('Show full screen manual control preview');
-    }, []);
-
-    const handleShowFullScreenAI = useCallback(() => {
-        console.log('Show full screen AI agent preview');
-    }, []);
-
-    const handleAttentionAreaPolygonsChange = useCallback((polygons) => {
-        setAttentionAreaPolygons(polygons);
-    }, []);
-
-    // ========================
-    // Styles
-    // ========================
-    const previewContainerStyle = {
-        width: '100%',
-        height: '200px',
-        backgroundColor: '#f0f0f0',
-        border: '1px solid #ddd',
-        borderRadius: '4px',
-        marginBottom: '0.5rem',
-        position: 'relative' // Ensure polygon container is positioned
-    };
-
-    const buttonContainerStyle = {
-        display: 'flex',
-        justifyContent: 'flex-end'
-    };
 
     return (
         <div className="page-container">
@@ -218,23 +168,6 @@ const Camera = () => {
                             <RenderStaticField label="Flip Horizontally" value={flipHorizontally ? 'Yes' : 'No'} />
                             <RenderStaticField label="Flip Vertically" value={flipVertically ? 'Yes' : 'No'} />
                             <RenderStaticField label="Rotate (degrees)" value={rotateDegrees} />
-
-                            <HorizontalSeparator label="Preview" fullWidth={true} />
-                            <div style={previewContainerStyle}>
-                                {isMounted && (
-                                    <Polygon
-                                        mode="viewer"
-                                        background="#f8f8f8"
-                                        style={{ width: '100%', height: '100%' }}
-                                    />
-                                )}
-                            </div>
-                            <div style={buttonContainerStyle}>
-                                <Button
-                                    label="Show Full Screen"
-                                    onClick={handleShowFullScreenCamera}
-                                />
-                            </div>
                         </ColumnLayout>
                     </Panel>
                 </div>
@@ -263,23 +196,6 @@ const Camera = () => {
                             <HorizontalSeparator label="Stretch" fullWidth={true} />
                             <RenderStaticField label="Width" value={manualStretchWidth} />
                             <RenderStaticField label="Height" value={manualStretchHeight} />
-
-                            <HorizontalSeparator label="Preview" fullWidth={true} />
-                            <div style={previewContainerStyle}>
-                                {isMounted && (
-                                    <Polygon
-                                        mode="viewer"
-                                        background="#f8f8f8"
-                                        style={{ width: '100%', height: '100%' }}
-                                    />
-                                )}
-                            </div>
-                            <div style={buttonContainerStyle}>
-                                <Button
-                                    label="Show Full Screen"
-                                    onClick={handleShowFullScreenManual}
-                                />
-                            </div>
                         </ColumnLayout>
                     </Panel>
                 </div>
@@ -308,28 +224,6 @@ const Camera = () => {
                             <HorizontalSeparator label="Stretch" fullWidth={true} />
                             <RenderStaticField label="Width" value={aiStretchWidth} />
                             <RenderStaticField label="Height" value={aiStretchHeight} />
-
-                            <HorizontalSeparator label="Attention Area" fullWidth={true} />
-                            <RenderStaticField label="Attention Area Enabled" value={attentionAreaEnabled ? 'Yes' : 'No'} />
-                            <div style={previewContainerStyle}>
-                                {isMounted && (
-                                    <Polygon
-                                        mode={attentionAreaEnabled ? 'designer' : 'viewer'}
-                                        background="#f8f8f8"
-                                        style={{ width: '100%', height: '100%' }}
-                                        polygons={attentionAreaPolygons}
-                                        onChange={handleAttentionAreaPolygonsChange}
-                                        borderColor="#ff6600"
-                                        fillColor="#ff660033"
-                                    />
-                                )}
-                            </div>
-                            <div style={buttonContainerStyle}>
-                                <Button
-                                    label="Show Full Screen"
-                                    onClick={handleShowFullScreenAI}
-                                />
-                            </div>
                         </ColumnLayout>
                     </Panel>
                 </div>
@@ -480,13 +374,6 @@ const Camera = () => {
                             value={tempState.aiStretchHeight}
                             onChange={(val) => updateTempState('aiStretchHeight', val)}
                         />
-
-                        <HorizontalSeparator label="Attention Area" fullWidth={true} />
-                        <Switch
-                            label="Attention Area Enabled"
-                            value={tempState.attentionAreaEnabled}
-                            onChange={(val) => updateTempState('attentionAreaEnabled', val)}
-                        />
                     </ColumnLayout>
                 </ModalWindow>
             )}
@@ -494,4 +381,5 @@ const Camera = () => {
     );
 };
 
-export default Camera;
+export default Cameras;
+
