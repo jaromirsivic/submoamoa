@@ -760,3 +760,4 @@ Update Cameras page -> Camera Panel -> edit button -> Modal Window:
 3. There is a horizontal scrollbar displayed in the modal window.
 Probably the width of some components is too big. Make them smaller so the horizontal scroll bar will
 disapear.
+

@@ -378,6 +378,19 @@
         "reticleColor": "#ff0000cc",
         "reticleSize": 1
     },
+    "cameras": [
+        {
+            "general": {
+                "deviceIndex": 0,
+                "name": "cam1",
+                "resolutionWidth": 1920,
+                "resolutionHeight": 1080,
+                "flipHorizontally": false,
+                "flipVertically": false,
+                "rotate": "0"
+            }
+        }
+    ],
     "hotZone": {
         "units": "in",
         "computationQuality": 30,
