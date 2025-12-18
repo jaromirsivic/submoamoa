@@ -689,3 +689,53 @@ Correct behavior of how events are triggered is this:
 	onJoystickEnd()
 	//another onJoystickMove must not be sent here even if the snap animation is being rendered.
 	//it can be sent only after the user clicks again and starts moving the mouse
+
+Update Settings -> Camera page:
+We will start the design of this page from the scratch.
+There will be three panels on the page.
+The first panel is called "Camera". There will be following components on the panel:
+- General Setup: HorizontalSeparator
+- - Input Device Index: TextField(value=0)
+- - Preferred resolution: TextField(value=1920 x 1080)
+- - Accepted Resolution: TextField(1920 x 1080)
+- Flip and Rotate: HorizontalSeparator
+- - Flip Horizontally: Switch
+- - Flip Vertically: Switch
+- - Rotate (degrees): Combobox(possible values=[0, 90, 180, 270], value=0)
+- Preview: HorizontalSeparator
+- - Live Preview: Polygon(image=blank)
+- - Show Full Screen: Button
+The second panel is called "Manual Control - Input Img". There will be following components on the panel:
+- Crop: HorizontalSeparator
+- - Top: TextField(value="0% (0 pixels)")
+- - Left: TextField(value="0% (0 pixels)")
+- - Bottom: TextField(value="0% (0 pixels)")
+- - Right: TextField(value="0% (0 pixels)")
+- Stretch: HorizontalSeparator
+- - Width: TextField(value="640 pixels")
+- - Height: TextField(value="480 pixels")
+- Preview: HorizontalSeparator
+- - Live Preview: Polygon(image=blank)
+- - Show Full Screen: Button
+The second panel is called "AI Agent - Input Img". There will be following components on the panel:
+- Crop: HorizontalSeparator
+- - Top: TextField(value="0% (0 pixels)")
+- - Left: TextField(value="0% (0 pixels)")
+- - Bottom: TextField(value="0% (0 pixels)")
+- - Right: TextField(value="0% (0 pixels)")
+- Stretch: HorizontalSeparator
+- - Width: TextField(value="640 pixels")
+- - Height: TextField(value="480 pixels")
+- Attention Area: HorizontalSeparator
+- - Attention Area Enabled: Switch
+- - Attention Area Polygon: Polygon(image=blank)
+- - Show Full Screen: Button
+
+Update camera page.
+1. For each panel in the page create an Edit button in the header of the panel.
+The same approach as on the Motors page. When user clicks on the Edit button
+a Modal Window will appear. There will be appropriate input controls in the window.
+2. On the Camera page in all panels change the TextBox components, Switch components
+and ComboBox components to plain TextFields (the Same approach and style like on the Motors page)
+3. Fix the following issue. When user tries to navigate to another page from the Camera page
+nothing happens. He still remains on the Camera page. Fix it.

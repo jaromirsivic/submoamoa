@@ -1,430 +1,483 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import Panel from './components/Panel';
 import Button from './components/Button';
 import ComboBox from './components/ComboBox';
-import StaticText from './components/StaticText';
-import NumericInput from './components/NumericInput';
-import Slider from './components/Slider';
+import Textbox from './components/Textbox';
 import Switch from './components/Switch';
 import ColumnLayout from './components/ColumnLayout';
 import HorizontalSeparator from './components/HorizontalSeparator';
-import ColorPicker from './components/ColorPicker';
+import Polygon from './components/Polygon';
 import ModalWindow from './components/ModalWindow';
-import { getCameraSettings, saveCameraSettings } from './lib/api';
+import StaticText from './components/StaticText';
 import editIcon from './assets/icons/edit.svg';
 
+/**
+ * Camera settings page with three panels:
+ * 1. Camera - General settings, flip/rotate, and camera preview
+ * 2. Manual Control - Input Img - Crop and stretch settings for manual control
+ * 3. AI Agent - Input Img - Crop, stretch, and attention area settings for AI
+ */
 const Camera = () => {
-    // State for the modal
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [validationErrors, setValidationErrors] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
+    // ========================
+    // State: Camera Panel
+    // ========================
+    const [inputDeviceIndex, setInputDeviceIndex] = useState('0');
+    const [preferredResolution, setPreferredResolution] = useState('1920 x 1080');
+    const [acceptedResolution, setAcceptedResolution] = useState('1920 x 1080');
+    const [flipHorizontally, setFlipHorizontally] = useState(false);
+    const [flipVertically, setFlipVertically] = useState(false);
+    const [rotateDegrees, setRotateDegrees] = useState('0');
 
-    // Default camera settings
-    const defaultCameraSettings = {
-        source: 'cam1',
-        flipHorizontally: false,
-        flipVertically: false,
-        rotate: '0',
-        cropLeft: 0,
-        cropTop: 0,
-        cropRight: 0,
-        cropBottom: 0,
-        resizeEnabled: true,
-        resizeWidth: 640,
-        resizeHeight: 480,
-        showReticle: true,
-        reticleX: 50,
-        reticleY: 50,
-        reticleColor: '#ff0000cc',
-        reticleSize: 1
+    // ========================
+    // State: Manual Control - Input Img Panel
+    // ========================
+    const [manualCropTop, setManualCropTop] = useState('0% (0 pixels)');
+    const [manualCropLeft, setManualCropLeft] = useState('0% (0 pixels)');
+    const [manualCropBottom, setManualCropBottom] = useState('0% (0 pixels)');
+    const [manualCropRight, setManualCropRight] = useState('0% (0 pixels)');
+    const [manualStretchWidth, setManualStretchWidth] = useState('640 pixels');
+    const [manualStretchHeight, setManualStretchHeight] = useState('480 pixels');
+
+    // ========================
+    // State: AI Agent - Input Img Panel
+    // ========================
+    const [aiCropTop, setAiCropTop] = useState('0% (0 pixels)');
+    const [aiCropLeft, setAiCropLeft] = useState('0% (0 pixels)');
+    const [aiCropBottom, setAiCropBottom] = useState('0% (0 pixels)');
+    const [aiCropRight, setAiCropRight] = useState('0% (0 pixels)');
+    const [aiStretchWidth, setAiStretchWidth] = useState('640 pixels');
+    const [aiStretchHeight, setAiStretchHeight] = useState('480 pixels');
+    const [attentionAreaEnabled, setAttentionAreaEnabled] = useState(false);
+    const [attentionAreaPolygons, setAttentionAreaPolygons] = useState([]);
+
+    // ========================
+    // Modals State
+    // ========================
+    const [activeModal, setActiveModal] = useState(null); // 'camera', 'manual', 'ai', or null
+    
+    // Temp state for editing
+    const [tempState, setTempState] = useState({});
+
+    // ========================
+    // Rotation Options
+    // ========================
+    const rotateOptions = [
+        { label: '0', value: '0' },
+        { label: '90', value: '90' },
+        { label: '180', value: '180' },
+        { label: '270', value: '270' }
+    ];
+
+    // ========================
+    // Handlers
+    // ========================
+    const openModal = (modalName) => {
+        // Initialize temp state based on modal
+        const state = {};
+        if (modalName === 'camera') {
+            state.inputDeviceIndex = inputDeviceIndex;
+            state.preferredResolution = preferredResolution;
+            state.acceptedResolution = acceptedResolution;
+            state.flipHorizontally = flipHorizontally;
+            state.flipVertically = flipVertically;
+            state.rotateDegrees = rotateDegrees;
+        } else if (modalName === 'manual') {
+            state.manualCropTop = manualCropTop;
+            state.manualCropLeft = manualCropLeft;
+            state.manualCropBottom = manualCropBottom;
+            state.manualCropRight = manualCropRight;
+            state.manualStretchWidth = manualStretchWidth;
+            state.manualStretchHeight = manualStretchHeight;
+        } else if (modalName === 'ai') {
+            state.aiCropTop = aiCropTop;
+            state.aiCropLeft = aiCropLeft;
+            state.aiCropBottom = aiCropBottom;
+            state.aiCropRight = aiCropRight;
+            state.aiStretchWidth = aiStretchWidth;
+            state.aiStretchHeight = aiStretchHeight;
+            state.attentionAreaEnabled = attentionAreaEnabled;
+            // For polygons, we use the main state directly or handle it separately if needed.
+            // Since polygon editing is interactive, we might want to edit it "live" or in a separate way.
+            // For now, let's keep polygon editing out of the modal or include it if requested.
+            // The prompt says "appropriate input controls in the window". 
+            // Since Attention Area is complex (Polygon), editing it inside a modal might be cramped.
+            // But let's assume we can enable/disable it in modal. 
+            // The Polygon editor itself is usually on the main page for better UX, but let's see.
+        }
+        setTempState(state);
+        setActiveModal(modalName);
     };
 
-    // Camera settings state
-    const [cameraSettings, setCameraSettings] = useState(defaultCameraSettings);
+    const closeModal = () => {
+        setActiveModal(null);
+        setTempState({});
+    };
 
-    // Temp state for modal editing
-    const [tempSettings, setTempSettings] = useState({ ...cameraSettings });
+    const saveModal = () => {
+        if (activeModal === 'camera') {
+            setInputDeviceIndex(tempState.inputDeviceIndex);
+            setPreferredResolution(tempState.preferredResolution);
+            setAcceptedResolution(tempState.acceptedResolution);
+            setFlipHorizontally(tempState.flipHorizontally);
+            setFlipVertically(tempState.flipVertically);
+            setRotateDegrees(tempState.rotateDegrees);
+        } else if (activeModal === 'manual') {
+            setManualCropTop(tempState.manualCropTop);
+            setManualCropLeft(tempState.manualCropLeft);
+            setManualCropBottom(tempState.manualCropBottom);
+            setManualCropRight(tempState.manualCropRight);
+            setManualStretchWidth(tempState.manualStretchWidth);
+            setManualStretchHeight(tempState.manualStretchHeight);
+        } else if (activeModal === 'ai') {
+            setAiCropTop(tempState.aiCropTop);
+            setAiCropLeft(tempState.aiCropLeft);
+            setAiCropBottom(tempState.aiCropBottom);
+            setAiCropRight(tempState.aiCropRight);
+            setAiStretchWidth(tempState.aiStretchWidth);
+            setAiStretchHeight(tempState.aiStretchHeight);
+            setAttentionAreaEnabled(tempState.attentionAreaEnabled);
+        }
+        closeModal();
+    };
 
-    // Load camera settings from API on component mount
-    useEffect(() => {
-        const loadCameraSettings = async () => {
-            try {
-                setIsLoading(true);
-                const data = await getCameraSettings();
-                // Merge with defaults to ensure all properties exist
-                const mergedSettings = { ...defaultCameraSettings, ...data };
-                setCameraSettings(mergedSettings);
-                setTempSettings(mergedSettings);
-            } catch (error) {
-                console.error('Failed to load camera settings:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadCameraSettings();
+    const updateTempState = (key, value) => {
+        setTempState(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleShowFullScreenCamera = useCallback(() => {
+        console.log('Show full screen camera preview');
     }, []);
 
-    // Source options
-    const sourceOptions = [
-        { label: 'Camera 1', value: 'cam1' },
-        { label: 'Camera 2', value: 'cam2' },
-        { label: 'USB Webcam', value: 'usb1' }
-    ];
+    const handleShowFullScreenManual = useCallback(() => {
+        console.log('Show full screen manual control preview');
+    }, []);
 
-    // Rotation options
-    const rotateOptions = [
-        { label: '0°', value: '0' },
-        { label: '90°', value: '90' },
-        { label: '180°', value: '180' },
-        { label: '270°', value: '270' }
-    ];
+    const handleShowFullScreenAI = useCallback(() => {
+        console.log('Show full screen AI agent preview');
+    }, []);
 
-    const handleEditClick = () => {
-        setTempSettings({ ...cameraSettings });
-        setValidationErrors([]);
-        setIsModalOpen(true);
+    const handleAttentionAreaPolygonsChange = useCallback((polygons) => {
+        setAttentionAreaPolygons(polygons);
+    }, []);
+
+    // ========================
+    // Styles
+    // ========================
+    const previewContainerStyle = {
+        width: '100%',
+        height: '200px',
+        backgroundColor: '#f0f0f0',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        marginBottom: '0.5rem'
     };
 
-    const validateSettings = () => {
-        const errors = [];
-        if (tempSettings.cropLeft + tempSettings.cropRight >= 100) {
-            errors.push('Sum of Crop Left and Crop Right must be less than 100%');
-        }
-        if (tempSettings.cropTop + tempSettings.cropBottom >= 100) {
-            errors.push('Sum of Crop Top and Crop Bottom must be less than 100%');
-        }
-        return errors;
+    const buttonContainerStyle = {
+        display: 'flex',
+        justifyContent: 'flex-end'
     };
 
-    const handleModalOk = async () => {
-        const errors = validateSettings();
-        if (errors.length > 0) {
-            setValidationErrors(errors);
-            return;
-        }
-        
-        try {
-            setIsSaving(true);
-            await saveCameraSettings(tempSettings);
-            setCameraSettings({ ...tempSettings });
-            setIsModalOpen(false);
-        } catch (error) {
-            console.error('Failed to save camera settings:', error);
-            setValidationErrors([error.message || 'Failed to save settings. Please try again.']);
-        } finally {
-            setIsSaving(false);
-        }
-    };
+    const boldTextStyle = { fontWeight: 'bold' };
 
-    const handleModalCancel = () => {
-        setIsModalOpen(false);
-    };
-
-    const updateTempSetting = (key, value) => {
-        setTempSettings(prev => {
-            const newSettings = { ...prev, [key]: value };
-            // Clear validation errors when user changes values related to errors
-            if (validationErrors.length > 0) {
-                setValidationErrors([]);
-            }
-            return newSettings;
-        });
-    };
-
-    // Get display text for source
-    const getSourceLabel = (value) => {
-        const option = sourceOptions.find(o => o.value === value);
-        return option ? option.label : value;
-    };
-
-    // Get display text for rotation
-    const getRotateLabel = (value) => {
-        const option = rotateOptions.find(o => o.value === value);
-        return option ? option.label : value;
-    };
-
-    // Bold label style
-    const boldLabelStyle = { fontWeight: 'bold' };
-
-    // Show loading state
-    if (isLoading) {
-        return (
-            <div className="page-container">
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
-                    <StaticText text="Loading camera settings..." />
-                </div>
-            </div>
-        );
-    }
+    // Helper to render static text field
+    const RenderStaticField = ({ label, value }) => (
+        <StaticText text={<>{label}: <span style={boldTextStyle}>{value}</span></>} />
+    );
 
     return (
         <div className="page-container">
             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
+                
+                {/* ======================== */}
                 {/* Panel 1: Camera */}
+                {/* ======================== */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel
+                    <Panel 
                         title="Camera"
-                        headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={handleEditClick} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
+                        headerAction={
+                            <Button
+                                label={<img src={editIcon} alt="Edit" width="24" height="24" />}
+                                onClick={() => openModal('camera')}
+                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                            />
+                        }
                     >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <ColumnLayout gap="0.5rem">
-                                <StaticText text={<>Camera Source: <span style={boldLabelStyle}>{getSourceLabel(cameraSettings.source)}</span></>} />
+                        <ColumnLayout gap="0.75rem">
+                            <HorizontalSeparator label="General Setup" fullWidth={true} />
+                            <RenderStaticField label="Input Device Index" value={inputDeviceIndex} />
+                            <RenderStaticField label="Preferred resolution" value={preferredResolution} />
+                            <RenderStaticField label="Accepted Resolution" value={acceptedResolution} />
 
-                                <HorizontalSeparator label="Flip, Rotate and Crop" fullWidth={true} />
-                                <StaticText text={<>Flip Horizontally: <span style={boldLabelStyle}>{cameraSettings.flipHorizontally ? 'Yes' : 'No'}</span></>} />
-                                <StaticText text={<>Flip Vertically: <span style={boldLabelStyle}>{cameraSettings.flipVertically ? 'Yes' : 'No'}</span></>} />
-                                <StaticText text={<>Rotate: <span style={boldLabelStyle}>{getRotateLabel(cameraSettings.rotate)}</span></>} />
-                                <StaticText text={<>Crop Left (%): <span style={boldLabelStyle}>{cameraSettings.cropLeft}</span></>} />
-                                <StaticText text={<>Crop Top (%): <span style={boldLabelStyle}>{cameraSettings.cropTop}</span></>} />
-                                <StaticText text={<>Crop Right (%): <span style={boldLabelStyle}>{cameraSettings.cropRight}</span></>} />
-                                <StaticText text={<>Crop Bottom (%): <span style={boldLabelStyle}>{cameraSettings.cropBottom}</span></>} />
+                            <HorizontalSeparator label="Flip and Rotate" fullWidth={true} />
+                            <RenderStaticField label="Flip Horizontally" value={flipHorizontally ? 'Yes' : 'No'} />
+                            <RenderStaticField label="Flip Vertically" value={flipVertically ? 'Yes' : 'No'} />
+                            <RenderStaticField label="Rotate (degrees)" value={rotateDegrees} />
 
-                                <HorizontalSeparator label="Resize" fullWidth={true} />
-                                <StaticText text={<>Enabled: <span style={boldLabelStyle}>{cameraSettings.resizeEnabled ? 'Yes' : 'No'}</span></>} />
-                                <StaticText text={<>Width (px): <span style={boldLabelStyle}>{cameraSettings.resizeWidth}</span></>} />
-                                <StaticText text={<>Height (px): <span style={boldLabelStyle}>{cameraSettings.resizeHeight}</span></>} />
-
-                                <HorizontalSeparator label="Reticle" fullWidth={true} />
-                                <StaticText text={<>Show Reticle: <span style={boldLabelStyle}>{cameraSettings.showReticle ? 'Yes' : 'No'}</span></>} />
-                                <StaticText text={<>X (%): <span style={boldLabelStyle}>{cameraSettings.reticleX}</span></>} />
-                                <StaticText text={<>Y (%): <span style={boldLabelStyle}>{cameraSettings.reticleY}</span></>} />
-                                <ColorPicker
-                                    label="Color:"
-                                    color={cameraSettings.reticleColor}
-                                    disabled={true}
-                                    showAlpha={true}
+                            <HorizontalSeparator label="Preview" fullWidth={true} />
+                            <div style={previewContainerStyle}>
+                                <Polygon
+                                    mode="viewer"
+                                    background="#f8f8f8"
+                                    style={{ width: '100%', height: '100%' }}
                                 />
-                                <StaticText text={<>Size: <span style={boldLabelStyle}>{cameraSettings.reticleSize}</span></>} />
-                            </ColumnLayout>
-                        </div>
+                            </div>
+                            <div style={buttonContainerStyle}>
+                                <Button
+                                    label="Show Full Screen"
+                                    onClick={handleShowFullScreenCamera}
+                                />
+                            </div>
+                        </ColumnLayout>
                     </Panel>
                 </div>
 
-                {/* Panel 2: Crop and Size (keeping existing) */}
+                {/* ======================== */}
+                {/* Panel 2: Manual Control - Input Img */}
+                {/* ======================== */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel
-                        title="Crop and Size"
-                        headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={() => { }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
+                    <Panel 
+                        title="Manual Control - Input Img"
+                        headerAction={
+                            <Button
+                                label={<img src={editIcon} alt="Edit" width="24" height="24" />}
+                                onClick={() => openModal('manual')}
+                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                            />
+                        }
                     >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                            <ColumnLayout gap="0.25rem">
-                                {/* Crop Controls Section */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                    <HorizontalSeparator label="Crop Controls" fullWidth={true} />
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
-                                        <ColumnLayout gap="0.25rem">
-                                            <StaticText text="Crop Top (px): 0" />
-                                            <StaticText text="Crop Bottom (px): 0" />
-                                            <StaticText text="Crop Left (px): 0" />
-                                            <StaticText text="Crop Right (px): 0" />
-                                        </ColumnLayout>
-                                    </div>
-                                </div>
+                        <ColumnLayout gap="0.75rem">
+                            <HorizontalSeparator label="Crop" fullWidth={true} />
+                            <RenderStaticField label="Top" value={manualCropTop} />
+                            <RenderStaticField label="Left" value={manualCropLeft} />
+                            <RenderStaticField label="Bottom" value={manualCropBottom} />
+                            <RenderStaticField label="Right" value={manualCropRight} />
 
-                                {/* New Dimensions Section */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                    <HorizontalSeparator label="New Dimensions" fullWidth={true} />
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
-                                        <ColumnLayout gap="0.25rem">
-                                            <StaticText text="New Width (px): 1920" />
-                                            <StaticText text="New Height (px): 1080" />
-                                        </ColumnLayout>
-                                    </div>
-                                </div>
+                            <HorizontalSeparator label="Stretch" fullWidth={true} />
+                            <RenderStaticField label="Width" value={manualStretchWidth} />
+                            <RenderStaticField label="Height" value={manualStretchHeight} />
 
-                                {/* Center Point Section */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                    <HorizontalSeparator label="Center Point" fullWidth={true} />
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
-                                        <ColumnLayout gap="0.25rem">
-                                            <Switch
-                                                label="Enabled"
-                                                value={true}
-                                                onChange={() => { }}
-                                            />
-                                            <NumericInput
-                                                label="Position X"
-                                                value={320}
-                                                onChange={() => { }}
-                                            />
-                                            <NumericInput
-                                                label="Position Y"
-                                                value={240}
-                                                onChange={() => { }}
-                                            />
-                                        </ColumnLayout>
-                                    </div>
-                                </div>
-                            </ColumnLayout>
-                        </div>
+                            <HorizontalSeparator label="Preview" fullWidth={true} />
+                            <div style={previewContainerStyle}>
+                                <Polygon
+                                    mode="viewer"
+                                    background="#f8f8f8"
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                            </div>
+                            <div style={buttonContainerStyle}>
+                                <Button
+                                    label="Show Full Screen"
+                                    onClick={handleShowFullScreenManual}
+                                />
+                            </div>
+                        </ColumnLayout>
                     </Panel>
                 </div>
 
-                {/* Panel 3: AI Attention Area */}
+                {/* ======================== */}
+                {/* Panel 3: AI Agent - Input Img */}
+                {/* ======================== */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel
-                        title="AI Attention Area"
-                        headerAction={<Button label={<img src={editIcon} alt="Edit" width="24" height="24" />} onClick={() => { }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} />}
+                    <Panel 
+                        title="AI Agent - Input Img"
+                        headerAction={
+                            <Button
+                                label={<img src={editIcon} alt="Edit" width="24" height="24" />}
+                                onClick={() => openModal('ai')}
+                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                            />
+                        }
                     >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                            <ColumnLayout gap="0.25rem">
-                                <Switch
-                                    label="Use masked area for AI object detection"
-                                    value={false}
-                                    onChange={() => { }}
+                        <ColumnLayout gap="0.75rem">
+                            <HorizontalSeparator label="Crop" fullWidth={true} />
+                            <RenderStaticField label="Top" value={aiCropTop} />
+                            <RenderStaticField label="Left" value={aiCropLeft} />
+                            <RenderStaticField label="Bottom" value={aiCropBottom} />
+                            <RenderStaticField label="Right" value={aiCropRight} />
+
+                            <HorizontalSeparator label="Stretch" fullWidth={true} />
+                            <RenderStaticField label="Width" value={aiStretchWidth} />
+                            <RenderStaticField label="Height" value={aiStretchHeight} />
+
+                            <HorizontalSeparator label="Attention Area" fullWidth={true} />
+                            <RenderStaticField label="Attention Area Enabled" value={attentionAreaEnabled ? 'Yes' : 'No'} />
+                            <div style={previewContainerStyle}>
+                                <Polygon
+                                    mode={attentionAreaEnabled ? 'designer' : 'viewer'}
+                                    background="#f8f8f8"
+                                    style={{ width: '100%', height: '100%' }}
+                                    polygons={attentionAreaPolygons}
+                                    onChange={handleAttentionAreaPolygonsChange}
+                                    borderColor="#ff6600"
+                                    fillColor="#ff660033"
                                 />
-                            </ColumnLayout>
-                        </div>
+                            </div>
+                            <div style={buttonContainerStyle}>
+                                <Button
+                                    label="Show Full Screen"
+                                    onClick={handleShowFullScreenAI}
+                                />
+                            </div>
+                        </ColumnLayout>
                     </Panel>
                 </div>
             </div>
 
-            {/* Modal Window for editing Camera settings */}
-            <ModalWindow
-                isOpen={isModalOpen}
-                title="Camera"
-                onOk={handleModalOk}
-                onCancel={handleModalCancel}
-                okLabel={isSaving ? "Saving..." : "Save"}
-                validationErrors={validationErrors}
-                okDisabled={isSaving}
-            >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <ComboBox
-                        label="Camera Source"
-                        items={sourceOptions}
-                        value={tempSettings.source}
-                        onChange={(value) => updateTempSetting('source', value)}
-                    />
+            {/* ======================== */}
+            {/* Modal: Camera */}
+            {/* ======================== */}
+            {activeModal === 'camera' && (
+                <ModalWindow
+                    isOpen={true}
+                    title="Edit Camera Settings"
+                    onOk={saveModal}
+                    onCancel={closeModal}
+                    okLabel="Save"
+                >
+                    <ColumnLayout gap="0.75rem">
+                        <HorizontalSeparator label="General Setup" fullWidth={true} />
+                        <Textbox
+                            label="Input Device Index"
+                            value={tempState.inputDeviceIndex}
+                            onChange={(val) => updateTempState('inputDeviceIndex', val)}
+                        />
+                        <Textbox
+                            label="Preferred resolution"
+                            value={tempState.preferredResolution}
+                            onChange={(val) => updateTempState('preferredResolution', val)}
+                        />
+                        <Textbox
+                            label="Accepted Resolution"
+                            value={tempState.acceptedResolution}
+                            onChange={(val) => updateTempState('acceptedResolution', val)}
+                            disabled={true}
+                        />
 
-                    <HorizontalSeparator label="Flip, Rotate and Crop" fullWidth={true} bleed="1rem" />
-                    <Switch
-                        label="Flip Horizontally"
-                        value={tempSettings.flipHorizontally}
-                        onChange={(value) => updateTempSetting('flipHorizontally', value)}
-                    />
-                    <Switch
-                        label="Flip Vertically"
-                        value={tempSettings.flipVertically}
-                        onChange={(value) => updateTempSetting('flipVertically', value)}
-                    />
-                    <ComboBox
-                        label="Rotate"
-                        items={rotateOptions}
-                        value={tempSettings.rotate}
-                        onChange={(value) => updateTempSetting('rotate', value)}
-                    />
-                    <Slider
-                        label="Crop Left (%)"
-                        value={tempSettings.cropLeft}
-                        onChange={(value) => updateTempSetting('cropLeft', value)}
-                        min={0}
-                        max={100}
-                        step={0.25}
-                        decimalPlaces={2}
-                        allowManualInput={true}
-                    />
-                    <Slider
-                        label="Crop Top (%)"
-                        value={tempSettings.cropTop}
-                        onChange={(value) => updateTempSetting('cropTop', value)}
-                        min={0}
-                        max={100}
-                        step={0.25}
-                        decimalPlaces={2}
-                        allowManualInput={true}
-                    />
-                    <Slider
-                        label="Crop Right (%)"
-                        value={tempSettings.cropRight}
-                        onChange={(value) => updateTempSetting('cropRight', value)}
-                        min={0}
-                        max={100}
-                        step={0.25}
-                        decimalPlaces={2}
-                        allowManualInput={true}
-                    />
-                    <Slider
-                        label="Crop Bottom (%)"
-                        value={tempSettings.cropBottom}
-                        onChange={(value) => updateTempSetting('cropBottom', value)}
-                        min={0}
-                        max={100}
-                        step={0.25}
-                        decimalPlaces={2}
-                        allowManualInput={true}
-                    />
+                        <HorizontalSeparator label="Flip and Rotate" fullWidth={true} />
+                        <Switch
+                            label="Flip Horizontally"
+                            value={tempState.flipHorizontally}
+                            onChange={(val) => updateTempState('flipHorizontally', val)}
+                        />
+                        <Switch
+                            label="Flip Vertically"
+                            value={tempState.flipVertically}
+                            onChange={(val) => updateTempState('flipVertically', val)}
+                        />
+                        <ComboBox
+                            label="Rotate (degrees)"
+                            items={rotateOptions}
+                            value={tempState.rotateDegrees}
+                            onChange={(val) => updateTempState('rotateDegrees', val)}
+                        />
+                    </ColumnLayout>
+                </ModalWindow>
+            )}
 
-                    <HorizontalSeparator label="Resize" fullWidth={true} bleed="1rem" />
-                    <Switch
-                        label="Enabled"
-                        value={tempSettings.resizeEnabled}
-                        onChange={(value) => updateTempSetting('resizeEnabled', value)}
-                    />
-                    <Slider
-                        label="Width (px)"
-                        value={tempSettings.resizeWidth}
-                        onChange={(value) => updateTempSetting('resizeWidth', value)}
-                        min={320}
-                        max={3840}
-                        step={1}
-                        allowManualInput={true}
-                    />
-                    <Slider
-                        label="Height (px)"
-                        value={tempSettings.resizeHeight}
-                        onChange={(value) => updateTempSetting('resizeHeight', value)}
-                        min={240}
-                        max={2160}
-                        step={1}
-                        allowManualInput={true}
-                    />
+            {/* ======================== */}
+            {/* Modal: Manual Control */}
+            {/* ======================== */}
+            {activeModal === 'manual' && (
+                <ModalWindow
+                    isOpen={true}
+                    title="Edit Manual Control Settings"
+                    onOk={saveModal}
+                    onCancel={closeModal}
+                    okLabel="Save"
+                >
+                    <ColumnLayout gap="0.75rem">
+                        <HorizontalSeparator label="Crop" fullWidth={true} />
+                        <Textbox
+                            label="Top"
+                            value={tempState.manualCropTop}
+                            onChange={(val) => updateTempState('manualCropTop', val)}
+                        />
+                        <Textbox
+                            label="Left"
+                            value={tempState.manualCropLeft}
+                            onChange={(val) => updateTempState('manualCropLeft', val)}
+                        />
+                        <Textbox
+                            label="Bottom"
+                            value={tempState.manualCropBottom}
+                            onChange={(val) => updateTempState('manualCropBottom', val)}
+                        />
+                        <Textbox
+                            label="Right"
+                            value={tempState.manualCropRight}
+                            onChange={(val) => updateTempState('manualCropRight', val)}
+                        />
 
-                    <HorizontalSeparator label="Reticle" fullWidth={true} bleed="1rem" />
-                    <Switch
-                        label="Show Reticle"
-                        value={tempSettings.showReticle}
-                        onChange={(value) => updateTempSetting('showReticle', value)}
-                    />
-                    <Slider
-                        label="X (%)"
-                        value={tempSettings.reticleX}
-                        onChange={(value) => updateTempSetting('reticleX', value)}
-                        min={0}
-                        max={100}
-                        step={0.1}
-                        decimalPlaces={2}
-                        allowManualInput={true}
-                    />
-                    <Slider
-                        label="Y (%)"
-                        value={tempSettings.reticleY}
-                        onChange={(value) => updateTempSetting('reticleY', value)}
-                        min={0}
-                        max={100}
-                        step={0.1}
-                        decimalPlaces={2}
-                        allowManualInput={true}
-                    />
-                    <ColorPicker
-                        label="Color"
-                        color={tempSettings.reticleColor}
-                        onChange={(value) => updateTempSetting('reticleColor', value)}
-                        showAlpha={true}
-                    />
-                    <Slider
-                        label="Size"
-                        value={tempSettings.reticleSize}
-                        onChange={(value) => updateTempSetting('reticleSize', value)}
-                        min={0.25}
-                        max={5}
-                        step={0.1}
-                        decimalPlaces={2}
-                        allowManualInput={true}
-                    />
-                </div>
-            </ModalWindow>
+                        <HorizontalSeparator label="Stretch" fullWidth={true} />
+                        <Textbox
+                            label="Width"
+                            value={tempState.manualStretchWidth}
+                            onChange={(val) => updateTempState('manualStretchWidth', val)}
+                        />
+                        <Textbox
+                            label="Height"
+                            value={tempState.manualStretchHeight}
+                            onChange={(val) => updateTempState('manualStretchHeight', val)}
+                        />
+                    </ColumnLayout>
+                </ModalWindow>
+            )}
+
+            {/* ======================== */}
+            {/* Modal: AI Agent */}
+            {/* ======================== */}
+            {activeModal === 'ai' && (
+                <ModalWindow
+                    isOpen={true}
+                    title="Edit AI Agent Settings"
+                    onOk={saveModal}
+                    onCancel={closeModal}
+                    okLabel="Save"
+                >
+                    <ColumnLayout gap="0.75rem">
+                        <HorizontalSeparator label="Crop" fullWidth={true} />
+                        <Textbox
+                            label="Top"
+                            value={tempState.aiCropTop}
+                            onChange={(val) => updateTempState('aiCropTop', val)}
+                        />
+                        <Textbox
+                            label="Left"
+                            value={tempState.aiCropLeft}
+                            onChange={(val) => updateTempState('aiCropLeft', val)}
+                        />
+                        <Textbox
+                            label="Bottom"
+                            value={tempState.aiCropBottom}
+                            onChange={(val) => updateTempState('aiCropBottom', val)}
+                        />
+                        <Textbox
+                            label="Right"
+                            value={tempState.aiCropRight}
+                            onChange={(val) => updateTempState('aiCropRight', val)}
+                        />
+
+                        <HorizontalSeparator label="Stretch" fullWidth={true} />
+                        <Textbox
+                            label="Width"
+                            value={tempState.aiStretchWidth}
+                            onChange={(val) => updateTempState('aiStretchWidth', val)}
+                        />
+                        <Textbox
+                            label="Height"
+                            value={tempState.aiStretchHeight}
+                            onChange={(val) => updateTempState('aiStretchHeight', val)}
+                        />
+
+                        <HorizontalSeparator label="Attention Area" fullWidth={true} />
+                        <Switch
+                            label="Attention Area Enabled"
+                            value={tempState.attentionAreaEnabled}
+                            onChange={(val) => updateTempState('attentionAreaEnabled', val)}
+                        />
+                    </ColumnLayout>
+                </ModalWindow>
+            )}
         </div>
     );
 };
