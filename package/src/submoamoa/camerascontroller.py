@@ -1,9 +1,9 @@
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
+#from fastapi import FastAPI
+#from fastapi.staticfiles import StaticFiles
+#from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from typing import Any
-from ultralytics import YOLO
+#from ultralytics import YOLO
 import time
 import cv2
 import numpy as np
@@ -17,27 +17,17 @@ FLIP_BOTH = -1
 class Camera:
     def __init__(self, *, index: int):
         # OpenCV camera object
-        self._camera = None
+        self._camera:cv2.VideoCapture = None
         # Camera index
         self.index = index
         # Camera name
         self.name = f'{index}: NO CAMERA DETECTED'
         # Supported resolutions
         self.supported_resolutions = []
-        self.fps = 0
-        self.bitrate = 0
-        self.focus = 0
-        self.exposure = 0
-        self.gain = 0
-        self.brightness = 0
-        self.contrast = 0
-        self.saturation = 0
-        self.hue = 0
-        self.sharpness = 0
-        self.autoExposure = 0
-        self.focus = 0
         # Is camera active
         self._active = False
+        # open camera
+        self.open()
 
     @property
     def camera(self) -> cv2.VideoCapture:
@@ -47,20 +37,310 @@ class Camera:
     def active(self) -> bool:
         return self._active
 
+    @property
+    def brightness(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_BRIGHTNESS)
+
+    @brightness.setter
+    def brightness(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_BRIGHTNESS, value)
+
+    @property
+    def contrast(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_CONTRAST)
+
+    @contrast.setter
+    def contrast(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_CONTRAST, value)
+
+    @property
+    def hue(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_HUE)
+
+    @hue.setter
+    def hue(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_HUE, value)
+
+    @property
+    def saturation(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_SATURATION)
+
+    @saturation.setter
+    def saturation(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_SATURATION, value)
+
+    @property
+    def sharpness(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_SHARPNESS)
+
+    @sharpness.setter
+    def sharpness(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_SHARPNESS, value)
+
+    @property
+    def gamma(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_GAMMA)
+
+    @gamma.setter
+    def gamma(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_GAMMA, value)
+
+    @property
+    def white_balance_temperature(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_WB_TEMPERATURE)
+
+    @white_balance_temperature.setter
+    def white_balance_temperature(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_WB_TEMPERATURE, value)
+
+    @property
+    def backlight(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_BACKLIGHT)
+
+    @backlight.setter
+    def backlight(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_BACKLIGHT, value)
+
+    @property
+    def gain(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_GAIN)
+
+    @gain.setter
+    def gain(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_GAIN, value)
+
+    @property
+    def focus(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_FOCUS)
+
+    @focus.setter
+    def focus(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_FOCUS, value)
+
+    @property
+    def exposure(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_EXPOSURE)
+
+    @exposure.setter
+    def exposure(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_EXPOSURE, value)
+
+    # @property
+    # def auto_brightness(self) -> bool:
+    #     if not self._active or self._camera is None:
+    #         return False
+    #     return bool(self.camera.get(cv2.CAP_PROP_AUTO_BRIGHTNESS))
+
+    # @auto_brightness.setter
+    # def auto_brightness(self, value: bool):
+    #     if self._active and self._camera is not None:
+    #         self.camera.set(cv2.CAP_PROP_AUTO_BRIGHTNESS, 1.0 if value else 0.0)
+
+    # @property
+    # def auto_contrast(self) -> bool:
+    #     if not self._active or self._camera is None:
+    #         return False
+    #     return bool(self.camera.get(cv2.CAP_PROP_AUTO_CONTRAST))
+
+    # @auto_contrast.setter
+    # def auto_contrast(self, value: bool):
+    #     if self._active and self._camera is not None:
+    #         self.camera.set(cv2.CAP_PROP_AUTO_CONTRAST, 1.0 if value else 0.0)
+
+    # @property
+    # def auto_hue(self) -> bool:
+    #     if not self._active or self._camera is None:
+    #         return False
+    #     return bool(self.camera.get(cv2.CAP_PROP_AUTO_HUE))
+
+    # @auto_hue.setter
+    # def auto_hue(self, value: bool):
+    #     if self._active and self._camera is not None:
+    #         self.camera.set(cv2.CAP_PROP_AUTO_HUE, 1.0 if value else 0.0)
+
+    # @property
+    # def auto_saturation(self) -> bool:
+    #     if not self._active or self._camera is None:
+    #         return False
+    #     return bool(self.camera.get(cv2.CAP_PROP_AUTO_SATURATION))
+
+    # @auto_saturation.setter
+    # def auto_saturation(self, value: bool):
+    #     if self._active and self._camera is not None:
+    #         self.camera.set(cv2.CAP_PROP_AUTO_SATURATION, 1.0 if value else 0.0)
+
+    # @property
+    # def auto_sharpness(self) -> bool:
+    #     if not self._active or self._camera is None:
+    #         return False
+    #     return bool(self.camera.get(cv2.CAP_PROP_AUTO_SHARPNESS))
+
+    # @auto_sharpness.setter
+    # def auto_sharpness(self, value: bool):
+    #     if self._active and self._camera is not None:
+    #         self.camera.set(cv2.CAP_PROP_AUTO_SHARPNESS, 1.0 if value else 0.0)
+
+    # @property
+    # def auto_gamma(self) -> bool:
+    #     if not self._active or self._camera is None:
+    #         return False
+    #     return bool(self.camera.get(cv2.CAP_PROP_AUTO_GAMMA))
+
+    # @auto_gamma.setter
+    # def auto_gamma(self, value: bool):
+    #     if self._active and self._camera is not None:
+    #         self.camera.set(cv2.CAP_PROP_AUTO_GAMMA, 1.0 if value else 0.0)
+
+    @property
+    def auto_white_balance_temperature(self) -> bool:
+        if not self._active or self._camera is None:
+            return False
+        return bool(self.camera.get(cv2.CAP_PROP_AUTO_WB))
+
+    @auto_white_balance_temperature.setter
+    def auto_white_balance_temperature(self, value: bool):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_AUTO_WB, 1.0 if value else 0.0)
+
+    # @property
+    # def auto_backlight_compensation(self) -> bool:
+    #     if not self._active or self._camera is None:
+    #         return False
+    #     return bool(self.camera.get(cv2.CAP_PROP_AUTO_BACKLIGHT_COMPENSATION))
+
+    # @auto_backlight_compensation.setter
+    # def auto_backlight_compensation(self, value: bool):
+    #     if self._active and self._camera is not None:
+    #         self.camera.set(cv2.CAP_PROP_AUTO_BACKLIGHT_COMPENSATION, 1.0 if value else 0.0)
+
+    # @property
+    # def auto_gain(self) -> bool:
+    #     if not self._active or self._camera is None:
+    #         return False
+    #     return bool(self.camera.get(cv2.CAP_PROP_AUTO_GAIN))
+
+    # @auto_gain.setter
+    # def auto_gain(self, value: bool):
+    #     if self._active and self._camera is not None:
+    #         self.camera.set(cv2.CAP_PROP_AUTO_GAIN, 1.0 if value else 0.0)
+
+    @property
+    def auto_focus(self) -> bool:
+        if not self._active or self._camera is None:
+            return False
+        return bool(self.camera.get(cv2.CAP_PROP_AUTOFOCUS))
+
+    @auto_focus.setter
+    def auto_focus(self, value: bool):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_AUTOFOCUS, 1.0 if value else 0.0)
+
+    @property
+    def auto_exposure(self) -> bool:
+        if not self._active or self._camera is None:
+            return False
+        return bool(self.camera.get(cv2.CAP_PROP_AUTO_EXPOSURE))
+
+    @auto_exposure.setter
+    def auto_exposure(self, value: bool):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0 if value else 0.0)
+
+    @property
+    def fps(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_FPS)
+
+    @fps.setter
+    def fps(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_FPS, value)
+
+    @property
+    def bitrate(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_BITRATE)
+
+    @bitrate.setter
+    def bitrate(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_BITRATE, value)
+
+    @property
+    def buffer_size(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self.camera.get(cv2.CAP_PROP_BUFFERSIZE)
+
+    @buffer_size.setter
+    def buffer_size(self, value: float):
+        if self._active and self._camera is not None:
+            self.camera.set(cv2.CAP_PROP_BUFFERSIZE, value)
+
     def open(self):
-        self.camera = cv2.VideoCapture(self.index)
+        self._camera = cv2.VideoCapture(self.index)
         if not self.camera.isOpened():
             self._active = False
             return False
         # Set active
         self._active = True
         # Set name
-        self.name = f'{self.index}: {self.camera.get(cv2.CAP_PROP_DEVICE_NAME)}'
+        self.name = f'{self.index}: GUID_{self.camera.get(cv2.CAP_PROP_GUID)}'
 
         # Check supported resolutions
         common_resolutions = [
-            (3840, 2160), (1920, 1080), (1600, 1200), (1280, 960), 
-            (1280, 720), (1024, 768), (800, 600), (640, 480), (320, 240)
+            (320, 240),
+            (640, 480),
+            (800, 600),
+            (960, 720),
+            (1024, 768),
+            (1280, 960),
+            (1280, 720),
+            (1600, 1200),
+            (1920, 1080),
+            (2560, 1440),
+            (3200, 1800),
+            (3840, 2160),
+            (4096, 2160),
+            (5120, 2880),
+            (6016, 3384),
+            (7680, 4320),
+            (8192, 4608)
         ]
         supported_resolutions = []
         # Check if supported resolutions are available
@@ -72,31 +352,35 @@ class Camera:
             if int(w) == width and int(h) == height:
                 supported_resolutions.append({"width": width, "height": height})
         self.supported_resolutions = supported_resolutions
-        # Set FPS
-        self.fps = self.camera.get(cv2.CAP_PROP_FPS)
-        # Set bitrate
-        self.bitrate = self.camera.get(cv2.CAP_PROP_BITRATE)
-        # Set focus
-        self.focus = self.camera.get(cv2.CAP_PROP_FOCUS)
-        # Set exposure
-        self.exposure = self.camera.get(cv2.CAP_PROP_EXPOSURE)
-        # Set gain
-        self.gain = self.camera.get(cv2.CAP_PROP_GAIN)
-        # Set brightness
-        self.brightness = self.camera.get(cv2.CAP_PROP_BRIGHTNESS)
-        # Set contrast
-        self.contrast = self.camera.get(cv2.CAP_PROP_CONTRAST)
-        # Set saturation
-        self.saturation = self.camera.get(cv2.CAP_PROP_SATURATION)
-        # Set hue
-        self.hue = self.camera.get(cv2.CAP_PROP_HUE)
-        # Set sharpness
-        self.sharpness = self.camera.get(cv2.CAP_PROP_SHARPNESS)
-        # Set auto exposure
-        self.autoExposure = self.camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)
-        # Set focus
-        self.focus = self.camera.get(cv2.CAP_PROP_FOCUS)
         return True
+
+    # def _load_properties(self):
+    #     self._brightness = self.camera.get(cv2.CAP_PROP_BRIGHTNESS)
+    #     self._contrast = self.camera.get(cv2.CAP_PROP_CONTRAST)
+    #     self._hue = self.camera.get(cv2.CAP_PROP_HUE)
+    #     self._saturation = self.camera.get(cv2.CAP_PROP_SATURATION)
+    #     self._sharpness = self.camera.get(cv2.CAP_PROP_SHARPNESS)
+    #     self._gamma = self.camera.get(cv2.CAP_PROP_GAMMA)
+    #     self._white_balance = self.camera.get(cv2.CAP_PROP_WHITE_BALANCE)
+    #     self._backlight_compensation = self.camera.get(cv2.CAP_PROP_BACKLIGHT_COMPENSATION)
+    #     self._gain = self.camera.get(cv2.CAP_PROP_GAIN)
+    #     self._focus = self.camera.get(cv2.CAP_PROP_FOCUS)
+    #     self._exposure = self.camera.get(cv2.CAP_PROP_EXPOSURE)
+    #     self._auto_brightness = self.camera.get(cv2.C)
+    #     self._auto_contrast = self.camera.get(cv2.CAP_PROP_AUTO_CONTRAST)
+    #     self._auto_hue = self.camera.get(cv2.CAP_PROP_AUTO_HUE)
+    #     self._auto_saturation = self.camera.get(cv2.CAP_PROP_AUTO_SATURATION)
+    #     self._auto_sharpness = self.camera.get(cv2.CAP_PROP_AUTO_SHARPNESS)
+    #     self._auto_gamma = self.camera.get(cv2.CAP_PROP_AUTO_GAMMA)
+    #     self._auto_white_balance = self.camera.get(cv2.CAP_PROP_AUTO_WHITE_BALANCE)
+    #     self._auto_backlight_compensation = self.camera.get(cv2.CAP_PROP_AUTO_BACKLIGHT_COMPENSATION)
+    #     self._auto_gain = self.camera.get(cv2.CAP_PROP_AUTO_GAIN)
+    #     self._auto_focus = self.camera.get(cv2.CAP_PROP_AUTO_FOCUS)
+    #     self._auto_exposure = self.camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+    #     self._fps = self.camera.get(cv2.CAP_PROP_FPS)
+    #     self._bitrate = self.camera.get(cv2.CAP_PROP_BITRATE)
+    #     self._buffer_size = self.camera.get(cv2.CAP_PROP_BUFFER_SIZE)
+    #     return True
 
     def close(self):
         if not self._active:
@@ -113,27 +397,33 @@ class Camera:
             "index": self.index,
             "name": self.name,
             "supported_resolutions": self.supported_resolutions,
-            "fps": self.fps,
-            "bitrate": self.bitrate,
-            "exposure": self.exposure,
-            "gain": self.gain,
             "brightness": self.brightness,
             "contrast": self.contrast,
-            "saturation": self.saturation,
             "hue": self.hue,
+            "saturation": self.saturation,
             "sharpness": self.sharpness,
-            "autoExposure": self.autoExposure,
-            "focus": self.focus
+            "gamma": self.gamma,
+            "white_balance_temperature": self.white_balance_temperature,
+            "backlight_compensation": self.backlight,
+            "gain": self.gain,
+            "focus": self.focus,
+            "exposure": self.exposure,
+            "auto_white_balance_temperature": self.auto_white_balance_temperature,
+            "auto_focus": self.auto_focus,
+            "auto_exposure": self.auto_exposure,
+            "fps": self.fps,
+            "bitrate": self.bitrate,
+            "buffer_size": self.buffer_size
         }
     
     def getFrame(self) -> tuple[bool, np.ndarray]:
-        if not self._active:
+        if not self._active or self._camera is None:
             return False, None
         return self.camera.read()
 
 
 
-class CameraController:
+class CamerasController:
     _singleton = None
 
     def __new__(cls, *args, **kwargs):

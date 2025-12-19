@@ -761,3 +761,13 @@ Update Cameras page -> Camera Panel -> edit button -> Modal Window:
 Probably the width of some components is too big. Make them smaller so the horizontal scroll bar will
 disapear.
 
+For each property mentioned in camerascontroller -> Camera._load_properties
+create a property in the Camera class. Getter will look like this:
+@property
+def brightness(self) -> int:
+    return self.camera.get(cv2.CAP_PROP_BRIGHTNESS)
+
+Setter will look like this:
+@brightness.setter
+def brightness(self, value: int):
+    self.camera.set(cv2.CAP_PROP_BRIGHTNESS, value)
