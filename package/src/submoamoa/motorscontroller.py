@@ -79,7 +79,7 @@ class MotorsController:
             # starts the motor controller
             self.start()
 
-    def execute(self):
+    def _run(self):
         """
         Infinite loop to call go method of each enabled motor
         """
@@ -100,7 +100,7 @@ class MotorsController:
         if self._running:
             return
         self._running = True
-        self._thread = threading.Thread(target=self.execute, daemon=True)
+        self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
 
     def stop(self):

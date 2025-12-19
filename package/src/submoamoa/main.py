@@ -8,10 +8,9 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request
 from . import settingscontroller
+from .mastercontroller import MasterController
 
-from .motorscontroller import MotorsController
-
-motors_controller = MotorsController()
+master_controller = MasterController()
 
 async def onload():
     print("Server loaded")
@@ -23,13 +22,13 @@ async def onload():
 async def lifespan(app: FastAPI):
     # Startup logic goes here
     print("Server starting up...")
-    motors_controller.start()
+    master_controller.start()
     # You can call your onload function here
     await onload()
     yield
     # Shutdown logic goes here
     print("Server shutting down...")
-    motors_controller.stop()
+    master_controller.stop()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -86,7 +85,7 @@ async def save_motors_settings_endpoint(motors_settings: list[dict[str, Any]]):
     settings = await settingscontroller.get_settings()
     settings["motors"] = motors_settings
     await settingscontroller.save_settings(settings)
-    motors_controller.reset()
+    master_controller.motors_controller.reset()
     return {"success": True}
 
 @app.get("/api/settings/hot-zone")
@@ -117,7 +116,7 @@ async def save_general_settings_endpoint(general_settings: dict[str, Any]):
     
     # Reset controller with new settings
     try:
-        motors_controller.reset()
+        master_controller.motors_controller.reset()
     except Exception as e:
         print(f"Failed to reset controller after settings save: {e}")
         
@@ -143,7 +142,7 @@ class MotorSpeedRequest(BaseModel):
 
 async def get_j8():
     """Get the J8 instance from the motors controller"""
-    return motors_controller.j8
+    return master_controller.motors.j8
 
 @app.get("/api/controller/status")
 async def get_controller_status_endpoint():
@@ -188,7 +187,7 @@ async def stop_motor_action(request: MotorActionStopRequest):
 async def set_motor_speed(request: MotorSpeedRequest):
     """Set motor speed via REST API"""
     try:
-        motors = motors_controller.motors
+        motors = master_controller.motors_controller.motors
         if request.motor_name in motors:
             motors[request.motor_name].move(speed=float(request.speed))
             return {"success": True, "motor_name": request.motor_name, "speed": request.speed}
