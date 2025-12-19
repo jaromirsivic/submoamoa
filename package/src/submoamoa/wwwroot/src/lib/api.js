@@ -82,26 +82,7 @@ const post = async (endpoint, data, timeout = DEFAULT_TIMEOUT) => {
     return response.json();
 };
 
-// ============================================
-// Camera Settings API
-// ============================================
 
-/**
- * Get camera settings from the server
- * @returns {Promise<object>} Camera settings object
- */
-export const getCameraSettings = async () => {
-    return get('/api/settings/camera');
-};
-
-/**
- * Save camera settings to the server
- * @param {object} cameraSettings - Camera settings to save
- * @returns {Promise<object>} Response from server
- */
-export const saveCameraSettings = async (cameraSettings) => {
-    return post('/api/settings/camera', cameraSettings);
-};
 
 // ============================================
 // Motors Settings API
@@ -231,8 +212,7 @@ export const saveGeneralSettings = async (generalSettings, timeout) => {
 
 // Export default object with all API functions
 export default {
-    getCameraSettings,
-    saveCameraSettings,
+
     getMotorsSettings,
     saveMotorsSettings,
     startMotorAction,

@@ -11,6 +11,7 @@ import importExportIcon from './assets/icons/importExport.svg';
 import motorsIcon from './assets/icons/motors.svg';
 import aiBehaviorIcon from './assets/icons/aiBehavior.svg';
 import hotZoneIcon from './assets/icons/hotZone.svg';
+
 import cameraIcon from './assets/icons/camera.svg';
 import tutorialsIcon from './assets/icons/tutorials.svg';
 import componentsDemoIcon from './assets/icons/mainPage.svg'; // Using mainPage icon as fallback for Components Demo
@@ -33,7 +34,7 @@ const Layout = () => {
       if (path === '/settings/ai-behavior') return { title: 'AI Behavior', icon: aiBehaviorIcon };
       if (path === '/settings/ai-behavior') return { title: 'AI Behavior', icon: aiBehaviorIcon };
       if (path === '/settings/hot-zone') return { title: 'Hot Zone', icon: hotZoneIcon };
-      if (path === '/settings/camera') return { title: 'Camera', icon: cameraIcon };
+
       if (path === '/settings/cameras') return { title: 'Camera(s)', icon: cameraIcon };
       return { title: 'Settings', icon: settingsIcon };
     }
@@ -126,7 +127,7 @@ const Layout = () => {
                   <li><MenuLink to="/settings/motors" icon={motorsIcon} label="Motors" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/settings/ai-behavior" icon={aiBehaviorIcon} label="AI Behavior" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/settings/hot-zone" icon={hotZoneIcon} label="Hot Zone" onClick={() => setIsMenuOpen(false)} /></li>
-                  <li><MenuLink to="/settings/camera" icon={cameraIcon} label="Camera" onClick={() => setIsMenuOpen(false)} /></li>
+
                   <li><MenuLink to="/settings/cameras" icon={cameraIcon} label="Camera(s)" onClick={() => setIsMenuOpen(false)} /></li>
                 </ul>
               </li>

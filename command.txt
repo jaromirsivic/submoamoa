@@ -771,3 +771,5 @@ Setter will look like this:
 @brightness.setter
 def brightness(self, value: int):
     self.camera.set(cv2.CAP_PROP_BRIGHTNESS, value)
+
+Remove web page Camera.jsx. Delete the file, remove the route, delete backend api if there is any.

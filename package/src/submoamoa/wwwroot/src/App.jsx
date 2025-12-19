@@ -12,7 +12,7 @@ import ImportExport from './ImportExport';
 import GeneralSetup from './GeneralSetup';
 import Motors from './Motors';
 import AIBehavior from './AIBehavior';
-import Camera from './Camera';
+
 import Cameras from './Cameras';
 import ComponentsDemo from './ComponentsDemo';
 import Sandbox from './Sandbox';
@@ -35,7 +35,7 @@ function App() {
             <Route path="motors" element={<Motors />} />
             <Route path="ai-behavior" element={<AIBehavior />} />
             <Route path="hot-zone" element={<HotZone />} />
-            <Route path="camera" element={<Camera />} />
+
             <Route path="cameras" element={<Cameras />} />
           </Route>
           <Route path="tutorials" element={<Tutorials />} />
