@@ -413,7 +413,7 @@
     "general": {
         "controllerSetup": {
             "controller": "remote",
-            "remoteHost": "192.168.68.54",
+            "remoteHost": "192.168.68.56",
             "remotePort": 8888
         }
     }

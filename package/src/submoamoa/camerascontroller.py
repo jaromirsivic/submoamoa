@@ -354,34 +354,6 @@ class Camera:
         self.supported_resolutions = supported_resolutions
         return True
 
-    # def _load_properties(self):
-    #     self._brightness = self.camera.get(cv2.CAP_PROP_BRIGHTNESS)
-    #     self._contrast = self.camera.get(cv2.CAP_PROP_CONTRAST)
-    #     self._hue = self.camera.get(cv2.CAP_PROP_HUE)
-    #     self._saturation = self.camera.get(cv2.CAP_PROP_SATURATION)
-    #     self._sharpness = self.camera.get(cv2.CAP_PROP_SHARPNESS)
-    #     self._gamma = self.camera.get(cv2.CAP_PROP_GAMMA)
-    #     self._white_balance = self.camera.get(cv2.CAP_PROP_WHITE_BALANCE)
-    #     self._backlight_compensation = self.camera.get(cv2.CAP_PROP_BACKLIGHT_COMPENSATION)
-    #     self._gain = self.camera.get(cv2.CAP_PROP_GAIN)
-    #     self._focus = self.camera.get(cv2.CAP_PROP_FOCUS)
-    #     self._exposure = self.camera.get(cv2.CAP_PROP_EXPOSURE)
-    #     self._auto_brightness = self.camera.get(cv2.C)
-    #     self._auto_contrast = self.camera.get(cv2.CAP_PROP_AUTO_CONTRAST)
-    #     self._auto_hue = self.camera.get(cv2.CAP_PROP_AUTO_HUE)
-    #     self._auto_saturation = self.camera.get(cv2.CAP_PROP_AUTO_SATURATION)
-    #     self._auto_sharpness = self.camera.get(cv2.CAP_PROP_AUTO_SHARPNESS)
-    #     self._auto_gamma = self.camera.get(cv2.CAP_PROP_AUTO_GAMMA)
-    #     self._auto_white_balance = self.camera.get(cv2.CAP_PROP_AUTO_WHITE_BALANCE)
-    #     self._auto_backlight_compensation = self.camera.get(cv2.CAP_PROP_AUTO_BACKLIGHT_COMPENSATION)
-    #     self._auto_gain = self.camera.get(cv2.CAP_PROP_AUTO_GAIN)
-    #     self._auto_focus = self.camera.get(cv2.CAP_PROP_AUTO_FOCUS)
-    #     self._auto_exposure = self.camera.get(cv2.CAP_PROP_AUTO_EXPOSURE)
-    #     self._fps = self.camera.get(cv2.CAP_PROP_FPS)
-    #     self._bitrate = self.camera.get(cv2.CAP_PROP_BITRATE)
-    #     self._buffer_size = self.camera.get(cv2.CAP_PROP_BUFFER_SIZE)
-    #     return True
-
     def close(self):
         if not self._active:
             return
