@@ -779,3 +779,14 @@ and as well range of the "NumericInput" component. There will be created "minSli
 which will define the range of the slider. Those will be min and max boundaries of the slider.
 But the "NumericInput" component will still have "min" and "max" props as a boundaries for the value.
 If "minSlider" or "maxSlider" are not defined, then "min" and "max" props will be used as boundaries for the slider.
+
+Update the Camera web page. Add all Camera properties to the Camera -> Edit -> Modal Window. Do not add
+those properties to the Camera -> Panel. The Camera -> Panel should only display the properties that are
+visible to the user at the moment. The Modal Window should display all properties.
+Now do not create any backend logic for the Camera properties. Just update the frontend.
+
+Update Camera web page. All sliders should have allowManualInput prop set to true. All
+sliders (the sliding part without caption and NumericInput) 
+in the section "Image Settings" should be optically aligned and should have the same width.
+There must be no horizontal scrollbar displayed in the modal window. Probably the width of some components is too big.
+Make them smaller so the horizontal scroll bar will disapear.

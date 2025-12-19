@@ -8,6 +8,7 @@ import ColumnLayout from './components/ColumnLayout';
 import HorizontalSeparator from './components/HorizontalSeparator';
 import ModalWindow from './components/ModalWindow';
 import StaticText from './components/StaticText';
+import Slider from './components/Slider';
 import editIcon from './assets/icons/edit.svg';
 
 const boldTextStyle = { fontWeight: 'bold' };
@@ -30,6 +31,20 @@ const Cameras = () => {
     const [flipHorizontally, setFlipHorizontally] = useState(false);
     const [flipVertically, setFlipVertically] = useState(false);
     const [rotateDegrees, setRotateDegrees] = useState('0');
+    const [brightness, setBrightness] = useState(0);
+    const [contrast, setContrast] = useState(0);
+    const [hue, setHue] = useState(0);
+    const [saturation, setSaturation] = useState(0);
+    const [sharpness, setSharpness] = useState(0);
+    const [gamma, setGamma] = useState(0);
+    const [whiteBalanceTemperature, setWhiteBalanceTemperature] = useState(0);
+    const [backlight, setBacklight] = useState(0);
+    const [gain, setGain] = useState(0);
+    const [focus, setFocus] = useState(0);
+    const [exposure, setExposure] = useState(0);
+    const [autoWhiteBalance, setAutoWhiteBalance] = useState(false);
+    const [autoFocus, setAutoFocus] = useState(false);
+    const [autoExposure, setAutoExposure] = useState(false);
 
     // ========================
     // State: Manual Control - Input Img Panel
@@ -50,12 +65,12 @@ const Cameras = () => {
     const [aiCropRight, setAiCropRight] = useState('0% (0 pixels)');
     const [aiStretchWidth, setAiStretchWidth] = useState('640 pixels');
     const [aiStretchHeight, setAiStretchHeight] = useState('480 pixels');
-    
+
     // ========================
     // Modals State
     // ========================
     const [activeModal, setActiveModal] = useState(null); // 'camera', 'manual', 'ai', or null
-    
+
     // Temp state for editing
     const [tempState, setTempState] = useState({});
 
@@ -97,6 +112,20 @@ const Cameras = () => {
             state.flipHorizontally = flipHorizontally;
             state.flipVertically = flipVertically;
             state.rotateDegrees = rotateDegrees;
+            state.brightness = brightness;
+            state.contrast = contrast;
+            state.hue = hue;
+            state.saturation = saturation;
+            state.sharpness = sharpness;
+            state.gamma = gamma;
+            state.whiteBalanceTemperature = whiteBalanceTemperature;
+            state.backlight = backlight;
+            state.gain = gain;
+            state.focus = focus;
+            state.exposure = exposure;
+            state.autoWhiteBalance = autoWhiteBalance;
+            state.autoFocus = autoFocus;
+            state.autoExposure = autoExposure;
         } else if (modalName === 'manual') {
             state.manualCropTop = manualCropTop;
             state.manualCropLeft = manualCropLeft;
@@ -116,6 +145,8 @@ const Cameras = () => {
         setActiveModal(modalName);
     }, [
         inputDeviceIndex, preferredResolution, acceptedResolution, flipHorizontally, flipVertically, rotateDegrees,
+        brightness, contrast, hue, saturation, sharpness, gamma, whiteBalanceTemperature, backlight, gain, focus, exposure,
+        autoWhiteBalance, autoFocus, autoExposure,
         manualCropTop, manualCropLeft, manualCropBottom, manualCropRight, manualStretchWidth, manualStretchHeight,
         aiCropTop, aiCropLeft, aiCropBottom, aiCropRight, aiStretchWidth, aiStretchHeight
     ]);
@@ -133,6 +164,20 @@ const Cameras = () => {
             setFlipHorizontally(tempState.flipHorizontally);
             setFlipVertically(tempState.flipVertically);
             setRotateDegrees(tempState.rotateDegrees);
+            setBrightness(tempState.brightness);
+            setContrast(tempState.contrast);
+            setHue(tempState.hue);
+            setSaturation(tempState.saturation);
+            setSharpness(tempState.sharpness);
+            setGamma(tempState.gamma);
+            setWhiteBalanceTemperature(tempState.whiteBalanceTemperature);
+            setBacklight(tempState.backlight);
+            setGain(tempState.gain);
+            setFocus(tempState.focus);
+            setExposure(tempState.exposure);
+            setAutoWhiteBalance(tempState.autoWhiteBalance);
+            setAutoFocus(tempState.autoFocus);
+            setAutoExposure(tempState.autoExposure);
         } else if (activeModal === 'manual') {
             setManualCropTop(tempState.manualCropTop);
             setManualCropLeft(tempState.manualCropLeft);
@@ -158,12 +203,12 @@ const Cameras = () => {
     return (
         <div className="page-container">
             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
-                
+
                 {/* ======================== */}
                 {/* Panel 1: Camera */}
                 {/* ======================== */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel 
+                    <Panel
                         title="Camera"
                         headerAction={
                             <Button
@@ -191,7 +236,7 @@ const Cameras = () => {
                 {/* Panel 2: Manual Control - Input Img */}
                 {/* ======================== */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel 
+                    <Panel
                         title="Manual Control - Input Img"
                         headerAction={
                             <Button
@@ -219,7 +264,7 @@ const Cameras = () => {
                 {/* Panel 3: AI Agent - Input Img */}
                 {/* ======================== */}
                 <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <Panel 
+                    <Panel
                         title="AI Agent - Input Img"
                         headerAction={
                             <Button
@@ -287,6 +332,27 @@ const Cameras = () => {
                             value={tempState.rotateDegrees}
                             onChange={(val) => updateTempState('rotateDegrees', val)}
                         />
+
+                        <HorizontalSeparator label="Image Settings" fullWidth={true} bleed="1rem" />
+                        <Slider label="Brightness" value={tempState.brightness} onChange={(val) => updateTempState('brightness', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
+                        <Slider label="Contrast" value={tempState.contrast} onChange={(val) => updateTempState('contrast', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
+                        <Slider label="Hue" value={tempState.hue} onChange={(val) => updateTempState('hue', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
+                        <Slider label="Saturation" value={tempState.saturation} onChange={(val) => updateTempState('saturation', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
+                        <Slider label="Sharpness" value={tempState.sharpness} onChange={(val) => updateTempState('sharpness', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
+                        <Slider label="Gamma" value={tempState.gamma} onChange={(val) => updateTempState('gamma', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
+                        <Slider label="Gain" value={tempState.gain} onChange={(val) => updateTempState('gain', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
+                        <Slider label="Backlight" value={tempState.backlight} onChange={(val) => updateTempState('backlight', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
+
+                        <HorizontalSeparator label="Controls" fullWidth={true} bleed="1rem" />
+                        <Switch label="Auto White Balance" value={tempState.autoWhiteBalance} onChange={(val) => updateTempState('autoWhiteBalance', val)} />
+                        {/* Only show WB slider if Auto is off? User didn't specify logic, but usually good UX. I'll just show all for now as per instructions "Add all Camera properties" unless I want to be fancy. Prompt said "Add all Camera properties...". I'll show it always to be safe. */}
+                        <Slider label="White Balance Temp" value={tempState.whiteBalanceTemperature} onChange={(val) => updateTempState('whiteBalanceTemperature', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} />
+
+                        <Switch label="Auto Focus" value={tempState.autoFocus} onChange={(val) => updateTempState('autoFocus', val)} />
+                        <Slider label="Focus" value={tempState.focus} onChange={(val) => updateTempState('focus', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} />
+
+                        <Switch label="Auto Exposure" value={tempState.autoExposure} onChange={(val) => updateTempState('autoExposure', val)} />
+                        <Slider label="Exposure" value={tempState.exposure} onChange={(val) => updateTempState('exposure', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} />
                     </ColumnLayout>
                 </ModalWindow>
             )}

@@ -14,6 +14,7 @@ const Slider = ({
     decimalPlaces,
     disabled = false,
     allowManualInput = false,
+    labelWidth,
     style = {}
 }) => {
     const [isDragging, setIsDragging] = useState(false);
@@ -30,7 +31,7 @@ const Slider = ({
     // Get clientX from either mouse or touch event
     const getClientX = (e) => {
         if (e.touches && e.touches.length > 0) {
-            return e.touches[0].clientX;
+            return e.touches[0].clientX
         }
         if (e.changedTouches && e.changedTouches.length > 0) {
             return e.changedTouches[0].clientX;
@@ -178,8 +179,8 @@ const Slider = ({
 
     return (
         <div className="custom-slider responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', gap: '1rem', ...style }}>
-            {label && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
-            <div style={{ position: 'relative', width: '100%', height: '40px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {label && <span style={{ whiteSpace: 'nowrap', width: labelWidth, minWidth: labelWidth, display: labelWidth ? 'inline-block' : 'inline' }}>{label}</span>}
+            <div style={{ position: 'relative', flex: 1, height: '40px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 {isDragging && !allowManualInput && <div style={valueLabelStyle}>{value}</div>}
                 <div
                     ref={trackRef}
@@ -192,7 +193,7 @@ const Slider = ({
                 </div>
 
                 {allowManualInput && (
-                    <div style={{ width: '110px' }}>
+                    <div style={{ width: '70px' }}>
                         <NumericInput
                             value={value}
                             onChange={handleManualChange}

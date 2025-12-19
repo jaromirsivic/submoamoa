@@ -142,7 +142,7 @@ class MotorSpeedRequest(BaseModel):
 
 async def get_j8():
     """Get the J8 instance from the motors controller"""
-    return master_controller.motors.j8
+    return master_controller.motors_controller.j8
 
 @app.get("/api/controller/status")
 async def get_controller_status_endpoint():
