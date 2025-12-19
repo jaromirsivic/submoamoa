@@ -8,6 +8,8 @@ const Slider = ({
     onAfterChange,
     min = 0,
     max = 100,
+    minSlider,
+    maxSlider,
     step = 1,
     decimalPlaces,
     disabled = false,
@@ -17,7 +19,13 @@ const Slider = ({
     const [isDragging, setIsDragging] = useState(false);
     const trackRef = useRef(null);
 
-    const percentage = ((value - min) / (max - min)) * 100;
+    // Determine slider boundaries
+    const sliderMin = minSlider !== undefined ? minSlider : min;
+    const sliderMax = maxSlider !== undefined ? maxSlider : max;
+
+    // Calculate percentage based on slider boundaries, clamping value for visual representation
+    const clampedValue = Math.max(sliderMin, Math.min(sliderMax, value));
+    const percentage = ((clampedValue - sliderMin) / (sliderMax - sliderMin)) * 100;
 
     // Get clientX from either mouse or touch event
     const getClientX = (e) => {
@@ -52,10 +60,10 @@ const Slider = ({
         let newPercentage = x / width;
         newPercentage = Math.max(0, Math.min(1, newPercentage));
 
-        let newValue = min + newPercentage * (max - min);
+        let newValue = sliderMin + newPercentage * (sliderMax - sliderMin);
         // Snap to step
         newValue = Math.round(newValue / step) * step;
-        // Clamp
+        // Clamp to absolute bounds
         newValue = Math.max(min, Math.min(max, newValue));
 
         onChange(newValue);
@@ -113,7 +121,7 @@ const Slider = ({
             window.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [isDragging, min, max, step, onChange, onAfterChange, value]);
+    }, [isDragging, min, max, minSlider, maxSlider, step, onChange, onAfterChange, value]);
 
     const handleManualChange = (val) => {
         onChange(val);

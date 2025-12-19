@@ -773,3 +773,9 @@ def brightness(self, value: int):
     self.camera.set(cv2.CAP_PROP_BRIGHTNESS, value)
 
 Remove web page Camera.jsx. Delete the file, remove the route, delete backend api if there is any.
+
+Update the "Slider" component. At the moment slider has "min" and "max" props which define the range of the slider
+and as well range of the "NumericInput" component. There will be created "minSlider" and "maxSlider" props
+which will define the range of the slider. Those will be min and max boundaries of the slider.
+But the "NumericInput" component will still have "min" and "max" props as a boundaries for the value.
+If "minSlider" or "maxSlider" are not defined, then "min" and "max" props will be used as boundaries for the slider.

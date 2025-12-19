@@ -387,7 +387,24 @@
                 "resolutionHeight": 1080,
                 "flipHorizontally": false,
                 "flipVertically": false,
-                "rotate": "0"
+                "rotate": "0",
+                "brightness": 0.0,
+                "contrast": 0.0,
+                "hue": 0.0,
+                "saturation": 0.0,
+                "sharpness": 0.0,
+                "gamma": 0.0,
+                "white_balance_temperature": 0.0,
+                "backlight_compensation": 0.0,
+                "gain": 0.0,
+                "focus": 0.0,
+                "exposure": 0.0,
+                "auto_white_balance_temperature": true,
+                "auto_focus": true,
+                "auto_exposure": true,
+                "fps": 0.0,
+                "bitrate": 0.0,
+                "buffer_size": 0.0
             }
         }
     ],
