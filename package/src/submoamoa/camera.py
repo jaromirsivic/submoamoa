@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Any
-from .nodeimage import NodeImage, NodeImageCroppedResized, NodeImageAI
-#from ultralytics import YOLO
+from .camerapostprocessing import NodeImage, NodeImageCroppedResized, NodeImageAI
 import time
 import cv2
 import numpy as np
@@ -29,16 +28,17 @@ class Camera:
         self._image: NodeImage = NodeImage(parent=self, fps=None)
         # NodeImageCroppedResized object
         self._image_cropped_resized: NodeImageCroppedResized = NodeImageCroppedResized(
-            parent=self._image, fps=None,
+            parent=self, fps=None,
             crop_top=0, crop_left=0, crop_bottom=0, crop_right=0,
             width=0, height=0
         )
         # NodeImageAI object
         self._image_ai: NodeImageAI = NodeImageAI(
-            parent=self._image, fps=None,
+            parent=self, fps=None,
             crop_top=0, crop_left=0, crop_bottom=0, crop_right=0,
-            width=320, height=240,
-            attention_points=[]
+            width=0, height=0,
+            attention_polygons=[],
+            model_name="yolo11x-pose"
         )
         # open camera
         self.open()
@@ -68,9 +68,9 @@ class Camera:
         Reset the fps of the nodes to twice the fps of the camera.
         """
         fps = self.fps
-        self._image.fps = self.fps * 2
-        self._image_cropped_resized.fps = self.fps * 2
-        self._image_ai.fps = self.fps * 2
+        self._image.fps = fps * 2
+        self._image_cropped_resized.fps = fps * 2
+        self._image_ai.fps = fps * 2
 
     @property
     def brightness(self) -> float:
@@ -319,13 +319,13 @@ class Camera:
         if not self._active or self._camera is None:
             return -1.0
         result = self._camera.get(cv2.CAP_PROP_FPS)
-        result = min(1000, max(0.01, result))
+        result = min(1000, max(1, result))
         return result
 
     @fps.setter
     def fps(self, value: float):
         if self._active and self._camera is not None:
-            value = min(1000, max(0.01, value))
+            value = min(1000, max(1, value))
             self._camera.set(cv2.CAP_PROP_FPS, value)
             # Reset the post processing filters fps
             self.reset_nodes_fps()
