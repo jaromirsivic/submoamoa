@@ -854,3 +854,13 @@ Update the Camera web page. Rename "Preferred Resolution" to "Resolution". Renam
 Resolution should change when Input Device changes. List of resolutions should be loaded
 from the "supported_resolutions" property which was sent by the backend to the frontend. If there is no
 item in the list, then the ComboBox will have only one item "0 x 0".
+
+Update camera web page. Add a new section "Preview" to the Camera Panel.
+There should be following components in the section:
+	Enabled: Switch
+	Live Preview: Polygon
+The Polygon component is stretched to fill the entire width of the section/panel.
+The height of the Polygon component is computed based on the "4/3" aspect ratio.
+If the enabled switch is off, then the "assets/camera.svg" should be displayed in the Polygon component
+in the fit mode. The polygon should be optically aligned with the camera image.
+Do not implement any backend logic for the Preview section at the moment.

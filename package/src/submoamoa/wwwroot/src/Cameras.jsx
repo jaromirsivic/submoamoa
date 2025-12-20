@@ -9,7 +9,9 @@ import HorizontalSeparator from './components/HorizontalSeparator';
 import ModalWindow from './components/ModalWindow';
 import StaticText from './components/StaticText';
 import Slider from './components/Slider';
+import Polygon from './components/Polygon';
 import editIcon from './assets/icons/edit.svg';
+import cameraIcon from './assets/icons/camera.svg';
 
 const boldTextStyle = { fontWeight: 'bold' };
 
@@ -30,6 +32,7 @@ const Cameras = () => {
     const [acceptedResolution, setAcceptedResolution] = useState('1920 x 1080');
     const [flipHorizontally, setFlipHorizontally] = useState(false);
     const [flipVertically, setFlipVertically] = useState(false);
+    const [previewEnabled, setPreviewEnabled] = useState(false);
     const [rotateDegrees, setRotateDegrees] = useState('0');
     const [brightness, setBrightness] = useState(0);
     const [contrast, setContrast] = useState(0);
@@ -266,6 +269,20 @@ const Cameras = () => {
                             <RenderStaticField label="Flip Horizontally" value={flipHorizontally ? 'Yes' : 'No'} />
                             <RenderStaticField label="Flip Vertically" value={flipVertically ? 'Yes' : 'No'} />
                             <RenderStaticField label="Rotate (degrees)" value={rotateDegrees} />
+
+                            <HorizontalSeparator label="Preview" fullWidth={true} />
+                            <Switch
+                                label="Enabled"
+                                value={previewEnabled}
+                                onChange={setPreviewEnabled}
+                            />
+                            <Polygon
+                                style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
+                                src={!previewEnabled ? cameraIcon : undefined}
+                                stretchMode="fit"
+                                mode="viewer"
+                                background="#222"
+                            />
                         </ColumnLayout>
                     </Panel>
                 </div>
