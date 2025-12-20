@@ -802,3 +802,50 @@ and the same kind of components (again not labels, but the input part of the com
 
 Add gap: '1rem' to other components (if it is relevant). We should have the same gap between components.
 We should always maintain the same strategy and same look and feel for the components.
+
+1. Update the Camera web page. Values in the Camera Panel and on the Camera -> Edit -> Modal Window should
+be loaded from the backend. Backend should return all properties of the Camera class stored in the settings.json
+camera -> general section.
+Some properties like "Input Device Index" and "Preferred Resolution" are comboboxes which have
+list of possible values. Backend should create a list of those values by reading all available input devices
+(stored in main.py -> master_controller -> cameras_controller -> cameras -> name) and supported_resolutions
+(stored in main.py -> master_controller -> cameras_controller -> cameras -> supported_resolutions) and dynamically
+create a structure like this:
+{
+    "input_devices": [
+        {
+            "value": 0,
+            "label": "Input Device 0"
+			"supported_resolutions": [
+				{
+					"width": 640,
+					"height": 480,
+					"label": "640 x 480"
+				},
+				{
+					"width": 1280,
+					"height": 720,
+					"label": "1280 x 720"
+				}
+			]
+        },
+        {
+            "value": 1,
+            "label": "Input Device 1"
+			"supported_resolutions": [
+				{
+					"width": 640,
+					"height": 480,
+					"label": "640 x 480"
+				},
+				{
+					"width": 1280,
+					"height": 720,
+					"label": "1280 x 720"
+				}
+			]
+        }
+    ]
+}
+and incorporate this structure into the message sent to the frontend.
+Do not bother with saving the properties to the backend at the moment. Focus only on loading the properties from the backend.

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Panel from './components/Panel';
 import Button from './components/Button';
 import ComboBox from './components/ComboBox';
@@ -67,9 +67,40 @@ const Cameras = () => {
     const [aiStretchHeight, setAiStretchHeight] = useState('480 pixels');
 
     // ========================
+    // State: Backend Data
+    // ========================
+    const [inputDevices, setInputDevices] = useState([]);
+
+    // ========================
     // Modals State
     // ========================
     const [activeModal, setActiveModal] = useState(null); // 'camera', 'manual', 'ai', or null
+
+    useEffect(() => {
+        fetch('/api/cameras/list')
+            .then(res => res.json())
+            .then(data => {
+                // Update settings from backend
+                if (data.inputDeviceIndex !== undefined) setInputDeviceIndex(String(data.inputDeviceIndex));
+                if (data.preferredResolution) setPreferredResolution(data.preferredResolution);
+                if (data.acceptedResolution) setAcceptedResolution(data.acceptedResolution);
+                if (data.flipHorizontally !== undefined) setFlipHorizontally(data.flipHorizontally);
+                if (data.flipVertically !== undefined) setFlipVertically(data.flipVertically);
+                if (data.rotateDegrees !== undefined) setRotateDegrees(String(data.rotateDegrees));
+
+                // Update other properties if present (assuming backend sends them flattened or we map them)
+                // For now, based on instructions, just loading device list and general settings.
+                // If specific camera properties (brightness etc) are needed from backend, we might need a separate call 
+                // or they should be part of the response for the *current* camera. 
+                // The prompt says "Backend should return all properties of the Camera class stored in the settings.json camera -> general section."
+                // And "Create a list of those values... and incorporate this structure into the message".
+
+                if (data.input_devices) {
+                    setInputDevices(data.input_devices);
+                }
+            })
+            .catch(err => console.error("Failed to load camera list:", err));
+    }, []);
 
     // Temp state for editing
     const [tempState, setTempState] = useState({});
@@ -84,20 +115,17 @@ const Cameras = () => {
         { label: '270', value: '270' }
     ];
 
-    const inputDeviceOptions = [
-        { label: '0', value: '0' },
-        { label: '1', value: '1' },
-        { label: '2', value: '2' },
-        { label: '3', value: '3' }
-    ];
+    const inputDeviceOptions = inputDevices.map(d => ({
+        label: d.label,
+        value: String(d.value)
+    }));
 
-    const resolutionOptions = [
-        { label: '640 x 480', value: '640 x 480' },
-        { label: '800 x 600', value: '800 x 600' },
-        { label: '1280 x 720', value: '1280 x 720' },
-        { label: '1920 x 1080', value: '1920 x 1080' },
-        { label: '3840 x 2160', value: '3840 x 2160' }
-    ];
+    const selectedDevice = inputDevices.find(d => String(d.value) === String(inputDeviceIndex));
+    // Use dynamic resolutions from backend if available, otherwise fallback or empty
+    const resolutionOptions = selectedDevice ? selectedDevice.supported_resolutions.map(r => ({
+        label: r.label,
+        value: r.label
+    })) : [];
 
     // ========================
     // Handlers

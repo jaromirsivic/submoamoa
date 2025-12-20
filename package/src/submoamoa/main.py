@@ -122,6 +122,42 @@ async def save_general_settings_endpoint(general_settings: dict[str, Any]):
         
     return {"success": True}
 
+@app.get("/api/cameras/list")
+async def get_cameras_list_endpoint():
+    """Get connected cameras info and general settings"""
+    settings = await settingscontroller.get_settings()
+    general_settings = settings.get("general", {})
+    
+    input_devices = []
+    
+    # Reload list of cameras to get fresh data
+    # master_controller.cameras_controller.reload_list_of_cameras() 
+    # NOTE: Reloading might be slow or interrupt streams if active. 
+    # For now assuming cameras are already loaded or static enough.
+    # If dynamic plug/unplug is needed, we should reload here or have a background task.
+    # Given the requirements, we'll read the current state.
+    
+    for cam in master_controller.cameras_controller.cameras:
+        device_info = {
+            "value": cam.index,
+            "label": f"{cam.name}", # Or just cam.name if it's descriptive enough
+            "supported_resolutions": []
+        }
+        
+        for res in cam.supported_resolutions:
+             device_info["supported_resolutions"].append({
+                 "width": res["width"],
+                 "height": res["height"],
+                 "label": f"{res['width']} x {res['height']}"
+             })
+             
+        input_devices.append(device_info)
+        
+    return {
+        **general_settings,
+        "input_devices": input_devices
+    }
+
 # ============================================
 # Motor Action API
 # ============================================
