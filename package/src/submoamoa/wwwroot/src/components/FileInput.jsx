@@ -27,7 +27,7 @@ const FileInput = ({
     };
 
     return (
-        <div className="responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, ...style }}>
+        <div className="responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, gap: '1rem', ...style }}>
             {label && <span style={{ whiteSpace: 'nowrap', width: labelWidth, minWidth: labelWidth, display: labelWidth ? 'inline-block' : 'inline' }}>{label}</span>}
             <input
                 type="file"

@@ -35,7 +35,7 @@ const Switch = ({
     const containerClass = `responsive-input-container ${labelPosition === 'top' ? 'top-label' : ''}`;
 
     return (
-        <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', ...style }}>
+        <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', gap: '1rem', ...style }}>
             {label && <span className="switch-label" style={{ width: labelWidth, minWidth: labelWidth, display: labelWidth ? 'inline-block' : 'inline' }}>{label}</span>}
             <div
                 className="custom-switch"

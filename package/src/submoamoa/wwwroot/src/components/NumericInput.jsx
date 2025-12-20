@@ -88,7 +88,7 @@ const NumericInput = ({
         alignItems: 'center', // Center label and input block
         justifyContent: labelPosition === 'top' ? 'flex-start' : 'space-between',
         width: '100%',
-        gap: labelPosition === 'left' ? '0.5rem' : '0',
+        gap: labelPosition === 'left' ? '1rem' : '0',
         ...style
     };
 

@@ -26,7 +26,7 @@ const Textbox = ({
     const containerClass = `responsive-input-container ${labelPosition === 'top' ? 'top-label' : ''}`;
 
     return (
-        <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, width: '100%', ...style }}>
+        <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, width: '100%', gap: '1rem', ...style }}>
             {label && <label className="textbox-label" style={{ whiteSpace: 'nowrap', width: labelWidth, minWidth: labelWidth, display: labelWidth ? 'inline-block' : 'inline' }}>{label}</label>}
             <input
                 type="text"
