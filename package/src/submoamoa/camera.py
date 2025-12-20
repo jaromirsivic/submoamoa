@@ -24,19 +24,20 @@ class Camera:
         self.supported_resolutions = []
         # Is camera active
         self._active = False
+        # Create post processing filters
         # NodeImage object
         self._image: NodeImage = NodeImage(parent=self, fps=None)
         # NodeImageCroppedResized object
         self._image_cropped_resized: NodeImageCroppedResized = NodeImageCroppedResized(
             parent=self._image, fps=None,
             crop_top=0, crop_left=0, crop_bottom=0, crop_right=0,
-            width=640, height=480
+            width=0, height=0
         )
         # NodeImageAI object
         self._image_ai: NodeImageAI = NodeImageAI(
-            parent=self._image_cropped_resized, fps=None,
+            parent=self._image, fps=None,
             crop_top=0, crop_left=0, crop_bottom=0, crop_right=0,
-            width=640, height=480,
+            width=320, height=240,
             attention_points=[]
         )
         # open camera
@@ -49,6 +50,27 @@ class Camera:
     @property
     def active(self) -> bool:
         return self._active
+
+    @property
+    def image(self) -> NodeImage:
+        return self._image
+
+    @property
+    def image_cropped_resized(self) -> NodeImageCroppedResized:
+        return self._image_cropped_resized
+
+    @property
+    def image_ai(self) -> NodeImageAI:
+        return self._image_ai
+
+    def reset_nodes_fps(self):
+        """
+        Reset the fps of the nodes to twice the fps of the camera.
+        """
+        fps = self.fps
+        self._image.fps = self.fps * 2
+        self._image_cropped_resized.fps = self.fps * 2
+        self._image_ai.fps = self.fps * 2
 
     @property
     def brightness(self) -> float:
@@ -296,12 +318,17 @@ class Camera:
     def fps(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
-        return self._camera.get(cv2.CAP_PROP_FPS)
+        result = self._camera.get(cv2.CAP_PROP_FPS)
+        result = min(1000, max(0.01, result))
+        return result
 
     @fps.setter
     def fps(self, value: float):
         if self._active and self._camera is not None:
+            value = min(1000, max(0.01, value))
             self._camera.set(cv2.CAP_PROP_FPS, value)
+            # Reset the post processing filters fps
+            self.reset_nodes_fps()
 
     @property
     def bitrate(self) -> float:
@@ -365,6 +392,8 @@ class Camera:
             if int(w) == width and int(h) == height:
                 supported_resolutions.append({"width": width, "height": height})
         self.supported_resolutions = supported_resolutions
+        # Reset the fps of the nodes (post processing filters)
+        self.reset_nodes_fps()
         return True
 
     def close(self):
