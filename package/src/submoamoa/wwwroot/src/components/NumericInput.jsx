@@ -10,6 +10,7 @@ const NumericInput = ({
     step = 1,
     decimalPlaces,
     disabled = false,
+    labelWidth,
     style = {}
 }) => {
     const [localValue, setLocalValue] = React.useState('');
@@ -171,11 +172,12 @@ const NumericInput = ({
     return (
         <div className={`custom-numeric-input responsive-input-container ${labelPosition === 'top' ? 'top-label' : ''}`} style={containerStyle}>
             {label && <label className="numeric-input-label" style={{
-                display: 'block',
+                display: labelWidth ? 'inline-block' : 'block',
                 marginBottom: labelPosition === 'top' ? '0.25rem' : '0',
                 whiteSpace: 'nowrap',
                 textAlign: 'start',
-                width: labelPosition === 'top' ? '100%' : 'auto'
+                width: labelWidth || (labelPosition === 'top' ? '100%' : 'auto'),
+                minWidth: labelWidth
             }}>{label}</label>}
 
             <div style={flexWrapperStyle}>

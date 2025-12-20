@@ -6,6 +6,7 @@ const FileInput = ({
     onFileSelect,
     accept,
     disabled = false,
+    labelWidth,
     style = {}
 }) => {
     const fileInputRef = useRef(null);
@@ -27,7 +28,7 @@ const FileInput = ({
 
     return (
         <div className="responsive-input-container" style={{ width: '100%', opacity: disabled ? 0.5 : 1, ...style }}>
-            {label && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
+            {label && <span style={{ whiteSpace: 'nowrap', width: labelWidth, minWidth: labelWidth, display: labelWidth ? 'inline-block' : 'inline' }}>{label}</span>}
             <input
                 type="file"
                 ref={fileInputRef}

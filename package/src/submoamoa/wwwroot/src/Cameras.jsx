@@ -344,14 +344,14 @@ const Cameras = () => {
                         <Slider label="Backlight" value={tempState.backlight} onChange={(val) => updateTempState('backlight', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="100px" />
 
                         <HorizontalSeparator label="Controls" fullWidth={true} bleed="1rem" />
-                        <Switch label="Auto White Balance" value={tempState.autoWhiteBalance} onChange={(val) => updateTempState('autoWhiteBalance', val)} />
+                        <Switch label="Auto White Balance" value={tempState.autoWhiteBalance} onChange={(val) => updateTempState('autoWhiteBalance', val)} labelWidth="130px" />
                         {/* Only show WB slider if Auto is off? User didn't specify logic, but usually good UX. I'll just show all for now as per instructions "Add all Camera properties" unless I want to be fancy. Prompt said "Add all Camera properties...". I'll show it always to be safe. */}
                         <Slider label="White Balance Temp" value={tempState.whiteBalanceTemperature} onChange={(val) => updateTempState('whiteBalanceTemperature', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} />
 
-                        <Switch label="Auto Focus" value={tempState.autoFocus} onChange={(val) => updateTempState('autoFocus', val)} />
+                        <Switch label="Auto Focus" value={tempState.autoFocus} onChange={(val) => updateTempState('autoFocus', val)} labelWidth="130px" />
                         <Slider label="Focus" value={tempState.focus} onChange={(val) => updateTempState('focus', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} />
 
-                        <Switch label="Auto Exposure" value={tempState.autoExposure} onChange={(val) => updateTempState('autoExposure', val)} />
+                        <Switch label="Auto Exposure" value={tempState.autoExposure} onChange={(val) => updateTempState('autoExposure', val)} labelWidth="130px" />
                         <Slider label="Exposure" value={tempState.exposure} onChange={(val) => updateTempState('exposure', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} />
                     </ColumnLayout>
                 </ModalWindow>

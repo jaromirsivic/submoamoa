@@ -6,6 +6,7 @@ const Checkbox = ({
     value,
     onChange,
     disabled = false,
+    labelWidth,
     style = {}
 }) => {
     const checkboxStyle = {
@@ -26,7 +27,7 @@ const Checkbox = ({
 
     return (
         <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', ...style }}>
-            {label && <span className="checkbox-label">{label}</span>}
+            {label && <span className="checkbox-label" style={{ width: labelWidth, minWidth: labelWidth, display: labelWidth ? 'inline-block' : 'inline' }}>{label}</span>}
             <div
                 className="custom-checkbox"
                 style={checkboxStyle}

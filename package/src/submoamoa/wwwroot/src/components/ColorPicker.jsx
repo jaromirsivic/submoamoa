@@ -10,7 +10,8 @@ const ColorPicker = ({
     onChange,
     showHex = true,
     showAlpha = false,
-    disabled = false
+    disabled = false,
+    labelWidth
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [openAbove, setOpenAbove] = useState(false);
@@ -218,7 +219,7 @@ const ColorPicker = ({
 
     return (
         <div className="custom-color-picker responsive-input-container" ref={containerRef} style={{ position: 'relative', opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
-            {label && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
+            {label && <span style={{ whiteSpace: 'nowrap', width: labelWidth, minWidth: labelWidth, display: labelWidth ? 'inline-block' : 'inline' }}>{label}</span>}
             {/* Trigger button (ComboBox style) */}
             <div
                 onClick={() => {

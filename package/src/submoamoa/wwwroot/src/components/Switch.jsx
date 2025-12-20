@@ -6,6 +6,7 @@ const Switch = ({
     value,
     onChange,
     disabled = false,
+    labelWidth,
     style = {}
 }) => {
     const switchStyle = {
@@ -35,7 +36,7 @@ const Switch = ({
 
     return (
         <div className={containerClass} style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto', ...style }}>
-            {label && <span className="switch-label">{label}</span>}
+            {label && <span className="switch-label" style={{ width: labelWidth, minWidth: labelWidth, display: labelWidth ? 'inline-block' : 'inline' }}>{label}</span>}
             <div
                 className="custom-switch"
                 style={switchStyle}

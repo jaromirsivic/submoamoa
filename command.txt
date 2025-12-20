@@ -790,3 +790,12 @@ sliders (the sliding part without caption and NumericInput)
 in the section "Image Settings" should be optically aligned and should have the same width.
 There must be no horizontal scrollbar displayed in the modal window. Probably the width of some components is too big.
 Make them smaller so the horizontal scroll bar will disapear.
+
+Update all basic components which have label prop. Add labelWidth prop to all of them so we can control
+the width of the label to align components.
+
+Update Camera web page. All sliders in the "Controls" section should have allowManualInput prop set to true.
+All components should be optically aligned. Optical alignment is done per section - in each section
+the components (sliders, switches, comboboxes, ...) should be aligned to the same left position
+(I am not talking about the labels, but about the input part of the components) 
+and the same kind of components (again not labels, but the input part of the components) should have the same width.
