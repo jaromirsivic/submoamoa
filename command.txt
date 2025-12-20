@@ -849,3 +849,8 @@ create a structure like this:
 }
 and incorporate this structure into the message sent to the frontend.
 Do not bother with saving the properties to the backend at the moment. Focus only on loading the properties from the backend.
+
+Update the Camera web page. Rename "Preferred Resolution" to "Resolution". Rename "Input Device Index" to "Input Device".
+Resolution should change when Input Device changes. List of resolutions should be loaded
+from the "supported_resolutions" property which was sent by the backend to the frontend. If there is no
+item in the list, then the ComboBox will have only one item "0 x 0".

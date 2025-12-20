@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any
+from .nodeimage import NodeImage, NodeImageCroppedResized, NodeImageAI
 #from ultralytics import YOLO
 import time
 import cv2
@@ -23,6 +24,21 @@ class Camera:
         self.supported_resolutions = []
         # Is camera active
         self._active = False
+        # NodeImage object
+        self._image: NodeImage = NodeImage(parent=self, fps=None)
+        # NodeImageCroppedResized object
+        self._image_cropped_resized: NodeImageCroppedResized = NodeImageCroppedResized(
+            parent=self._image, fps=None,
+            crop_top=0, crop_left=0, crop_bottom=0, crop_right=0,
+            width=640, height=480
+        )
+        # NodeImageAI object
+        self._image_ai: NodeImageAI = NodeImageAI(
+            parent=self._image_cropped_resized, fps=None,
+            crop_top=0, crop_left=0, crop_bottom=0, crop_right=0,
+            width=640, height=480,
+            attention_points=[]
+        )
         # open camera
         self.open()
 
@@ -385,7 +401,7 @@ class Camera:
             "buffer_size": self.buffer_size
         }
     
-    def getFrame(self) -> tuple[bool, np.ndarray]:
+    def get_frame(self) -> tuple[bool, np.ndarray]:
         if not self._active or self._camera is None:
             return False, None
         return self._camera.read()

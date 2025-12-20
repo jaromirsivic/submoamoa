@@ -120,12 +120,22 @@ const Cameras = () => {
         value: String(d.value)
     }));
 
-    const selectedDevice = inputDevices.find(d => String(d.value) === String(inputDeviceIndex));
-    // Use dynamic resolutions from backend if available, otherwise fallback or empty
-    const resolutionOptions = selectedDevice ? selectedDevice.supported_resolutions.map(r => ({
-        label: r.label,
-        value: r.label
-    })) : [];
+    // Calculate resolution options based on current selection (modal or main view)
+    // If modal is active and we are editing camera, use tempState.inputDeviceIndex
+    // Otherwise use the saved inputDeviceIndex
+    const currentDeviceIndex = activeModal === 'camera' ? tempState.inputDeviceIndex : inputDeviceIndex;
+
+    const selectedDevice = inputDevices.find(d => String(d.value) === String(currentDeviceIndex));
+
+    let resolutionOptions = [];
+    if (selectedDevice && selectedDevice.supported_resolutions && selectedDevice.supported_resolutions.length > 0) {
+        resolutionOptions = selectedDevice.supported_resolutions.map(r => ({
+            label: r.label,
+            value: r.label
+        }));
+    } else {
+        resolutionOptions = [{ label: '0 x 0', value: '0 x 0' }];
+    }
 
     // ========================
     // Handlers
@@ -248,8 +258,8 @@ const Cameras = () => {
                     >
                         <ColumnLayout gap="0.75rem">
                             <HorizontalSeparator label="General Setup" fullWidth={true} />
-                            <RenderStaticField label="Input Device Index" value={inputDeviceIndex} />
-                            <RenderStaticField label="Preferred resolution" value={preferredResolution} />
+                            <RenderStaticField label="Input Device" value={inputDeviceIndex} />
+                            <RenderStaticField label="Resolution" value={preferredResolution} />
                             <RenderStaticField label="Accepted Resolution" value={acceptedResolution} />
 
                             <HorizontalSeparator label="Flip and Rotate" fullWidth={true} />
@@ -331,14 +341,14 @@ const Cameras = () => {
                     <ColumnLayout gap="0.75rem">
                         <HorizontalSeparator label="General Setup" fullWidth={true} bleed="1rem" />
                         <ComboBox
-                            label="Input Device Index"
+                            label="Input Device"
                             items={inputDeviceOptions}
                             value={tempState.inputDeviceIndex}
                             onChange={(val) => updateTempState('inputDeviceIndex', val)}
                             labelWidth="160px"
                         />
                         <ComboBox
-                            label="Preferred resolution"
+                            label="Resolution"
                             items={resolutionOptions}
                             value={tempState.preferredResolution}
                             onChange={(val) => updateTempState('preferredResolution', val)}
