@@ -23,18 +23,19 @@ async def get_cameras_list_endpoint():
     # Given the requirements, we'll read the current state.
     
     for cam in master_controller.cameras_controller.cameras:
-        device_info = {
-            "value": cam.index,
-            "label": f"{cam.name}", # Or just cam.name if it's descriptive enough
-            "supported_resolutions": []
-        }
+        device_info = cam.to_dict()
+        # device_info["value"] = cam.index
+        # device_info["label"] = cam.name
         
-        for res in cam.supported_resolutions:
-             device_info["supported_resolutions"].append({
+        # Add labels to supported resolutions for frontend ComboBox
+        resolutions_with_labels = []
+        for res in device_info["supported_resolutions"]:
+             resolutions_with_labels.append({
                  "width": res["width"],
                  "height": res["height"],
                  "label": f"{res['width']} x {res['height']}"
              })
+        device_info["supported_resolutions"] = resolutions_with_labels
              
         input_devices.append(device_info)
         

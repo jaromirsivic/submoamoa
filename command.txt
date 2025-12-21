@@ -925,3 +925,77 @@ for example all rest api calls and all logic regarding motors should be placed i
 all rest api calls and all logic regarding camreas should be placed into restapicameras.py
 and so on.
 Each page will have its restapi{pagename}.py file
+
+Update Camera web page -> Camera panel Modal Window and restapicameras.py -> /api/cameras/list.
+Modify current behavior in the rest api. Currently we are returning back from the get_cameras_list_endpoint()
+only the list of device names and for each device only a list of supported resolutions.
+In the updated version we will return full list of all properties
+of each camera using camera.to_dict() function. We will then load and display those properties
+on the Modal Window - components for each property should already be there.
+
+1. Update Camera web page. The get_cameras_list_endpoint() now almost returns correct json. The json looks like this:
+{
+    "controllerSetup": {
+        "controller": "remote",
+        "remoteHost": "192.168.68.56",
+        "remotePort": 8888
+    },
+    "input_devices": [
+        {
+            "index": 0,
+            "name": "0: GUID_1.0",
+            "supported_resolutions": [
+                {
+                    "width": 320,
+                    "height": 240,
+                    "label": "320 x 240"
+                },
+                {
+                    "width": 640,
+                    "height": 480,
+                    "label": "640 x 480"
+                },
+                {
+                    "width": 1280,
+                    "height": 720,
+                    "label": "1280 x 720"
+                },
+                {
+                    "width": 1920,
+                    "height": 1080,
+                    "label": "1920 x 1080"
+                }
+            ],
+            "width": 1920,
+            "height": 1080,
+            "fps": 30.0,
+            "bitrate": -1.0,
+            "buffer_size": 1.0,
+            "flip_horizontal": false,
+            "flip_vertical": false,
+            "rotate": 0,
+            "brightness": 128.0,
+            "contrast": 32.0,
+            "hue": 0.0,
+            "saturation": 64.0,
+            "sharpness": 3.0,
+            "gamma": 120.0,
+            "white_balance_temperature": -1.0,
+            "backlight_compensation": 1.0,
+            "gain": -1.0,
+            "focus": -1.0,
+            "exposure": -6.0,
+            "auto_white_balance_temperature": true,
+            "auto_focus": true,
+            "auto_exposure": false,
+            "value": 0,
+            "label": "0: GUID_1.0"
+        },
+		...
+In the "input_devices" structure get rid of "value" and "label" those are redundant information.
+If Cameras.jsx needs them then remap it to "index" and "name".
+
+2. Make sure that the inputs in the Modal Window which are displayed after user clicks on the edit button in the Camera panel
+are correctly set based on the last result of rest api call /api/cameras/list. For example brightness is correctly returned
+as 128 in the json but the value of "Brightness" Slider in the section "Image Settings" in the Modal Window
+is 0. There must be some error. Fix it.

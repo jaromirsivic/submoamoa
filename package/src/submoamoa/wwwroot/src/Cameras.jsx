@@ -130,8 +130,8 @@ const Cameras = () => {
     ];
 
     const inputDeviceOptions = inputDevices.map(d => ({
-        label: d.label,
-        value: String(d.value)
+        label: d.name,
+        value: String(d.index)
     }));
 
     // Calculate resolution options based on current selection (modal or main view)
@@ -139,7 +139,7 @@ const Cameras = () => {
     // Otherwise use the saved inputDeviceIndex
     const currentDeviceIndex = activeModal === 'camera' ? tempState.inputDeviceIndex : inputDeviceIndex;
 
-    const selectedDevice = inputDevices.find(d => String(d.value) === String(currentDeviceIndex));
+    const selectedDevice = inputDevices.find(d => String(d.index) === String(currentDeviceIndex));
 
     let resolutionOptions = [];
     if (selectedDevice && selectedDevice.supported_resolutions && selectedDevice.supported_resolutions.length > 0) {
@@ -154,31 +154,64 @@ const Cameras = () => {
     // ========================
     // Handlers
     // ========================
+    const getDeviceStateFromDevice = (device) => {
+        if (!device) return {};
+        return {
+            inputDeviceIndex: String(device.index),
+            preferredResolution: device.width && device.height ? `${device.width} x ${device.height}` : '0 x 0',
+            acceptedResolution: device.width && device.height ? `${device.width} x ${device.height}` : '0 x 0',
+            fps: device.fps,
+            flipHorizontally: device.flip_horizontal,
+            flipVertically: device.flip_vertical,
+            rotateDegrees: String(device.rotate),
+            brightness: device.brightness,
+            contrast: device.contrast,
+            hue: device.hue,
+            saturation: device.saturation,
+            sharpness: device.sharpness,
+            gamma: device.gamma,
+            whiteBalanceTemperature: device.white_balance_temperature,
+            backlight: device.backlight_compensation,
+            gain: device.gain,
+            focus: device.focus,
+            exposure: device.exposure,
+            autoWhiteBalance: device.auto_white_balance_temperature,
+            autoFocus: device.auto_focus,
+            autoExposure: device.auto_exposure
+        };
+    };
+
     const openModal = useCallback((modalName) => {
         // Initialize temp state based on modal
-        const state = {};
+        let state = {};
         if (modalName === 'camera') {
-            state.inputDeviceIndex = inputDeviceIndex;
-            state.preferredResolution = preferredResolution;
-            state.acceptedResolution = acceptedResolution;
-            state.fps = fps;
-            state.flipHorizontally = flipHorizontally;
-            state.flipVertically = flipVertically;
-            state.rotateDegrees = rotateDegrees;
-            state.brightness = brightness;
-            state.contrast = contrast;
-            state.hue = hue;
-            state.saturation = saturation;
-            state.sharpness = sharpness;
-            state.gamma = gamma;
-            state.whiteBalanceTemperature = whiteBalanceTemperature;
-            state.backlight = backlight;
-            state.gain = gain;
-            state.focus = focus;
-            state.exposure = exposure;
-            state.autoWhiteBalance = autoWhiteBalance;
-            state.autoFocus = autoFocus;
-            state.autoExposure = autoExposure;
+            const device = inputDevices.find(d => String(d.index) === String(inputDeviceIndex));
+            if (device) {
+                state = getDeviceStateFromDevice(device);
+            } else {
+                // Fallback to current global state
+                state.inputDeviceIndex = inputDeviceIndex;
+                state.preferredResolution = preferredResolution;
+                state.acceptedResolution = acceptedResolution;
+                state.fps = fps;
+                state.flipHorizontally = flipHorizontally;
+                state.flipVertically = flipVertically;
+                state.rotateDegrees = rotateDegrees;
+                state.brightness = brightness;
+                state.contrast = contrast;
+                state.hue = hue;
+                state.saturation = saturation;
+                state.sharpness = sharpness;
+                state.gamma = gamma;
+                state.whiteBalanceTemperature = whiteBalanceTemperature;
+                state.backlight = backlight;
+                state.gain = gain;
+                state.focus = focus;
+                state.exposure = exposure;
+                state.autoWhiteBalance = autoWhiteBalance;
+                state.autoFocus = autoFocus;
+                state.autoExposure = autoExposure;
+            }
         } else if (modalName === 'manual') {
             state.manualCropTop = manualCropTop;
             state.manualCropLeft = manualCropLeft;
@@ -433,7 +466,17 @@ const Cameras = () => {
                             label="Input Device"
                             items={inputDeviceOptions}
                             value={tempState.inputDeviceIndex}
-                            onChange={(val) => updateTempState('inputDeviceIndex', val)}
+                            onChange={(val) => {
+                                const newDevice = inputDevices.find(d => String(d.index) === String(val));
+                                if (newDevice) {
+                                    setTempState(prev => ({
+                                        ...prev,
+                                        ...getDeviceStateFromDevice(newDevice)
+                                    }));
+                                } else {
+                                    updateTempState('inputDeviceIndex', val);
+                                }
+                            }}
                             labelWidth="160px"
                         />
                         <ComboBox
