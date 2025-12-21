@@ -20,7 +20,10 @@ class NodeImage:
 
     @property
     def frame(self) -> np.ndarray:
-        return self._frame
+        ret_value, ret_frame = self.get_frame()
+        if ret_value:
+            return ret_frame
+        return None
 
     @property
     def fps(self) -> int:

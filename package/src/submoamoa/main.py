@@ -1,14 +1,16 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from typing import Any
 from contextlib import asynccontextmanager
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request
 from . import settingscontroller
 from .mastercontroller import MasterController
+import asyncio
+import cv2
 
 master_controller = MasterController()
 
@@ -281,6 +283,85 @@ async def get_speed_histogram_endpoint():
             })
     
     return result
+
+# ============================================
+# Camera Stream API
+# ============================================
+
+async def generate_camera_frames(*, camera_index: int):
+    """
+    Generator that yields MJPEG frames from the camera.
+    Uses multipart/x-mixed-replace for browser-native streaming.
+    """
+    while True:
+        try:
+            # Get the camera by index
+            if camera_index < 0 or camera_index >= len(master_controller.cameras_controller.cameras):
+                break
+            
+            camera = master_controller.cameras_controller.cameras[camera_index]
+            frame = camera.image.frame
+            
+            if frame is not None:
+                # Encode frame as JPEG
+                _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                frame_bytes = jpeg.tobytes()
+                
+                # Yield as multipart frame
+                yield (
+                    b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n'
+                )
+            
+            # Small delay to control frame rate (100 fps max)
+            await asyncio.sleep(0.01)
+            
+        except Exception as e:
+            print(f"Error streaming camera {camera_index}: {e}")
+            await asyncio.sleep(0.1)
+
+@app.get("/api/cameras/stream/{camera_index}")
+async def stream_camera(camera_index: int):
+    """
+    Stream camera feed as MJPEG.
+    Use this URL as an img src for live video streaming.
+    """
+    if camera_index < 0 or camera_index >= len(master_controller.cameras_controller.cameras):
+        raise HTTPException(status_code=404, detail=f"Camera {camera_index} not found")
+    
+    return StreamingResponse(
+        generate_camera_frames(camera_index=camera_index),
+        media_type='multipart/x-mixed-replace; boundary=frame'
+    )
+
+@app.get("/api/cameras/frame/{camera_index}")
+async def get_camera_frame(camera_index: int):
+    """
+    Get a single frame from the camera as JPEG.
+    Use this for polling-based updates.
+    """
+    if camera_index < 0 or camera_index >= len(master_controller.cameras_controller.cameras):
+        raise HTTPException(status_code=404, detail=f"Camera {camera_index} not found")
+    
+    try:
+        camera = master_controller.cameras_controller.cameras[camera_index]
+        frame = camera.image.frame
+        
+        if frame is None:
+            raise HTTPException(status_code=503, detail="No frame available")
+        
+        # Encode frame as JPEG
+        _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        
+        return StreamingResponse(
+            iter([jpeg.tobytes()]),
+            media_type='image/jpeg',
+            headers={'Cache-Control': 'no-cache, no-store, must-revalidate'}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 app.mount("/", StaticFiles(directory=BASE_DIR / "wwwroot/dist", html=True), name="static")
 

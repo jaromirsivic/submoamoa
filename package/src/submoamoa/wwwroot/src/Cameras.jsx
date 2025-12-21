@@ -285,7 +285,7 @@ const Cameras = () => {
                             />
                             <Polygon
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
-                                src={!previewEnabled ? cameraOffIcon : undefined}
+                                src={previewEnabled ? `/api/cameras/stream/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#222"
@@ -327,7 +327,7 @@ const Cameras = () => {
                             />
                             <Polygon
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
-                                src={!manualPreviewEnabled ? cameraOffIcon : undefined}
+                                src={manualPreviewEnabled ? `/api/cameras/stream/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#222"
@@ -369,7 +369,7 @@ const Cameras = () => {
                             />
                             <Polygon
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
-                                src={!aiPreviewEnabled ? cameraOffIcon : undefined}
+                                src={aiPreviewEnabled ? `/api/cameras/stream/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#222"

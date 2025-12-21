@@ -888,7 +888,7 @@ in the fit mode. The polygon should be optically aligned with the camera image.
 Do not implement any backend logic for the Preview section at the moment.
 
 Update Camera web page. When user enables preview in the camera panel the Polygon component
-should display live feed of the camera from the backend. Source of the feed is:
+should display live video/image feed of the camera from the backend. Source of the feed is:
 master_controller.cameras_controller.cameras[camera_index].image.frame
 camera_index is saved in settings.json -> cameras -> general -> deviceIndex
 Update Cameras.jsx, Polygon.jsx, main.py and other files if necessary.
