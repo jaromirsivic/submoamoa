@@ -48,6 +48,7 @@ const Cameras = () => {
     const [autoWhiteBalance, setAutoWhiteBalance] = useState(false);
     const [autoFocus, setAutoFocus] = useState(false);
     const [autoExposure, setAutoExposure] = useState(false);
+    const [polygons1, setPolygons1] = useState([]);
 
     // ========================
     // State: Manual Control - Input Img Panel

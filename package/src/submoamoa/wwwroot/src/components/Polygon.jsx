@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
+// Stable empty array reference to prevent infinite re-renders when no polygons prop is passed
+const EMPTY_POLYGONS = [];
+
 /**
  * Polygon component for drawing and editing polygons over an image.
  * 
@@ -20,7 +23,7 @@ const Polygon = ({
     lineWidth = 1,
     maxPoints = 32,
     maxPolygons = 8,
-    polygons: externalPolygons = [],
+    polygons: externalPolygons = EMPTY_POLYGONS,
     onChange,
     // Reticle props
     reticleX = 0.5,
@@ -94,15 +97,32 @@ const Polygon = ({
 
     // Update container size on resize
     useEffect(() => {
+        let animationFrameId;
+
         const updateSize = () => {
             if (containerRef.current) {
                 const rect = containerRef.current.getBoundingClientRect();
-                setContainerSize({ width: rect.width, height: rect.height });
+                setContainerSize(prev => {
+                    if (Math.abs(prev.width - rect.width) < 1 && Math.abs(prev.height - rect.height) < 1) {
+                        return prev;
+                    }
+                    return { width: rect.width, height: rect.height };
+                });
             }
         };
+
+        const onResize = () => {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(updateSize);
+        };
+
         updateSize();
-        window.addEventListener('resize', updateSize);
-        return () => window.removeEventListener('resize', updateSize);
+        window.addEventListener('resize', onResize);
+        
+        return () => {
+            window.removeEventListener('resize', onResize);
+            cancelAnimationFrame(animationFrameId);
+        };
     }, []);
 
     // Get clientX/Y from either mouse or touch event
@@ -401,11 +421,14 @@ const Polygon = ({
         draw();
     }, [draw]);
 
-    // Cleanup throttle timeout on unmount
+    // Cleanup timeouts and animations on unmount
     useEffect(() => {
         return () => {
             if (joystickThrottleTimeoutRef.current) {
                 clearTimeout(joystickThrottleTimeoutRef.current);
+            }
+            if (joystickAnimationRef.current) {
+                cancelAnimationFrame(joystickAnimationRef.current);
             }
         };
     }, []);
@@ -700,7 +723,10 @@ const Polygon = ({
             return;
         }
 
-        setDraggingPoint(null);
+        // Only update state if actually dragging (avoid unnecessary state updates)
+        if (draggingPoint !== null) {
+            setDraggingPoint(null);
+        }
     };
 
     const handleMouseUp = () => handlePointerUp();
@@ -772,20 +798,23 @@ const Polygon = ({
         }
     }, [containerSize, imageLoaded, draw]);
 
+    // Only attach event handlers for interactive modes (designer/joystick)
+    const isInteractive = mode === 'designer' || mode === 'joystick';
+
     return (
         <div
             className="custom-polygon"
             ref={containerRef}
             style={containerStyle}
-            onClick={handleClick}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onDoubleClick={handleDoubleClick}
+            onClick={isInteractive ? handleClick : undefined}
+            onMouseDown={isInteractive ? handleMouseDown : undefined}
+            onMouseMove={isInteractive ? handleMouseMove : undefined}
+            onMouseUp={isInteractive ? handleMouseUp : undefined}
+            onMouseLeave={isInteractive ? handleMouseUp : undefined}
+            onTouchStart={isInteractive ? handleTouchStart : undefined}
+            onTouchMove={isInteractive ? handleTouchMove : undefined}
+            onTouchEnd={isInteractive ? handleTouchEnd : undefined}
+            onDoubleClick={isInteractive ? handleDoubleClick : undefined}
         >
             {src && (
                 <img

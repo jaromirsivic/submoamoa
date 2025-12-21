@@ -864,3 +864,14 @@ The height of the Polygon component is computed based on the "4/3" aspect ratio.
 If the enabled switch is off, then the "assets/camera.svg" should be displayed in the Polygon component
 in the fit mode. The polygon should be optically aligned with the camera image.
 Do not implement any backend logic for the Preview section at the moment.
+
+The Polygon component added to the Cameras web page line 279-285 is causing a routing issues.
+When the Polygon was added to the Cameras web page whenever user clicks on any other item in the menu
+trying to navigate out of the page, nothing happens. Url in the web browser changes
+but then nothing happens. The user is stuck on the Camera web page.
+When the Polygon component is removed the routing starts to work correctly.
+Find the issue and fix it. I need ot use Polygon component on this page.
+
+The issue was not fixed by your changes. But I have found what can
+remove the issue. If I add polygons={polygons1}
+(see line 286) the routing issue dissapears. Why? Can you fix the root cause?
