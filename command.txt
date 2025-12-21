@@ -902,3 +902,20 @@ Update Camera web page. When user enables preview in the "AI Agent - Input Img."
 should display live video/image feed of the camera from the backend. Source of the feed is:
 master_controller.cameras_controller.cameras[camera_index].image_ai.frame
 camera_index is saved in settings.json -> cameras -> general -> deviceIndex
+
+On the Camera page on the Modal Window of the Camera Panel add following components:
+Into the section general setup add:
+FPS: Slider (minvalue=1, maxvalue=240)
+
+On the Camera web page on the left side of the edit button in the header of the Camera panel add
+a reload button with icon ./assets/reload.svg. When user clicks on 
+the reload button the yes/no Modal Window with a question:
+	Do you want to refresh list of camera devices? This operation may take several seconds.
+If the user clicks on the "yes" button all displayed live streams in the Preview section
+of all panels are terminated and "Enabled" switches in those Preview sections are turned off. The Backend api /reset is called
+and the master_controller.cameras_controller.reset() function is called.
+
+When user clicks on the Reload button on the Camera web page and then clicks
+on the yes button on the Modal Window the button should change color and be disabled
+and a text "Saving..." should appear. The same behavior like on the General Setup
+web page should be used.

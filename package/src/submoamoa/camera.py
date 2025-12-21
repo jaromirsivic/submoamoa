@@ -6,23 +6,30 @@ import cv2
 import numpy as np
 
 
-FLIP_NONE = 2
 FLIP_HORIZONTAL = 1
 FLIP_VERTICAL = 0
 FLIP_BOTH = -1
 
 class Camera:
-    def __init__(self, *, index: int):
+    def __init__(self, *, index: int, settings: dict = None):
         # OpenCV camera object
         self._camera:cv2.VideoCapture = None
         # Camera index
-        self.index = index
+        self._index = index
+        # Camera settings
+        self._settings = settings
         # Camera name
-        self.name = f'{index}: NO CAMERA DETECTED'
+        self._name = f'{index}: NO CAMERA DETECTED'
         # Supported resolutions
         self.supported_resolutions = []
+        # Flip and rotate settings
+        self._flip_horizontal = False
+        self._flip_vertical = False
+        self._rotate = 0
         # Is camera active
         self._active = False
+        # Last frame
+        self._frame = None
         # Create post processing filters
         # NodeImage object
         self._image: NodeImage = NodeImage(parent=self, fps=None)
@@ -43,6 +50,8 @@ class Camera:
         # open camera
         self.open()
 
+    # Basic properties
+
     @property
     def camera(self) -> cv2.VideoCapture:
         return self._camera
@@ -50,6 +59,76 @@ class Camera:
     @property
     def active(self) -> bool:
         return self._active
+
+    @property
+    def index(self) -> int:
+        return self._index
+    
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def fps(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        result = self._camera.get(cv2.CAP_PROP_FPS)
+        result = min(1000, max(1, result))
+        return result
+
+    @property
+    def width(self) -> int:
+        if not self._active or self._camera is None:
+            return -1
+        return int(self._camera.get(cv2.CAP_PROP_FRAME_WIDTH))
+    
+    @width.setter
+    def width(self, value: int):
+        if self._active and self._camera is not None:
+            self._camera.set(cv2.CAP_PROP_FRAME_WIDTH, value)
+
+    @property
+    def height(self) -> int:
+        if not self._active or self._camera is None:
+            return -1
+        return int(self._camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    
+    @height.setter
+    def height(self, value: int):
+        if self._active and self._camera is not None:
+            self._camera.set(cv2.CAP_PROP_FRAME_HEIGHT, value)
+
+    @fps.setter
+    def fps(self, value: float):
+        if self._active and self._camera is not None:
+            value = min(1000, max(1, value))
+            self._camera.set(cv2.CAP_PROP_FPS, value)
+            # Reset the post processing filters fps
+            self.reset_nodes_fps()
+
+    @property
+    def bitrate(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self._camera.get(cv2.CAP_PROP_BITRATE)
+
+    @bitrate.setter
+    def bitrate(self, value: float):
+        if self._active and self._camera is not None:
+            self._camera.set(cv2.CAP_PROP_BITRATE, value)
+
+    @property
+    def buffer_size(self) -> float:
+        if not self._active or self._camera is None:
+            return -1.0
+        return self._camera.get(cv2.CAP_PROP_BUFFERSIZE)
+
+    @buffer_size.setter
+    def buffer_size(self, value: float):
+        if self._active and self._camera is not None:
+            self._camera.set(cv2.CAP_PROP_BUFFERSIZE, value)
+
+    # Post processing filters
 
     @property
     def image(self) -> NodeImage:
@@ -71,6 +150,34 @@ class Camera:
         self._image.fps = fps * 2
         self._image_cropped_resized.fps = fps * 2
         self._image_ai.fps = fps * 2
+
+    # Flip and rotate settings
+
+    @property
+    def flip_horizontal(self) -> bool:
+        return self._flip_horizontal
+    
+    @flip_horizontal.setter
+    def flip_horizontal(self, value: bool):
+        self._flip_horizontal = value
+    
+    @property
+    def flip_vertical(self) -> bool:
+        return self._flip_vertical
+    
+    @flip_vertical.setter
+    def flip_vertical(self, value: bool):
+        self._flip_vertical = value
+    
+    @property
+    def rotate(self) -> int:
+        return self._rotate
+    
+    @rotate.setter
+    def rotate(self, value: int):
+        self._rotate = value
+
+    # Camera settings
 
     @property
     def brightness(self) -> float:
@@ -314,53 +421,15 @@ class Camera:
         if self._active and self._camera is not None:
             self._camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0 if value else 0.0)
 
-    @property
-    def fps(self) -> float:
-        if not self._active or self._camera is None:
-            return -1.0
-        result = self._camera.get(cv2.CAP_PROP_FPS)
-        result = min(1000, max(1, result))
-        return result
-
-    @fps.setter
-    def fps(self, value: float):
-        if self._active and self._camera is not None:
-            value = min(1000, max(1, value))
-            self._camera.set(cv2.CAP_PROP_FPS, value)
-            # Reset the post processing filters fps
-            self.reset_nodes_fps()
-
-    @property
-    def bitrate(self) -> float:
-        if not self._active or self._camera is None:
-            return -1.0
-        return self._camera.get(cv2.CAP_PROP_BITRATE)
-
-    @bitrate.setter
-    def bitrate(self, value: float):
-        if self._active and self._camera is not None:
-            self._camera.set(cv2.CAP_PROP_BITRATE, value)
-
-    @property
-    def buffer_size(self) -> float:
-        if not self._active or self._camera is None:
-            return -1.0
-        return self._camera.get(cv2.CAP_PROP_BUFFERSIZE)
-
-    @buffer_size.setter
-    def buffer_size(self, value: float):
-        if self._active and self._camera is not None:
-            self._camera.set(cv2.CAP_PROP_BUFFERSIZE, value)
-
     def open(self):
-        self._camera = cv2.VideoCapture(self.index)
+        self._camera = cv2.VideoCapture(self._index)
         if not self._camera.isOpened():
             self._active = False
             return False
         # Set active
         self._active = True
         # Set name
-        self.name = f'{self.index}: GUID_{self._camera.get(cv2.CAP_PROP_GUID)}'
+        self._name = f'{self._index}: GUID_{self._camera.get(cv2.CAP_PROP_GUID)}'
 
         # Check supported resolutions
         common_resolutions = [
@@ -385,11 +454,9 @@ class Camera:
         supported_resolutions = []
         # Check if supported resolutions are available
         for width, height in common_resolutions:
-            self._camera.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-            self._camera.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-            w = self._camera.get(cv2.CAP_PROP_FRAME_WIDTH)
-            h = self._camera.get(cv2.CAP_PROP_FRAME_HEIGHT)
-            if int(w) == width and int(h) == height:
+            self.width = width
+            self.height = height
+            if self.width == width and self.height == height:
                 supported_resolutions.append({"width": width, "height": height})
         self.supported_resolutions = supported_resolutions
         # Reset the fps of the nodes (post processing filters)
@@ -411,6 +478,14 @@ class Camera:
             "index": self.index,
             "name": self.name,
             "supported_resolutions": self.supported_resolutions,
+            "width": self.width,
+            "height": self.height,
+            "fps": self.fps,
+            "bitrate": self.bitrate,
+            "buffer_size": self.buffer_size,
+            "flip_horizontal": self.flip_horizontal,
+            "flip_vertical": self.flip_vertical,
+            "rotate": self.rotate,
             "brightness": self.brightness,
             "contrast": self.contrast,
             "hue": self.hue,
@@ -424,13 +499,72 @@ class Camera:
             "exposure": self.exposure,
             "auto_white_balance_temperature": self.auto_white_balance_temperature,
             "auto_focus": self.auto_focus,
-            "auto_exposure": self.auto_exposure,
-            "fps": self.fps,
-            "bitrate": self.bitrate,
-            "buffer_size": self.buffer_size
+            "auto_exposure": self.auto_exposure
         }
-    
+
+    def reload_settings(self):
+        if not self._active or self._camera is None:
+            return
+        self.width = self._settings["width"]
+        self.height = self._settings["height"]
+        self.fps = self._settings["fps"]
+        self.bitrate = self._settings["bitrate"]
+        self.buffer_size = self._settings["buffer_size"]
+        self.flip_horizontal = self._settings["flip_horizontal"]
+        self.flip_vertical = self._settings["flip_vertical"]
+        self.rotate = self._settings["rotate"]
+        self.brightness = self._settings["brightness"]
+        self.contrast = self._settings["contrast"]
+        self.hue = self._settings["hue"]
+        self.saturation = self._settings["saturation"]
+        self.sharpness = self._settings["sharpness"]
+        self.gamma = self._settings["gamma"]
+        self.white_balance_temperature = self._settings["white_balance_temperature"]
+        self.backlight = self._settings["backlight"]
+        self.gain = self._settings["gain"]
+        self.focus = self._settings["focus"]
+        self.exposure = self._settings["exposure"]
+        self.auto_white_balance_temperature = self._settings["auto_white_balance_temperature"]
+        self.auto_focus = self._settings["auto_focus"]
+        self.auto_exposure = self._settings["auto_exposure"]
+
+    @property
+    def settings(self) -> dict:
+        return self._settings
+
+    @settings.setter
+    def settings(self, value: dict):
+        self._settings = value
+        self.reload_settings()
+
+    @property
+    def frame(self) -> np.ndarray:
+        ret_value, ret_frame = self.get_frame()
+        if ret_value:
+            return ret_frame
+        return None
+
     def get_frame(self) -> tuple[bool, np.ndarray]:
+        # if camera is not active or camera is not opened, return False, None
         if not self._active or self._camera is None:
             return False, None
-        return self._camera.read()
+        # read frame from camera
+        ret, frame = self._camera.read()
+        if not ret:
+            return False, None
+        self._frame = frame
+        # Flip camera input horizontally and vertically
+        if self._flip_horizontal and self._flip_vertical:
+            frame = cv2.flip(frame, FLIP_BOTH)
+        elif self._flip_horizontal:
+            frame = cv2.flip(frame, FLIP_HORIZONTAL)
+        elif self._flip_vertical:
+            frame = cv2.flip(frame, FLIP_VERTICAL)
+        # Rotate camera input
+        if self._rotate == 90:
+            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+        elif self._rotate == 180:
+            frame = cv2.rotate(frame, cv2.ROTATE_180)
+        elif self._rotate == 270:
+            frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        return True, frame

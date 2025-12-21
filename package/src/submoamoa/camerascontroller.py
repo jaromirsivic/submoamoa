@@ -20,24 +20,23 @@ class CamerasController:
     def __init__(self):
         # List of cameras
         self._cameras: list[Camera] = []
-        self.reload_list_of_cameras()
+        self.reset()
 
     @property
     def cameras(self) -> list[Camera]:
         return self._cameras
 
-    def reload_list_of_cameras(self, *, max_index=8):
+    def reset(self, *, max_index=8):
         """
         Reload the list of cameras.
         Parameters:
         max_index : int : The maximum index of the cameras to reload.
         """
-        self._cameras = []
-        for i in range(max_index):
-            self._cameras.append(Camera(index=i))
-            # Open and close camera to get all properties
-            self._cameras[i].open()
-            #self._cameras[i].close()
+        for camera in self._cameras:
+            camera.close()
+        self._cameras = [Camera(index=i) for i in range(max_index)]
+        for camera in self._cameras:
+            camera.open()
 
 
 def bitblt_frame(*, src_frame: np.ndarray, src_x: int, src_y: int, src_width: int, src_height: int,

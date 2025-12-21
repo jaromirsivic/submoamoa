@@ -15,4 +15,15 @@ export default defineConfig({
     //   },
     // },
   },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    // target: 'esnext',
+    // rollupOptions: {
+    //   output: {
+    //     manualChunks: {
+    //       'react': ['react', 'react-dom'],
+    //     },
+    //   },
+    // },
+  }
 })

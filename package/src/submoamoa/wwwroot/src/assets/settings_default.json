@@ -2,7 +2,7 @@
     "motors": [
         {
             "enabled": true,
-            "name": "linearMotor0",
+            "name": "Left Arm",
             "type": "linear",
             "role": "leftArm",
             "forwardPin": 12,
@@ -14,7 +14,7 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "inertia": 0.1,
+            "inertia": 0.08,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -23,8 +23,8 @@
                 },
                 {
                     "pwmMultiplier": 0.1,
-                    "forwardSeconds": 0,
-                    "reverseSeconds": 0
+                    "forwardSeconds": 150,
+                    "reverseSeconds": 150
                 },
                 {
                     "pwmMultiplier": 0.5,
@@ -42,11 +42,72 @@
                     "reverseSeconds": 25
                 }
             ],
-            "automaticCalibrationEnabled": true
+            "automaticCalibrationEnabled": true,
+            "speedHistogram": {
+                "pwmMultiplier": 1,
+                "defaultState": "stop",
+                "histogram": [
+                    [
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.1
+                        },
+                        {
+                            "value": 150
+                        },
+                        {
+                            "value": 150
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.5
+                        },
+                        {
+                            "value": 55
+                        },
+                        {
+                            "value": 55
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.75
+                        },
+                        {
+                            "value": 40
+                        },
+                        {
+                            "value": 40
+                        }
+                    ],
+                    [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 25
+                        }
+                    ]
+                ]
+            }
         },
         {
             "enabled": true,
-            "name": "linearMotor1",
+            "name": "Right Arm",
             "type": "linear",
             "role": "rightArm",
             "forwardPin": 33,
@@ -86,7 +147,68 @@
                     "reverseSeconds": 25
                 }
             ],
-            "automaticCalibrationEnabled": true
+            "automaticCalibrationEnabled": true,
+            "speedHistogram": {
+                "pwmMultiplier": 1,
+                "defaultState": "stop",
+                "histogram": [
+                    [
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.1
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.5
+                        },
+                        {
+                            "value": 55
+                        },
+                        {
+                            "value": 55
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.75
+                        },
+                        {
+                            "value": 40
+                        },
+                        {
+                            "value": 40
+                        }
+                    ],
+                    [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 25
+                        }
+                    ]
+                ]
+            }
         },
         {
             "enabled": false,
@@ -94,7 +216,7 @@
             "type": "linear",
             "role": "general",
             "forwardPin": 11,
-            "reversePin": 13,
+            "reversePin": 0,
             "mcp3008ForwardPin": 0,
             "mcp3008ReversePin": 0,
             "dutyCycle": {
@@ -130,7 +252,68 @@
                     "reverseSeconds": 25
                 }
             ],
-            "automaticCalibrationEnabled": true
+            "automaticCalibrationEnabled": true,
+            "speedHistogram": {
+                "pwmMultiplier": 1,
+                "defaultState": "stop",
+                "histogram": [
+                    [
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.1
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.5
+                        },
+                        {
+                            "value": 55
+                        },
+                        {
+                            "value": 55
+                        }
+                    ],
+                    [
+                        {
+                            "value": 0.75
+                        },
+                        {
+                            "value": 40
+                        },
+                        {
+                            "value": 40
+                        }
+                    ],
+                    [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 25
+                        }
+                    ]
+                ]
+            }
         },
         {
             "enabled": false,
@@ -195,13 +378,43 @@
         "reticleColor": "#ff0000cc",
         "reticleSize": 1
     },
+    "cameras": [
+        {
+            "general": {
+                "index": 0,
+                "name": "cam1",
+                "width": 1920,
+                "height": 1080,
+                "fps": 0.0,
+                "bitrate": 0.0,
+                "buffer_size": 0.0,
+                "flipHorizontally": false,
+                "flipVertically": false,
+                "rotate": "0",
+                "brightness": 0.0,
+                "contrast": 0.0,
+                "hue": 0.0,
+                "saturation": 0.0,
+                "sharpness": 0.0,
+                "gamma": 0.0,
+                "white_balance_temperature": 0.0,
+                "backlight_compensation": 0.0,
+                "gain": 0.0,
+                "focus": 0.0,
+                "exposure": 0.0,
+                "auto_white_balance_temperature": true,
+                "auto_focus": true,
+                "auto_exposure": true
+            }
+        }
+    ],
     "hotZone": {
-        "units": "cm",
+        "units": "in",
         "computationQuality": 30,
         "centerPole": {
             "micStickRadius": 50,
             "height": 40,
-            "yDistanceFromArmPoles": 25
+            "yDistanceFromArmPoles": 20
         },
         "armPoles": {
             "height": 80,
@@ -216,8 +429,8 @@
     },
     "general": {
         "controllerSetup": {
-            "controller": "localhost",
-            "remoteHost": "192.168.0.1",
+            "controller": "remote",
+            "remoteHost": "192.168.68.56",
             "remotePort": 8888
         }
     }

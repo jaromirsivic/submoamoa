@@ -11,6 +11,7 @@ import StaticText from './components/StaticText';
 import Slider from './components/Slider';
 import Polygon from './components/Polygon';
 import editIcon from './assets/icons/edit.svg';
+import reloadIcon from './assets/icons/reload.svg';
 import cameraOffIcon from './assets/icons/cameraOff.svg';
 
 const boldTextStyle = { fontWeight: 'bold' };
@@ -30,6 +31,7 @@ const Cameras = () => {
     const [inputDeviceIndex, setInputDeviceIndex] = useState('0');
     const [preferredResolution, setPreferredResolution] = useState('1920 x 1080');
     const [acceptedResolution, setAcceptedResolution] = useState('1920 x 1080');
+    const [fps, setFps] = useState(30);
     const [flipHorizontally, setFlipHorizontally] = useState(false);
     const [flipVertically, setFlipVertically] = useState(false);
     const [previewEnabled, setPreviewEnabled] = useState(false);
@@ -85,6 +87,8 @@ const Cameras = () => {
     // Modals State
     // ========================
     const [activeModal, setActiveModal] = useState(null); // 'camera', 'manual', 'ai', or null
+    const [showReloadModal, setShowReloadModal] = useState(false);
+    const [isReloading, setIsReloading] = useState(false);
 
     useEffect(() => {
         fetch('/api/cameras/list')
@@ -157,6 +161,7 @@ const Cameras = () => {
             state.inputDeviceIndex = inputDeviceIndex;
             state.preferredResolution = preferredResolution;
             state.acceptedResolution = acceptedResolution;
+            state.fps = fps;
             state.flipHorizontally = flipHorizontally;
             state.flipVertically = flipVertically;
             state.rotateDegrees = rotateDegrees;
@@ -209,6 +214,7 @@ const Cameras = () => {
             setInputDeviceIndex(tempState.inputDeviceIndex);
             setPreferredResolution(tempState.preferredResolution);
             setAcceptedResolution(tempState.acceptedResolution);
+            setFps(tempState.fps);
             setFlipHorizontally(tempState.flipHorizontally);
             setFlipVertically(tempState.flipVertically);
             setRotateDegrees(tempState.rotateDegrees);
@@ -248,6 +254,30 @@ const Cameras = () => {
         setTempState(prev => ({ ...prev, [key]: value }));
     }, []);
 
+    const handleReloadRequest = useCallback(() => {
+        setShowReloadModal(true);
+    }, []);
+
+    const handleReloadConfirm = useCallback(() => {
+        setIsReloading(true);
+        setPreviewEnabled(false);
+        setManualPreviewEnabled(false);
+        setAiPreviewEnabled(false);
+
+        fetch('/api/reset', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("Cameras reset successfully");
+                }
+            })
+            .catch(err => console.error("Failed to reset cameras:", err))
+            .finally(() => {
+                setIsReloading(false);
+                setShowReloadModal(false);
+            });
+    }, []);
+
     return (
         <div className="page-container">
             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
@@ -259,11 +289,18 @@ const Cameras = () => {
                     <Panel
                         title="Camera"
                         headerAction={
-                            <Button
-                                label={<img src={editIcon} alt="Edit" width="24" height="24" />}
-                                onClick={() => openModal('camera')}
-                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
-                            />
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <Button
+                                    label={<img src={reloadIcon} alt="Reload" width="24" height="24" />}
+                                    onClick={handleReloadRequest}
+                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                                />
+                                <Button
+                                    label={<img src={editIcon} alt="Edit" width="24" height="24" />}
+                                    onClick={() => openModal('camera')}
+                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                                />
+                            </div>
                         }
                     >
                         <ColumnLayout gap="0.75rem">
@@ -404,6 +441,19 @@ const Cameras = () => {
                             items={resolutionOptions}
                             value={tempState.preferredResolution}
                             onChange={(val) => updateTempState('preferredResolution', val)}
+                            labelWidth="160px"
+                        />
+                        <Slider
+                            label="FPS"
+                            value={tempState.fps}
+                            onChange={(val) => updateTempState('fps', val)}
+                            min={1}
+                            max={240}
+                            minSlider={1}
+                            maxSlider={240}
+                            step={1}
+                            decimalPlaces={0}
+                            allowManualInput={true}
                             labelWidth="160px"
                         />
 
@@ -547,6 +597,25 @@ const Cameras = () => {
                             onChange={(val) => updateTempState('aiStretchHeight', val)}
                         />
                     </ColumnLayout>
+                </ModalWindow>
+            )}
+
+            {/* ======================== */}
+            {/* Modal: Reload Confirmation */}
+            {/* ======================== */}
+            {showReloadModal && (
+                <ModalWindow
+                    isOpen={true}
+                    title="Confirm Reload"
+                    onOk={handleReloadConfirm}
+                    onCancel={() => !isReloading && setShowReloadModal(false)}
+                    okLabel={isReloading ? "Saving..." : "Yes"}
+                    okDisabled={isReloading}
+                    cancelLabel="No"
+                >
+                    <div style={{ padding: '1rem' }}>
+                        Do you want to refresh list of camera devices? This operation may take several seconds.
+                    </div>
                 </ModalWindow>
             )}
         </div>

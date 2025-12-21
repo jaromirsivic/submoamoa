@@ -108,7 +108,7 @@ const Layout = () => {
             borderLeft: '1px solid var(--color-border)',
             borderBottom: '1px solid var(--color-border)',
             zIndex: 49,
-            maxHeight: 'calc(100vh - var(--header-height) - var(--safe-area-top, 0px))',
+            //maxHeight: 'calc(100vh - var(--header-height) - var(--safe-area-top, 0px))',
             maxHeight: 'calc(100dvh - var(--header-height) - var(--safe-area-top, 0px))',
             overflowY: 'auto'
           }}>

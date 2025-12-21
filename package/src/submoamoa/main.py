@@ -161,6 +161,12 @@ async def get_cameras_list_endpoint():
         "input_devices": input_devices
     }
 
+@app.post("/api/reset")
+async def reset_cameras_endpoint():
+    """Reset camera list"""
+    master_controller.cameras_controller.reset()
+    return {"success": True}
+
 # ============================================
 # Motor Action API
 # ============================================

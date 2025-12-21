@@ -381,12 +381,15 @@
     "cameras": [
         {
             "general": {
-                "deviceIndex": 0,
+                "index": 0,
                 "name": "cam1",
-                "resolutionWidth": 1920,
-                "resolutionHeight": 1080,
-                "flipHorizontally": false,
-                "flipVertically": false,
+                "width": 1920,
+                "height": 1080,
+                "fps": 0.0,
+                "bitrate": 0.0,
+                "buffer_size": 0.0,
+                "flipHorizontal": false,
+                "flipVertical": false,
                 "rotate": "0",
                 "brightness": 0.0,
                 "contrast": 0.0,
@@ -401,10 +404,7 @@
                 "exposure": 0.0,
                 "auto_white_balance_temperature": true,
                 "auto_focus": true,
-                "auto_exposure": true,
-                "fps": 0.0,
-                "bitrate": 0.0,
-                "buffer_size": 0.0
+                "auto_exposure": true
             }
         }
     ],
