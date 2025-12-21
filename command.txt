@@ -875,3 +875,20 @@ Find the issue and fix it. I need ot use Polygon component on this page.
 The issue was not fixed by your changes. But I have found what can
 remove the issue. If I add polygons={polygons1}
 (see line 286) the routing issue dissapears. Why? Can you fix the root cause?
+
+Update camera web page. Add a new section "Preview" 
+to the "Manual Control - Input Img." and "AI Agent - Input Img." panels.
+There should be following components in the section:
+	Enabled: Switch
+	Live Preview: Polygon
+The Polygon component is stretched to fill the entire width of the section/panel.
+The height of the Polygon component is computed based on the "4/3" aspect ratio.
+If the enabled switch is off, then the "assets/camera.svg" should be displayed in the Polygon component
+in the fit mode. The polygon should be optically aligned with the camera image.
+Do not implement any backend logic for the Preview section at the moment.
+
+Update Camera web page. When user enables preview in the camera panel the Polygon component
+should display live feed of the camera from the backend. Source of the feed is:
+master_controller.cameras_controller.cameras[camera_index].image.frame
+camera_index is saved in settings.json -> cameras -> general -> deviceIndex
+Update Cameras.jsx, Polygon.jsx, main.py and other files if necessary.

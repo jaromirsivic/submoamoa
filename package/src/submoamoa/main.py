@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI):
     # Startup logic goes here
     print("Server starting up...")
     master_controller.start()
+    master_controller.cameras_controller.cameras[0].image.frame
     # You can call your onload function here
     await onload()
     yield

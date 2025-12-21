@@ -11,7 +11,7 @@ import StaticText from './components/StaticText';
 import Slider from './components/Slider';
 import Polygon from './components/Polygon';
 import editIcon from './assets/icons/edit.svg';
-import cameraIcon from './assets/icons/camera.svg';
+import cameraOffIcon from './assets/icons/cameraOff.svg';
 
 const boldTextStyle = { fontWeight: 'bold' };
 
@@ -69,6 +69,12 @@ const Cameras = () => {
     const [aiCropRight, setAiCropRight] = useState('0% (0 pixels)');
     const [aiStretchWidth, setAiStretchWidth] = useState('640 pixels');
     const [aiStretchHeight, setAiStretchHeight] = useState('480 pixels');
+
+    // ========================
+    // State: Preview Section (Manual and AI panels)
+    // ========================
+    const [manualPreviewEnabled, setManualPreviewEnabled] = useState(false);
+    const [aiPreviewEnabled, setAiPreviewEnabled] = useState(false);
 
     // ========================
     // State: Backend Data
@@ -279,7 +285,7 @@ const Cameras = () => {
                             />
                             <Polygon
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
-                                src={!previewEnabled ? cameraIcon : undefined}
+                                src={!previewEnabled ? cameraOffIcon : undefined}
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#222"
@@ -312,6 +318,20 @@ const Cameras = () => {
                             <HorizontalSeparator label="Stretch" fullWidth={true} />
                             <RenderStaticField label="Width" value={manualStretchWidth} />
                             <RenderStaticField label="Height" value={manualStretchHeight} />
+
+                            <HorizontalSeparator label="Preview" fullWidth={true} />
+                            <Switch
+                                label="Enabled"
+                                value={manualPreviewEnabled}
+                                onChange={setManualPreviewEnabled}
+                            />
+                            <Polygon
+                                style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
+                                src={!manualPreviewEnabled ? cameraOffIcon : undefined}
+                                stretchMode="fit"
+                                mode="viewer"
+                                background="#222"
+                            />
                         </ColumnLayout>
                     </Panel>
                 </div>
@@ -340,6 +360,20 @@ const Cameras = () => {
                             <HorizontalSeparator label="Stretch" fullWidth={true} />
                             <RenderStaticField label="Width" value={aiStretchWidth} />
                             <RenderStaticField label="Height" value={aiStretchHeight} />
+
+                            <HorizontalSeparator label="Preview" fullWidth={true} />
+                            <Switch
+                                label="Enabled"
+                                value={aiPreviewEnabled}
+                                onChange={setAiPreviewEnabled}
+                            />
+                            <Polygon
+                                style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
+                                src={!aiPreviewEnabled ? cameraOffIcon : undefined}
+                                stretchMode="fit"
+                                mode="viewer"
+                                background="#222"
+                            />
                         </ColumnLayout>
                     </Panel>
                 </div>
