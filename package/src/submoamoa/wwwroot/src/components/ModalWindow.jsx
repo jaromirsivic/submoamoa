@@ -13,7 +13,8 @@ const ModalWindow = ({
     validationErrors = [],
     validationWarnings = [],
     okDisabled = false,
-    movable = true
+    movable = true,
+    customFooterButtons = []
 }) => {
     const [showTopShadow, setShowTopShadow] = useState(false);
     const [showBottomShadow, setShowBottomShadow] = useState(false);
@@ -215,6 +216,7 @@ const ModalWindow = ({
                             style={{ height: '40px', display: 'flex', alignItems: 'center' }}
                         />
                     )}
+                    {customFooterButtons}
                     {onOk && (
                         <Button
                             label={okLabel}

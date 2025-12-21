@@ -1,11 +1,36 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 import asyncio
 import cv2
 from . import settingscontroller
 from .context import master_controller
 
 router = APIRouter()
+
+class CameraSettings(BaseModel):
+    index: int
+    width: int
+    height: int
+    fps: float
+    flip_horizontal: bool
+    flip_vertical: bool
+    rotate: int
+    brightness: float
+    contrast: float
+    hue: float
+    saturation: float
+    sharpness: float
+    gamma: float
+    white_balance_temperature: float
+    backlight_compensation: float
+    gain: float
+    focus: float
+    exposure: float
+    auto_white_balance_temperature: bool
+    auto_focus: bool
+    auto_exposure: bool
+    saveToDisk: bool = False
 
 @router.get("/api/cameras/list")
 async def get_cameras_list_endpoint():
@@ -15,17 +40,8 @@ async def get_cameras_list_endpoint():
     
     input_devices = []
     
-    # Reload list of cameras to get fresh data
-    # master_controller.cameras_controller.reload_list_of_cameras() 
-    # NOTE: Reloading might be slow or interrupt streams if active. 
-    # For now assuming cameras are already loaded or static enough.
-    # If dynamic plug/unplug is needed, we should reload here or have a background task.
-    # Given the requirements, we'll read the current state.
-    
     for cam in master_controller.cameras_controller.cameras:
         device_info = cam.to_dict()
-        # device_info["value"] = cam.index
-        # device_info["label"] = cam.name
         
         # Add labels to supported resolutions for frontend ComboBox
         resolutions_with_labels = []
@@ -49,6 +65,98 @@ async def reset_cameras_endpoint():
     """Reset camera list"""
     master_controller.cameras_controller.reset()
     return {"success": True}
+
+@router.post("/api/cameras/savecamera")
+async def save_camera_settings(settings: CameraSettings):
+    """
+    Save or apply camera settings.
+    If saveToDisk is True, saves to settings.json.
+    Always applies settings to the running camera instance.
+    """
+    try:
+        # Find the camera by index
+        camera = None
+        for cam in master_controller.cameras_controller.cameras:
+            if cam.index == settings.index:
+                camera = cam
+                break
+        
+        if not camera:
+            raise HTTPException(status_code=404, detail=f"Camera with index {settings.index} not found")
+
+        # Apply settings to the running camera instance
+        camera.width = settings.width
+        camera.height = settings.height
+        camera.fps = settings.fps
+        camera.flip_horizontal = settings.flip_horizontal
+        camera.flip_vertical = settings.flip_vertical
+        camera.rotate = settings.rotate
+        camera.brightness = settings.brightness
+        camera.contrast = settings.contrast
+        camera.hue = settings.hue
+        camera.saturation = settings.saturation
+        camera.sharpness = settings.sharpness
+        camera.gamma = settings.gamma
+        camera.white_balance_temperature = settings.white_balance_temperature
+        camera.backlight = settings.backlight_compensation
+        camera.gain = settings.gain
+        camera.focus = settings.focus
+        camera.exposure = settings.exposure
+        camera.auto_white_balance_temperature = settings.auto_white_balance_temperature
+        camera.auto_focus = settings.auto_focus
+        camera.auto_exposure = settings.auto_exposure
+
+        # If saveToDisk is True, update settings.json
+        if settings.saveToDisk:
+            current_settings = await settingscontroller.get_settings()
+            
+            # Ensure "cameras" list exists in settings
+            if "cameras" not in current_settings:
+                current_settings["cameras"] = []
+            
+            # Find or create the camera config in settings
+            camera_config = None
+            for conf in current_settings["cameras"]:
+                if conf.get("index") == settings.index:
+                    camera_config = conf
+                    break
+            
+            if not camera_config:
+                camera_config = {"index": settings.index}
+                current_settings["cameras"].append(camera_config)
+            
+            # Update general settings for this camera
+            camera_config["general"] = {
+                "width": settings.width,
+                "height": settings.height,
+                "fps": settings.fps,
+                "flip_horizontal": settings.flip_horizontal,
+                "flip_vertical": settings.flip_vertical,
+                "rotate": settings.rotate,
+                "brightness": settings.brightness,
+                "contrast": settings.contrast,
+                "hue": settings.hue,
+                "saturation": settings.saturation,
+                "sharpness": settings.sharpness,
+                "gamma": settings.gamma,
+                "white_balance_temperature": settings.white_balance_temperature,
+                "backlight_compensation": settings.backlight_compensation,
+                "gain": settings.gain,
+                "focus": settings.focus,
+                "exposure": settings.exposure,
+                "auto_white_balance_temperature": settings.auto_white_balance_temperature,
+                "auto_focus": settings.auto_focus,
+                "auto_exposure": settings.auto_exposure
+            }
+            
+            await settingscontroller.save_settings(current_settings)
+
+        return {"success": True}
+
+    except Exception as e:
+        print(f"Error saving camera settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 async def generate_camera_frames(*, camera_index: int):
     """
@@ -215,4 +323,3 @@ async def get_camera_frame(camera_index: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-

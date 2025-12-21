@@ -999,3 +999,25 @@ If Cameras.jsx needs them then remap it to "index" and "name".
 are correctly set based on the last result of rest api call /api/cameras/list. For example brightness is correctly returned
 as 128 in the json but the value of "Brightness" Slider in the section "Image Settings" in the Modal Window
 is 0. There must be some error. Fix it.
+
+Update Cameras web page I know where is the issue with the Modal Window. If the user selects
+another input device and then goes back to the input device with index 0 the inputs in the Modal window
+are set to correct values. It seems that the first display of the Modal Window does not refresh
+all inputs and there are some default values but not the values based on the json received from backend.
+Fix it.
+
+1. Update Camera web page -> edit button -> Modal Window. Add "Apply" button between
+Save and Cancel button. Apply button should have the same color as Save button.
+1b. Remove "Accepted Resolution" TextField from the Camera panel and put "FPS" instead.
+2. Create a backend function /api/cameras/savecamera to handle "save" and "apply" actions:
+2a. When Apply button is pressed the setup of each camera (which could have been modified by
+the user when interacting with properrties of the cameras in the modal window)
+is sent back to the backend. Backend sets up "settings" property of all
+cameras in the master_controller.cameras_controller.cameras[CAMERA_INDEX].settings and returns true to the front end.
+Front end then immediately calls /api/cameras/list and refreshes all inputs on the modal window.
+Nothing is saved to the settings.json. Modal window is not closed.
+2b. When save button is pressed the behavior is almost the same as when the Apply button was pressed
+except this time the setup of all cameras is saved into the settings.json
+for each camera into the settings.json -> cameras[CAMERA_INDEX].general. then the Modal
+window is closed. Rest api to list cameras is called but this time only to update the textfields of the Camera panel.
+

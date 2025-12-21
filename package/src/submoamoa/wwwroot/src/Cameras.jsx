@@ -230,6 +230,7 @@ const Cameras = () => {
         setTempState(state);
         setActiveModal(modalName);
     }, [
+        inputDevices, // Add inputDevices to dependencies
         inputDeviceIndex, preferredResolution, acceptedResolution, flipHorizontally, flipVertically, rotateDegrees,
         brightness, contrast, hue, saturation, sharpness, gamma, whiteBalanceTemperature, backlight, gain, focus, exposure,
         autoWhiteBalance, autoFocus, autoExposure,
@@ -242,46 +243,85 @@ const Cameras = () => {
         setTempState({});
     }, []);
 
-    const saveModal = useCallback(() => {
+    const saveModal = useCallback((saveToDisk = false) => {
+        let payload = {};
         if (activeModal === 'camera') {
-            setInputDeviceIndex(tempState.inputDeviceIndex);
-            setPreferredResolution(tempState.preferredResolution);
-            setAcceptedResolution(tempState.acceptedResolution);
-            setFps(tempState.fps);
-            setFlipHorizontally(tempState.flipHorizontally);
-            setFlipVertically(tempState.flipVertically);
-            setRotateDegrees(tempState.rotateDegrees);
-            setBrightness(tempState.brightness);
-            setContrast(tempState.contrast);
-            setHue(tempState.hue);
-            setSaturation(tempState.saturation);
-            setSharpness(tempState.sharpness);
-            setGamma(tempState.gamma);
-            setWhiteBalanceTemperature(tempState.whiteBalanceTemperature);
-            setBacklight(tempState.backlight);
-            setGain(tempState.gain);
-            setFocus(tempState.focus);
-            setExposure(tempState.exposure);
-            setAutoWhiteBalance(tempState.autoWhiteBalance);
-            setAutoFocus(tempState.autoFocus);
-            setAutoExposure(tempState.autoExposure);
-        } else if (activeModal === 'manual') {
-            setManualCropTop(tempState.manualCropTop);
-            setManualCropLeft(tempState.manualCropLeft);
-            setManualCropBottom(tempState.manualCropBottom);
-            setManualCropRight(tempState.manualCropRight);
-            setManualStretchWidth(tempState.manualStretchWidth);
-            setManualStretchHeight(tempState.manualStretchHeight);
-        } else if (activeModal === 'ai') {
-            setAiCropTop(tempState.aiCropTop);
-            setAiCropLeft(tempState.aiCropLeft);
-            setAiCropBottom(tempState.aiCropBottom);
-            setAiCropRight(tempState.aiCropRight);
-            setAiStretchWidth(tempState.aiStretchWidth);
-            setAiStretchHeight(tempState.aiStretchHeight);
+            payload = {
+                index: Number(tempState.inputDeviceIndex),
+                width: Number(tempState.preferredResolution.split(' x ')[0]),
+                height: Number(tempState.preferredResolution.split(' x ')[1]),
+                fps: Number(tempState.fps),
+                flip_horizontal: tempState.flipHorizontally,
+                flip_vertical: tempState.flipVertically,
+                rotate: Number(tempState.rotateDegrees),
+                brightness: Number(tempState.brightness),
+                contrast: Number(tempState.contrast),
+                hue: Number(tempState.hue),
+                saturation: Number(tempState.saturation),
+                sharpness: Number(tempState.sharpness),
+                gamma: Number(tempState.gamma),
+                white_balance_temperature: Number(tempState.whiteBalanceTemperature),
+                backlight_compensation: Number(tempState.backlight),
+                gain: Number(tempState.gain),
+                focus: Number(tempState.focus),
+                exposure: Number(tempState.exposure),
+                auto_white_balance_temperature: tempState.autoWhiteBalance,
+                auto_focus: tempState.autoFocus,
+                auto_exposure: tempState.autoExposure
+            };
         }
-        closeModal();
-    }, [activeModal, tempState, closeModal]);
+        
+        if (Object.keys(payload).length > 0) {
+            fetch('/api/cameras/savecamera', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...payload, saveToDisk })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Refresh camera list
+                    fetch('/api/cameras/list')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.input_devices) {
+                                setInputDevices(data.input_devices);
+                                // If Apply (saveToDisk=false), refresh current modal values
+                                if (!saveToDisk && activeModal === 'camera') {
+                                    const device = data.input_devices.find(d => String(d.index) === String(tempState.inputDeviceIndex));
+                                    if (device) {
+                                        setTempState(prev => ({
+                                            ...prev,
+                                            ...getDeviceStateFromDevice(device)
+                                        }));
+                                    }
+                                }
+                            }
+                            // Update main panel fields if saved or applied (for selected device)
+                            const currentDevice = data.input_devices?.find(d => String(d.index) === String(inputDeviceIndex));
+                            if (currentDevice) {
+                                setPreferredResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
+                                setFps(currentDevice.fps);
+                                setFlipHorizontally(currentDevice.flip_horizontal);
+                                setFlipVertically(currentDevice.flip_vertical);
+                                setRotateDegrees(String(currentDevice.rotate));
+                            }
+                        });
+                    
+                    if (saveToDisk) {
+                        closeModal();
+                    }
+                }
+            })
+            .catch(err => console.error("Failed to save camera settings:", err));
+        } else {
+            // For other modals (manual, ai), just close for now as per previous logic (or add logic if needed)
+            // Assuming requirement only specified Camera modal for now for save/apply logic
+            if (activeModal !== 'camera') {
+                 closeModal();
+            }
+        }
+    }, [activeModal, tempState, closeModal, inputDeviceIndex, getDeviceStateFromDevice]);
 
     const updateTempState = useCallback((key, value) => {
         setTempState(prev => ({ ...prev, [key]: value }));
@@ -340,7 +380,7 @@ const Cameras = () => {
                             <HorizontalSeparator label="General Setup" fullWidth={true} />
                             <RenderStaticField label="Input Device" value={inputDeviceIndex} />
                             <RenderStaticField label="Resolution" value={preferredResolution} />
-                            <RenderStaticField label="Accepted Resolution" value={acceptedResolution} />
+                            <RenderStaticField label="FPS" value={fps} />
 
                             <HorizontalSeparator label="Flip and Rotate" fullWidth={true} />
                             <RenderStaticField label="Flip Horizontally" value={flipHorizontally ? 'Yes' : 'No'} />
@@ -456,9 +496,18 @@ const Cameras = () => {
                 <ModalWindow
                     isOpen={true}
                     title="Edit Camera Settings"
-                    onOk={saveModal}
+                    onOk={() => saveModal(true)}
                     onCancel={closeModal}
                     okLabel="Save"
+                    customFooterButtons={[
+                        <Button
+                            key="apply"
+                            label="Apply"
+                            onClick={() => saveModal(false)}
+                            color="#3b82f6"
+                            style={{ height: '40px', display: 'flex', alignItems: 'center' }}
+                        />
+                    ]}
                 >
                     <ColumnLayout gap="0.75rem">
                         <HorizontalSeparator label="General Setup" fullWidth={true} bleed="1rem" />
