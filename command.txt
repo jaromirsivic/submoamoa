@@ -919,3 +919,9 @@ When user clicks on the Reload button on the Camera web page and then clicks
 on the yes button on the Modal Window the button should change color and be disabled
 and a text "Saving..." should appear. The same behavior like on the General Setup
 web page should be used.
+
+Split main.py into several files:
+for example all rest api calls and all logic regarding motors should be placed into restapimotors.py
+all rest api calls and all logic regarding camreas should be placed into restapicameras.py
+and so on.
+Each page will have its restapi{pagename}.py file
