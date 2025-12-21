@@ -323,7 +323,7 @@ async def generate_camera_frames(*, camera_index: int):
 @app.get("/api/cameras/stream/{camera_index}")
 async def stream_camera(camera_index: int):
     """
-    Stream camera feed as MJPEG.
+    Stream camera feed as MJPEG (raw camera image).
     Use this URL as an img src for live video streaming.
     """
     if camera_index < 0 or camera_index >= len(master_controller.cameras_controller.cameras):
@@ -333,6 +333,97 @@ async def stream_camera(camera_index: int):
         generate_camera_frames(camera_index=camera_index),
         media_type='multipart/x-mixed-replace; boundary=frame'
     )
+
+
+async def generate_camera_frames_manual(*, camera_index: int):
+    """
+    Generator that yields MJPEG frames from the cropped/resized camera image.
+    Uses multipart/x-mixed-replace for browser-native streaming.
+    Source: camera.image_cropped_resized.frame
+    """
+    while True:
+        try:
+            if camera_index < 0 or camera_index >= len(master_controller.cameras_controller.cameras):
+                break
+            
+            camera = master_controller.cameras_controller.cameras[camera_index]
+            frame = camera.image_cropped_resized.frame
+            
+            if frame is not None:
+                _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                frame_bytes = jpeg.tobytes()
+                
+                yield (
+                    b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n'
+                )
+            
+            await asyncio.sleep(0.01)
+            
+        except Exception as e:
+            print(f"Error streaming manual camera {camera_index}: {e}")
+            await asyncio.sleep(0.1)
+
+
+async def generate_camera_frames_ai(*, camera_index: int):
+    """
+    Generator that yields MJPEG frames from the AI-processed camera image.
+    Uses multipart/x-mixed-replace for browser-native streaming.
+    Source: camera.image_ai.frame
+    """
+    while True:
+        try:
+            if camera_index < 0 or camera_index >= len(master_controller.cameras_controller.cameras):
+                break
+            
+            camera = master_controller.cameras_controller.cameras[camera_index]
+            frame = camera.image_ai.frame
+            
+            if frame is not None:
+                _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                frame_bytes = jpeg.tobytes()
+                
+                yield (
+                    b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n'
+                )
+            
+            await asyncio.sleep(0.01)
+            
+        except Exception as e:
+            print(f"Error streaming AI camera {camera_index}: {e}")
+            await asyncio.sleep(0.1)
+
+
+@app.get("/api/cameras/stream-manual/{camera_index}")
+async def stream_camera_manual(camera_index: int):
+    """
+    Stream cropped/resized camera feed as MJPEG for Manual Control.
+    Source: camera.image_cropped_resized.frame
+    """
+    if camera_index < 0 or camera_index >= len(master_controller.cameras_controller.cameras):
+        raise HTTPException(status_code=404, detail=f"Camera {camera_index} not found")
+    
+    return StreamingResponse(
+        generate_camera_frames_manual(camera_index=camera_index),
+        media_type='multipart/x-mixed-replace; boundary=frame'
+    )
+
+
+@app.get("/api/cameras/stream-ai/{camera_index}")
+async def stream_camera_ai(camera_index: int):
+    """
+    Stream AI-processed camera feed as MJPEG for AI Agent.
+    Source: camera.image_ai.frame
+    """
+    if camera_index < 0 or camera_index >= len(master_controller.cameras_controller.cameras):
+        raise HTTPException(status_code=404, detail=f"Camera {camera_index} not found")
+    
+    return StreamingResponse(
+        generate_camera_frames_ai(camera_index=camera_index),
+        media_type='multipart/x-mixed-replace; boundary=frame'
+    )
+
 
 @app.get("/api/cameras/frame/{camera_index}")
 async def get_camera_frame(camera_index: int):

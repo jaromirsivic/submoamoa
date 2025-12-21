@@ -327,7 +327,7 @@ const Cameras = () => {
                             />
                             <Polygon
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
-                                src={manualPreviewEnabled ? `/api/cameras/stream/${inputDeviceIndex}` : cameraOffIcon}
+                                src={manualPreviewEnabled ? `/api/cameras/stream-manual/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#222"
@@ -369,7 +369,7 @@ const Cameras = () => {
                             />
                             <Polygon
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
-                                src={aiPreviewEnabled ? `/api/cameras/stream/${inputDeviceIndex}` : cameraOffIcon}
+                                src={aiPreviewEnabled ? `/api/cameras/stream-ai/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#222"

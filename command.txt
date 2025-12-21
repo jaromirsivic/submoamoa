@@ -892,3 +892,13 @@ should display live video/image feed of the camera from the backend. Source of t
 master_controller.cameras_controller.cameras[camera_index].image.frame
 camera_index is saved in settings.json -> cameras -> general -> deviceIndex
 Update Cameras.jsx, Polygon.jsx, main.py and other files if necessary.
+
+Update Camera web page. When user enables preview in the "Manual Control - Input Img." panel the Polygon component
+should display live video/image feed of the camera from the backend. Source of the feed is:
+master_controller.cameras_controller.cameras[camera_index].image_cropped_resized.frame
+camera_index is saved in settings.json -> cameras -> general -> deviceIndex
+
+Update Camera web page. When user enables preview in the "AI Agent - Input Img." panel the Polygon component
+should display live video/image feed of the camera from the backend. Source of the feed is:
+master_controller.cameras_controller.cameras[camera_index].image_ai.frame
+camera_index is saved in settings.json -> cameras -> general -> deviceIndex
