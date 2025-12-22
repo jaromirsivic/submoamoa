@@ -61,6 +61,13 @@ async def get_cameras_list_endpoint():
         "input_devices": input_devices
     }
 
+@router.get("/api/cameras/primary")
+async def get_primary_camera_endpoint():
+    """Get the primary camera configuration"""
+    settings = await settingscontroller.get_settings()
+    primary_camera = settings.get("primaryCamera", {})
+    return {"success": True, "primaryCamera": primary_camera}
+
 @router.post("/api/reset")
 async def reset_cameras_endpoint():
     """Reset camera settings to defaults"""

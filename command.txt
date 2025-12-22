@@ -1134,3 +1134,8 @@ When Saving camera setup by clicking on the Save button in the Camera Modal Wind
 save the "name" of the camera - send it to the backend API.
 Camera Index and Name should be stored as well in the
 "primaryCamera" section in the settings.json.
+
+Update Cameras web page. When Camera web page is loaded the page should load
+as well the primaryCamera and automatically select the input device
+which is equal to the primaryCamera.index (you should add a new rest
+api endpoint "getPrimaryCamera")

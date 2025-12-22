@@ -113,6 +113,9 @@ const Cameras = () => {
                     setInputDevices(data.input_devices);
                 }
 
+                // Check for primary camera first if inputDeviceIndex is default
+                // This logic might be overridden if we set inputDeviceIndex from getPrimaryCamera
+                
                 // Find current device from the list
                 const currentDeviceIndex = data.inputDeviceIndex !== undefined
                     ? String(data.inputDeviceIndex)
@@ -123,27 +126,35 @@ const Cameras = () => {
 
                 if (currentDevice) {
                     // Update panel state from device
-                    setInputDeviceIndex(String(currentDevice.index));
-                    setPreferredResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
-                    setFps(currentDevice.fps);
-                    setFlipHorizontally(currentDevice.flip_horizontal);
-                    setFlipVertically(currentDevice.flip_vertical);
-                    setRotateDegrees(String(currentDevice.rotate));
-                    setBrightness(currentDevice.brightness);
-                    setContrast(currentDevice.contrast);
-                    setHue(currentDevice.hue);
-                    setSaturation(currentDevice.saturation);
-                    setSharpness(currentDevice.sharpness);
-                    setGamma(currentDevice.gamma);
-                    setWhiteBalanceTemperature(currentDevice.white_balance_temperature);
-                    setBacklight(currentDevice.backlight);
-                    setGain(currentDevice.gain);
-                    setFocus(currentDevice.focus);
-                    setExposure(currentDevice.exposure);
-                    setAutoWhiteBalance(currentDevice.auto_white_balance_temperature);
-                    setAutoFocus(currentDevice.auto_focus);
-                    setAutoExposure(currentDevice.auto_exposure);
-                    setAutoExposure(currentDevice.auto_exposure);
+                    // Only update if not already set by primary camera fetch or user
+                    // But here we are fetching list, so we might want to respect current selection
+                    
+                    // Actually, we update panel state based on selected device always
+                    // But if this is initial load, we want primary camera
+                    // We'll handle primary camera setting separately in useEffect
+                    
+                    if (inputDeviceIndex === String(currentDevice.index)) {
+                         setPreferredResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
+                         setFps(currentDevice.fps);
+                         setFlipHorizontally(currentDevice.flip_horizontal);
+                         setFlipVertically(currentDevice.flip_vertical);
+                         setRotateDegrees(String(currentDevice.rotate));
+                         setBrightness(currentDevice.brightness);
+                         setContrast(currentDevice.contrast);
+                         setHue(currentDevice.hue);
+                         setSaturation(currentDevice.saturation);
+                         setSharpness(currentDevice.sharpness);
+                         setGamma(currentDevice.gamma);
+                         setWhiteBalanceTemperature(currentDevice.white_balance_temperature);
+                         setBacklight(currentDevice.backlight);
+                         setGain(currentDevice.gain);
+                         setFocus(currentDevice.focus);
+                         setExposure(currentDevice.exposure);
+                         setAutoWhiteBalance(currentDevice.auto_white_balance_temperature);
+                         setAutoFocus(currentDevice.auto_focus);
+                         setAutoExposure(currentDevice.auto_exposure);
+                         setAutoExposure(currentDevice.auto_exposure);
+                    }
 
                     // Update modal tempState if camera modal is open
                     if (activeModal === 'camera') {
@@ -151,7 +162,7 @@ const Cameras = () => {
                     }
                 } else {
                     // Fallback: update from top-level data if available
-                    if (data.inputDeviceIndex !== undefined) setInputDeviceIndex(String(data.inputDeviceIndex));
+                    if (data.inputDeviceIndex !== undefined && inputDeviceIndex === '0') setInputDeviceIndex(String(data.inputDeviceIndex));
                     if (data.preferredResolution) setPreferredResolution(data.preferredResolution);
                     if (data.flipHorizontally !== undefined) setFlipHorizontally(data.flipHorizontally);
                     if (data.flipVertically !== undefined) setFlipVertically(data.flipVertically);
@@ -161,10 +172,68 @@ const Cameras = () => {
             .catch(err => console.error("Failed to load camera list:", err));
     }, [inputDeviceIndex, activeModal]);
 
+    // Fetch primary camera on mount
     useEffect(() => {
-        fetchCameraList();
-    }, []);
+        fetch('/api/cameras/primary')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.primaryCamera) {
+                    setInputDeviceIndex(String(data.primaryCamera.index));
+                }
+            })
+            .catch(err => console.error("Failed to load primary camera:", err))
+            .finally(() => {
+                // Fetch list after trying to set primary camera
+                fetchCameraList();
+            });
+    }, []); 
+    
+    // Add inputDeviceIndex to fetchCameraList dependency if we want to refresh when it changes?
+    // But fetchCameraList uses inputDeviceIndex. 
+    // We called fetchCameraList in finally block of primary camera fetch.
+    // Also we have useEffect that calls fetchCameraList on mount.
+    // Let's modify the useEffect above.
 
+    // Updated useEffect for initial load
+    /* 
+    useEffect(() => {
+        // First try to get primary camera
+        fetch('/api/cameras/primary')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.primaryCamera) {
+                    setInputDeviceIndex(String(data.primaryCamera.index));
+                }
+            })
+            .catch(err => console.error("Failed to load primary camera:", err))
+            .finally(() => {
+                // Then fetch camera list details
+                fetchCameraList();
+            });
+    }, []); 
+    */
+    // But fetchCameraList depends on inputDeviceIndex. If we change it, does it re-run?
+    // Yes if we include it in dependency array of useEffect.
+    // But currently we only have `useEffect(() => { fetchCameraList(); }, []);`
+    
+    // Let's refactor:
+    // 1. Initial load: Fetch primary camera.
+    // 2. Set inputDeviceIndex.
+    // 3. This should trigger a fetch of camera details for that index? 
+    //    Or we just call fetchCameraList.
+    
+    // Actually, `fetchCameraList` depends on `inputDeviceIndex`.
+    // If we change `inputDeviceIndex` state, and we want `fetchCameraList` to run with NEW index,
+    // we should have `useEffect(() => { fetchCameraList(); }, [fetchCameraList]);` 
+    // and `fetchCameraList` has `[inputDeviceIndex]` dependency.
+    
+    useEffect(() => {
+        if (inputDeviceIndex) {
+             fetchCameraList();
+        }
+    }, [fetchCameraList]); 
+    // But we need to set initial inputDeviceIndex first.
+    
     // Temp state for editing
     const [tempState, setTempState] = useState({});
 
