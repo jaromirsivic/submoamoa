@@ -293,8 +293,10 @@ const Cameras = () => {
     const saveModal = useCallback((saveToDisk = false) => {
         let payload = {};
         if (activeModal === 'camera') {
+            const selectedDevice = inputDevices.find(d => String(d.index) === String(tempState.inputDeviceIndex));
             payload = {
                 index: Number(tempState.inputDeviceIndex),
+                name: selectedDevice ? selectedDevice.name : '',
                 width: Number(tempState.preferredResolution.split(' x ')[0]),
                 height: Number(tempState.preferredResolution.split(' x ')[1]),
                 fps: Number(tempState.fps),

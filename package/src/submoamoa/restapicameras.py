@@ -10,6 +10,7 @@ router = APIRouter()
 
 class CameraSettings(BaseModel):
     index: int
+    name: str = ""
     width: int
     height: int
     fps: float
@@ -143,6 +144,13 @@ async def save_camera_settings(settings: CameraSettings):
                 camera_config = {"index": settings.index}
                 current_settings["cameras"].append(camera_config)
             
+            # Save Primary Camera info if name is provided (it's the currently selected one being saved)
+            if settings.name:
+                current_settings["primaryCamera"] = {
+                    "index": settings.index,
+                    "name": settings.name
+                }
+
             # Update general settings for this camera
             camera_config["general"] = {
                 "width": settings.width,
