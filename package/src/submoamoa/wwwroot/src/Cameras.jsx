@@ -9,6 +9,7 @@ import HorizontalSeparator from './components/HorizontalSeparator';
 import ModalWindow from './components/ModalWindow';
 import StaticText from './components/StaticText';
 import Slider from './components/Slider';
+import NumericInput from './components/NumericInput';
 import Polygon from './components/Polygon';
 import editIcon from './assets/icons/edit.svg';
 import reloadIcon from './assets/icons/reload.svg';
@@ -20,6 +21,16 @@ const boldTextStyle = { fontWeight: 'bold' };
 const RenderStaticField = ({ label, value }) => (
     <StaticText text={<>{label}: <span style={boldTextStyle}>{value}</span></>} />
 );
+
+// Helper to parse resolution string
+const getResolutionDimensions = (resString) => {
+    if (!resString) return { width: 0, height: 0 };
+    const parts = resString.split(' x ');
+    return {
+        width: parseInt(parts[0]) || 0,
+        height: parseInt(parts[1]) || 0
+    };
+};
 
 /**
  * Cameras settings page (simplified version of Camera page without previews)
@@ -55,12 +66,12 @@ const Cameras = () => {
     // ========================
     // State: Manual Control - Input Img Panel
     // ========================
-    const [manualCropTop, setManualCropTop] = useState('0% (0 pixels)');
-    const [manualCropLeft, setManualCropLeft] = useState('0% (0 pixels)');
-    const [manualCropBottom, setManualCropBottom] = useState('0% (0 pixels)');
-    const [manualCropRight, setManualCropRight] = useState('0% (0 pixels)');
-    const [manualStretchWidth, setManualStretchWidth] = useState('640 pixels');
-    const [manualStretchHeight, setManualStretchHeight] = useState('480 pixels');
+    const [manualCropTop, setManualCropTop] = useState(0);
+    const [manualCropLeft, setManualCropLeft] = useState(0);
+    const [manualCropBottom, setManualCropBottom] = useState(0);
+    const [manualCropRight, setManualCropRight] = useState(0);
+    const [manualStretchWidth, setManualStretchWidth] = useState(640);
+    const [manualStretchHeight, setManualStretchHeight] = useState(480);
 
     // ========================
     // State: AI Agent - Input Img Panel
@@ -89,6 +100,9 @@ const Cameras = () => {
     const [activeModal, setActiveModal] = useState(null); // 'camera', 'manual', 'ai', or null
     const [showReloadModal, setShowReloadModal] = useState(false);
     const [isReloading, setIsReloading] = useState(false);
+
+    // Derived values
+    const { width: resWidth, height: resHeight } = getResolutionDimensions(preferredResolution);
 
     // Function to fetch camera list and update all state
     const fetchCameraList = useCallback(() => {
@@ -130,6 +144,7 @@ const Cameras = () => {
                     setExposure(currentDevice.exposure);
                     setAutoWhiteBalance(currentDevice.auto_white_balance_temperature);
                     setAutoFocus(currentDevice.auto_focus);
+                    setAutoExposure(currentDevice.auto_exposure);
                     setAutoExposure(currentDevice.auto_exposure);
 
                     // Update modal tempState if camera modal is open
@@ -352,9 +367,20 @@ const Cameras = () => {
                 })
                 .catch(err => console.error("Failed to save camera settings:", err));
         } else {
-            // For other modals (manual, ai), just close for now as per previous logic (or add logic if needed)
-            // Assuming requirement only specified Camera modal for now for save/apply logic
-            if (activeModal !== 'camera') {
+            // For Manual modal, update local state
+            if (activeModal === 'manual') {
+                setManualCropTop(Number(tempState.manualCropTop));
+                setManualCropLeft(Number(tempState.manualCropLeft));
+                setManualCropBottom(Number(tempState.manualCropBottom));
+                setManualCropRight(Number(tempState.manualCropRight));
+                setManualStretchWidth(Number(tempState.manualStretchWidth));
+                setManualStretchHeight(Number(tempState.manualStretchHeight));
+                // Only close modal if Save (saveToDisk=true), not on Apply
+                if (saveToDisk) {
+                    closeModal();
+                }
+            } else {
+                // For other modals, just close
                 closeModal();
             }
         }
@@ -528,14 +554,14 @@ const Cameras = () => {
                     >
                         <ColumnLayout gap="0.75rem">
                             <HorizontalSeparator label="Crop" fullWidth={true} />
-                            <RenderStaticField label="Top" value={manualCropTop} />
-                            <RenderStaticField label="Left" value={manualCropLeft} />
-                            <RenderStaticField label="Bottom" value={manualCropBottom} />
-                            <RenderStaticField label="Right" value={manualCropRight} />
+                            <RenderStaticField label="Top" value={`${manualCropTop}% (${Math.round(manualCropTop * resHeight / 100)} pixels)`} />
+                            <RenderStaticField label="Left" value={`${manualCropLeft}% (${Math.round(manualCropLeft * resWidth / 100)} pixels)`} />
+                            <RenderStaticField label="Bottom" value={`${manualCropBottom}% (${Math.round(manualCropBottom * resHeight / 100)} pixels)`} />
+                            <RenderStaticField label="Right" value={`${manualCropRight}% (${Math.round(manualCropRight * resWidth / 100)} pixels)`} />
 
                             <HorizontalSeparator label="Stretch" fullWidth={true} />
-                            <RenderStaticField label="Width" value={manualStretchWidth} />
-                            <RenderStaticField label="Height" value={manualStretchHeight} />
+                            <RenderStaticField label="Width" value={`${manualStretchWidth} pixels`} />
+                            <RenderStaticField label="Height" value={`${manualStretchHeight} pixels`} />
 
                             <HorizontalSeparator label="Preview" fullWidth={true} />
                             <Switch
@@ -682,7 +708,6 @@ const Cameras = () => {
 
                         <HorizontalSeparator label="Controls" fullWidth={true} bleed="1rem" />
                         <Switch label="Auto White Balance" value={tempState.autoWhiteBalance} onChange={(val) => updateTempState('autoWhiteBalance', val)} labelWidth="160px" />
-                        {/* Only show WB slider if Auto is off? User didn't specify logic, but usually good UX. I'll just show all for now as per instructions "Add all Camera properties" unless I want to be fancy. Prompt said "Add all Camera properties...". I'll show it always to be safe. */}
                         <Slider label="White Balance Temp" value={tempState.whiteBalanceTemperature} onChange={(val) => updateTempState('whiteBalanceTemperature', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="160px" />
 
                         <Switch label="Auto Focus" value={tempState.autoFocus} onChange={(val) => updateTempState('autoFocus', val)} labelWidth="160px" />
@@ -711,43 +736,88 @@ const Cameras = () => {
                 <ModalWindow
                     isOpen={true}
                     title="Edit Manual Control Settings"
-                    onOk={saveModal}
+                    onOk={() => saveModal(true)}
                     onCancel={closeModal}
                     okLabel="Save"
+                    customFooterButtons={[
+                        <Button
+                            key="apply"
+                            label="Apply"
+                            onClick={() => saveModal(false)}
+                            color="#3b82f6"
+                            style={{ height: '40px', display: 'flex', alignItems: 'center' }}
+                        />
+                    ]}
                 >
                     <ColumnLayout gap="0.75rem">
                         <HorizontalSeparator label="Crop" fullWidth={true} bleed="1rem" />
-                        <Textbox
-                            label="Top"
+                        <Slider
+                            label={`Top % (${Math.round((tempState.manualCropTop || 0) * resHeight / 100)} pixels)`}
                             value={tempState.manualCropTop}
                             onChange={(val) => updateTempState('manualCropTop', val)}
+                            min={0}
+                            max={100}
+                            step={0.01}
+                            decimalPlaces={2}
+                            allowManualInput={true}
+                            labelWidth="150px"
                         />
-                        <Textbox
-                            label="Left"
+                        <Slider
+                            label={`Left % (${Math.round((tempState.manualCropLeft || 0) * resWidth / 100)} pixels)`}
                             value={tempState.manualCropLeft}
                             onChange={(val) => updateTempState('manualCropLeft', val)}
+                            min={0}
+                            max={100}
+                            step={0.01}
+                            decimalPlaces={2}
+                            allowManualInput={true}
+                            labelWidth="150px"
                         />
-                        <Textbox
-                            label="Bottom"
+                        <Slider
+                            label={`Bottom % (${Math.round((tempState.manualCropBottom || 0) * resHeight / 100)} pixels)`}
                             value={tempState.manualCropBottom}
                             onChange={(val) => updateTempState('manualCropBottom', val)}
+                            min={0}
+                            max={100}
+                            step={0.01}
+                            decimalPlaces={2}
+                            allowManualInput={true}
+                            labelWidth="150px"
                         />
-                        <Textbox
-                            label="Right"
+                        <Slider
+                            label={`Right % (${Math.round((tempState.manualCropRight || 0) * resWidth / 100)} pixels)`}
                             value={tempState.manualCropRight}
                             onChange={(val) => updateTempState('manualCropRight', val)}
+                            min={0}
+                            max={100}
+                            step={0.01}
+                            decimalPlaces={2}
+                            allowManualInput={true}
+                            labelWidth="150px"
                         />
 
                         <HorizontalSeparator label="Stretch" fullWidth={true} bleed="1rem" />
-                        <Textbox
+                        <NumericInput
                             label="Width"
                             value={tempState.manualStretchWidth}
                             onChange={(val) => updateTempState('manualStretchWidth', val)}
+                            min={0}
+                            max={8192}
+                            step={1}
+                            decimalPlaces={0}
+                            labelWidth="150px"
+                            labelPosition="left"
                         />
-                        <Textbox
+                        <NumericInput
                             label="Height"
                             value={tempState.manualStretchHeight}
                             onChange={(val) => updateTempState('manualStretchHeight', val)}
+                            min={0}
+                            max={4608}
+                            step={1}
+                            decimalPlaces={0}
+                            labelWidth="150px"
+                            labelPosition="left"
                         />
 
                         <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />

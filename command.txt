@@ -1078,3 +1078,34 @@ outside of the visible area of the Polygon component.
 Remove panning functionality from Polygon component. Remove as well all keyboard interactions.
 Focus only on zooming functionality. Zoom can be done by mouse scroll wheel or two fingers on mobile devices.
 Center of the zoom is always the mouse cursor position or the center of the two fingers on mobile devices.
+
+1. Update Cameras web page -> Manual Control Input Img. Modal window. In the crop section
+of the modal window the inputs should be Sliders. Label should contain information
+about pixels and it should be computed dynamically: It should look like this:
+Top % (0 pixels): Slider(minValue=0, maxValue=100, step=0.5, decimalPlaces=2)
+Left % (0 pixels): Slider(minValue=0, maxValue=100, step=0.5, decimalPlaces=2)
+Bottom % (0 pixels): Slider(minValue=0, maxValue=100, step=0.5, decimalPlaces=2)
+Right % (0 pixels): Slider(minValue=0, maxValue=100, step=0.5, decimalPlaces=2)
+Sliders should be optically aligned like in the Camera Modal window in
+the Image Settings section.
+Whenever user updates a value of the input either by dragging slider or by updating
+value in the numeric input at the end of the slider the pixels information in the label
+should be recalculated using following formula for top and bottom:
+	pixels = slider.value * "Camera Panel"."General Setup"."Resolution"."height"
+for left and right:
+	pixels = slider.value * "Camera Panel"."General Setup"."Resolution"."width"
+2. Update Cameras web page -> Manual Control Input Img. Modal window. In the Stretch
+section the Width and Height should be NumericInputs. They should be optically alligned.
+The width min value is 0, the width max value is 8192. Step is 1. There are 0 decimal places.
+The height min value is 0, the height max value is 4608. Step is 1. There are 0 decimal places.
+
+Update Cameras web page -> Manual Control Input Img. Modal window. In the crop section
+of the modal window the numeric inputs should have a step 0.01.
+
+Update Cameras web page -> Manual Control Input Img. Modal window. Add an Apply button
+between Save and Cancel button in a similar way like it is on the Camera Modal Window
+Do not implement any backend action at this moment.
+
+
+Update Cameras web page. Rename "preferred resolution" to just "resolution" and get rid of
+"accepted resolution"
