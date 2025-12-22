@@ -23,7 +23,7 @@ class CameraSettings(BaseModel):
     sharpness: float
     gamma: float
     white_balance_temperature: float
-    backlight_compensation: float
+    backlight: float
     gain: float
     focus: float
     exposure: float
@@ -85,26 +85,27 @@ async def save_camera_settings(settings: CameraSettings):
             raise HTTPException(status_code=404, detail=f"Camera with index {settings.index} not found")
 
         # Apply settings to the running camera instance
-        camera.width = settings.width
-        camera.height = settings.height
-        camera.fps = settings.fps
-        camera.flip_horizontal = settings.flip_horizontal
-        camera.flip_vertical = settings.flip_vertical
-        camera.rotate = settings.rotate
-        camera.brightness = settings.brightness
-        camera.contrast = settings.contrast
-        camera.hue = settings.hue
-        camera.saturation = settings.saturation
-        camera.sharpness = settings.sharpness
-        camera.gamma = settings.gamma
-        camera.white_balance_temperature = settings.white_balance_temperature
-        camera.backlight = settings.backlight_compensation
-        camera.gain = settings.gain
-        camera.focus = settings.focus
-        camera.exposure = settings.exposure
-        camera.auto_white_balance_temperature = settings.auto_white_balance_temperature
-        camera.auto_focus = settings.auto_focus
-        camera.auto_exposure = settings.auto_exposure
+        camera.settings = settings.model_dump()
+        # camera.width = settings.width
+        # camera.height = settings.height
+        # camera.fps = settings.fps
+        # camera.flip_horizontal = settings.flip_horizontal
+        # camera.flip_vertical = settings.flip_vertical
+        # camera.rotate = settings.rotate
+        # camera.brightness = settings.brightness
+        # camera.contrast = settings.contrast
+        # camera.hue = settings.hue
+        # camera.saturation = settings.saturation
+        # camera.sharpness = settings.sharpness
+        # camera.gamma = settings.gamma
+        # camera.white_balance_temperature = settings.white_balance_temperature
+        # camera.backlight = settings.backlight_compensation
+        # camera.gain = settings.gain
+        # camera.focus = settings.focus
+        # camera.exposure = settings.exposure
+        # camera.auto_white_balance_temperature = settings.auto_white_balance_temperature
+        # camera.auto_focus = settings.auto_focus
+        # camera.auto_exposure = settings.auto_exposure
 
         # If saveToDisk is True, update settings.json
         if settings.saveToDisk:
@@ -140,7 +141,7 @@ async def save_camera_settings(settings: CameraSettings):
                 "sharpness": settings.sharpness,
                 "gamma": settings.gamma,
                 "white_balance_temperature": settings.white_balance_temperature,
-                "backlight_compensation": settings.backlight_compensation,
+                "backlight": settings.backlight,
                 "gain": settings.gain,
                 "focus": settings.focus,
                 "exposure": settings.exposure,

@@ -1021,3 +1021,9 @@ except this time the setup of all cameras is saved into the settings.json
 for each camera into the settings.json -> cameras[CAMERA_INDEX].general. then the Modal
 window is closed. Rest api to list cameras is called but this time only to update the textfields of the Camera panel.
 
+Add a Preview section into the Camera -> Edit -> Modal window as the last section of the Modal Window.
+There will be a Polygon component in the section
+connected to the camera live feed in the same way like it is done on the Camera panel
+except here it is always enabled and immediately consumes a camera live feed. When the modal is closed
+the preview on the Modal window stops consuming live feed.
+The preview is not mentioned in the jsons exchanged with the backend. It exists only temporarily on the Modal Window.

@@ -171,7 +171,7 @@ const Cameras = () => {
             sharpness: device.sharpness,
             gamma: device.gamma,
             whiteBalanceTemperature: device.white_balance_temperature,
-            backlight: device.backlight_compensation,
+            backlight: device.backlight,
             gain: device.gain,
             focus: device.focus,
             exposure: device.exposure,
@@ -261,7 +261,7 @@ const Cameras = () => {
                 sharpness: Number(tempState.sharpness),
                 gamma: Number(tempState.gamma),
                 white_balance_temperature: Number(tempState.whiteBalanceTemperature),
-                backlight_compensation: Number(tempState.backlight),
+                backlight: Number(tempState.backlight),
                 gain: Number(tempState.gain),
                 focus: Number(tempState.focus),
                 exposure: Number(tempState.exposure),
@@ -590,6 +590,15 @@ const Cameras = () => {
 
                         <Switch label="Auto Exposure" value={tempState.autoExposure} onChange={(val) => updateTempState('autoExposure', val)} labelWidth="160px" />
                         <Slider label="Exposure" value={tempState.exposure} onChange={(val) => updateTempState('exposure', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="160px" />
+                        
+                        <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
+                        <Polygon
+                            style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
+                            src={`/api/cameras/stream/${tempState.inputDeviceIndex}`}
+                            stretchMode="fit"
+                            mode="viewer"
+                            background="#222"
+                        />
                     </ColumnLayout>
                 </ModalWindow>
             )}

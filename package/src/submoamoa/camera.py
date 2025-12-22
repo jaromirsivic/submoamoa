@@ -72,61 +72,101 @@ class Camera:
     def fps(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "fps" in self._settings:
+            return self._settings["fps"]
         result = self._camera.get(cv2.CAP_PROP_FPS)
         result = min(1000, max(1, result))
         return result
+
+    @fps.setter
+    def fps(self, value: float):
+        if not self._active or self._camera is None:
+            return
+        value = min(1000, max(1, value))
+        try:
+            self._camera.set(cv2.CAP_PROP_FPS, value)
+        except Exception as e:
+            print(f"Error setting fps: {e}")
+        if self._settings is not None and "fps" in self._settings:
+            self._settings["fps"] = value
+        # Reset the post processing filters fps
+        self.reset_nodes_fps()
 
     @property
     def width(self) -> int:
         if not self._active or self._camera is None:
             return -1
+        if self._settings is not None and "width" in self._settings:
+            return self._settings["width"]
         return int(self._camera.get(cv2.CAP_PROP_FRAME_WIDTH))
     
     @width.setter
     def width(self, value: int):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_FRAME_WIDTH, value)
+        except Exception as e:
+            print(f"Error setting width: {e}")
+        if self._settings is not None and "width" in self._settings:
+            self._settings["width"] = value
 
     @property
     def height(self) -> int:
         if not self._active or self._camera is None:
             return -1
+        if self._settings is not None and "height" in self._settings:
+            return self._settings["height"]
         return int(self._camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
     @height.setter
     def height(self, value: int):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_FRAME_HEIGHT, value)
-
-    @fps.setter
-    def fps(self, value: float):
-        if self._active and self._camera is not None:
-            value = min(1000, max(1, value))
-            self._camera.set(cv2.CAP_PROP_FPS, value)
-            # Reset the post processing filters fps
-            self.reset_nodes_fps()
+        except Exception as e:
+            print(f"Error setting height: {e}")
+        if self._settings is not None and "height" in self._settings:
+            self._settings["height"] = value
 
     @property
     def bitrate(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "bitrate" in self._settings:
+            return self._settings["bitrate"]
         return self._camera.get(cv2.CAP_PROP_BITRATE)
 
     @bitrate.setter
     def bitrate(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_BITRATE, value)
+        except Exception as e:
+            print(f"Error setting bitrate: {e}")
+        if self._settings is not None and "bitrate" in self._settings:
+            self._settings["bitrate"] = value
 
     @property
     def buffer_size(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "buffer_size" in self._settings:
+            return self._settings["buffer_size"]
         return self._camera.get(cv2.CAP_PROP_BUFFERSIZE)
 
     @buffer_size.setter
     def buffer_size(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_BUFFERSIZE, value)
+        except Exception as e:
+            print(f"Error setting buffer_size: {e}")
+        if self._settings is not None and "buffer_size" in self._settings:
+            self._settings["buffer_size"] = value
 
     # Post processing filters
 
@@ -155,27 +195,39 @@ class Camera:
 
     @property
     def flip_horizontal(self) -> bool:
+        if self._settings is not None and "flip_horizontal" in self._settings:
+            return self._settings["flip_horizontal"]
         return self._flip_horizontal
     
     @flip_horizontal.setter
     def flip_horizontal(self, value: bool):
         self._flip_horizontal = value
+        if self._settings is not None and "flip_horizontal" in self._settings:
+            self._settings["flip_horizontal"] = value
     
     @property
     def flip_vertical(self) -> bool:
+        if self._settings is not None and "flip_vertical" in self._settings:
+            return self._settings["flip_vertical"]
         return self._flip_vertical
     
     @flip_vertical.setter
     def flip_vertical(self, value: bool):
         self._flip_vertical = value
+        if self._settings is not None and "flip_vertical" in self._settings:
+            self._settings["flip_vertical"] = value
     
     @property
     def rotate(self) -> int:
+        if self._settings is not None and "rotate" in self._settings:
+            return self._settings["rotate"]
         return self._rotate
     
     @rotate.setter
     def rotate(self, value: int):
         self._rotate = value
+        if self._settings is not None and "rotate" in self._settings:
+            self._settings["rotate"] = value
 
     # Camera settings
 
@@ -183,243 +235,267 @@ class Camera:
     def brightness(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "brightness" in self._settings:
+            return self._settings["brightness"]
         return self._camera.get(cv2.CAP_PROP_BRIGHTNESS)
 
     @brightness.setter
     def brightness(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_BRIGHTNESS, value)
+        except Exception as e:
+            print(f"Error setting brightness: {e}")
+        if self._settings is not None and "brightness" in self._settings:
+            self._settings["brightness"] = value
 
     @property
     def contrast(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "contrast" in self._settings:
+            return self._settings["contrast"]
         return self._camera.get(cv2.CAP_PROP_CONTRAST)
 
     @contrast.setter
     def contrast(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_CONTRAST, value)
+        except Exception as e:
+            print(f"Error setting contrast: {e}")
+        if self._settings is not None and "contrast" in self._settings:
+            self._settings["contrast"] = value
 
     @property
     def hue(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "hue" in self._settings:
+            return self._settings["hue"]
         return self._camera.get(cv2.CAP_PROP_HUE)
 
     @hue.setter
     def hue(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_HUE, value)
+        except Exception as e:
+            print(f"Error setting hue: {e}")
+        if self._settings is not None and "hue" in self._settings:
+            self._settings["hue"] = value
 
     @property
     def saturation(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "saturation" in self._settings:
+            return self._settings["saturation"]
         return self._camera.get(cv2.CAP_PROP_SATURATION)
 
     @saturation.setter
     def saturation(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_SATURATION, value)
+        except Exception as e:
+            print(f"Error setting saturation: {e}")
+        if self._settings is not None and "saturation" in self._settings:
+            self._settings["saturation"] = value
 
     @property
     def sharpness(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "sharpness" in self._settings:
+            return self._settings["sharpness"]
         return self._camera.get(cv2.CAP_PROP_SHARPNESS)
 
     @sharpness.setter
     def sharpness(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_SHARPNESS, value)
+        except Exception as e:
+            print(f"Error setting sharpness: {e}")
+        if self._settings is not None and "sharpness" in self._settings:
+            self._settings["sharpness"] = value
 
     @property
     def gamma(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "gamma" in self._settings:
+            return self._settings["gamma"]
         return self._camera.get(cv2.CAP_PROP_GAMMA)
 
     @gamma.setter
     def gamma(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_GAMMA, value)
+        except Exception as e:
+            print(f"Error setting gamma: {e}")
+        if self._settings is not None and "gamma" in self._settings:
+            self._settings["gamma"] = value
 
     @property
     def white_balance_temperature(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "white_balance_temperature" in self._settings:
+            return self._settings["white_balance_temperature"]
         return self._camera.get(cv2.CAP_PROP_WB_TEMPERATURE)
 
     @white_balance_temperature.setter
     def white_balance_temperature(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_WB_TEMPERATURE, value)
+        except Exception as e:
+            print(f"Error setting white_balance_temperature: {e}")
+        if self._settings is not None and "white_balance_temperature" in self._settings:
+            self._settings["white_balance_temperature"] = value
 
     @property
     def backlight(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "backlight" in self._settings:
+            return self._settings["backlight"]
         return self._camera.get(cv2.CAP_PROP_BACKLIGHT)
 
     @backlight.setter
     def backlight(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_BACKLIGHT, value)
+        except Exception as e:
+            print(f"Error setting backlight: {e}")
+        if self._settings is not None and "backlight" in self._settings:
+            self._settings["backlight"] = value
 
     @property
     def gain(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "gain" in self._settings:
+            return self._settings["gain"]
         return self._camera.get(cv2.CAP_PROP_GAIN)
 
     @gain.setter
     def gain(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_GAIN, value)
+        except Exception as e:
+            print(f"Error setting gain: {e}")
+        if self._settings is not None and "gain" in self._settings:
+            self._settings["gain"] = value
 
     @property
     def focus(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "focus" in self._settings:
+            return self._settings["focus"]
         return self._camera.get(cv2.CAP_PROP_FOCUS)
 
     @focus.setter
     def focus(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_FOCUS, value)
+        except Exception as e:
+            print(f"Error setting focus: {e}")
+        if self._settings is not None and "focus" in self._settings:
+            self._settings["focus"] = value
 
     @property
     def exposure(self) -> float:
         if not self._active or self._camera is None:
             return -1.0
+        if self._settings is not None and "exposure" in self._settings:
+            return self._settings["exposure"]
         return self._camera.get(cv2.CAP_PROP_EXPOSURE)
 
     @exposure.setter
     def exposure(self, value: float):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_EXPOSURE, value)
-
-    # @property
-    # def auto_brightness(self) -> bool:
-    #     if not self._active or self._camera is None:
-    #         return False
-    #     return bool(self._camera.get(cv2.CAP_PROP_AUTO_BRIGHTNESS))
-
-    # @auto_brightness.setter
-    # def auto_brightness(self, value: bool):
-    #     if self._active and self._camera is not None:
-    #         self._camera.set(cv2.CAP_PROP_AUTO_BRIGHTNESS, 1.0 if value else 0.0)
-
-    # @property
-    # def auto_contrast(self) -> bool:
-    #     if not self._active or self._camera is None:
-    #         return False
-    #     return bool(self._camera.get(cv2.CAP_PROP_AUTO_CONTRAST))
-
-    # @auto_contrast.setter
-    # def auto_contrast(self, value: bool):
-    #     if self._active and self._camera is not None:
-    #         self._camera.set(cv2.CAP_PROP_AUTO_CONTRAST, 1.0 if value else 0.0)
-
-    # @property
-    # def auto_hue(self) -> bool:
-    #     if not self._active or self._camera is None:
-    #         return False
-    #     return bool(self._camera.get(cv2.CAP_PROP_AUTO_HUE))
-
-    # @auto_hue.setter
-    # def auto_hue(self, value: bool):
-    #     if self._active and self._camera is not None:
-    #         self._camera.set(cv2.CAP_PROP_AUTO_HUE, 1.0 if value else 0.0)
-
-    # @property
-    # def auto_saturation(self) -> bool:
-    #     if not self._active or self._camera is None:
-    #         return False
-    #     return bool(self._camera.get(cv2.CAP_PROP_AUTO_SATURATION))
-
-    # @auto_saturation.setter
-    # def auto_saturation(self, value: bool):
-    #     if self._active and self._camera is not None:
-    #         self._camera.set(cv2.CAP_PROP_AUTO_SATURATION, 1.0 if value else 0.0)
-
-    # @property
-    # def auto_sharpness(self) -> bool:
-    #     if not self._active or self._camera is None:
-    #         return False
-    #     return bool(self._camera.get(cv2.CAP_PROP_AUTO_SHARPNESS))
-
-    # @auto_sharpness.setter
-    # def auto_sharpness(self, value: bool):
-    #     if self._active and self._camera is not None:
-    #         self._camera.set(cv2.CAP_PROP_AUTO_SHARPNESS, 1.0 if value else 0.0)
-
-    # @property
-    # def auto_gamma(self) -> bool:
-    #     if not self._active or self._camera is None:
-    #         return False
-    #     return bool(self._camera.get(cv2.CAP_PROP_AUTO_GAMMA))
-
-    # @auto_gamma.setter
-    # def auto_gamma(self, value: bool):
-    #     if self._active and self._camera is not None:
-    #         self._camera.set(cv2.CAP_PROP_AUTO_GAMMA, 1.0 if value else 0.0)
-
+        except Exception as e:
+            print(f"Error setting exposure: {e}")
+        if self._settings is not None and "exposure" in self._settings:
+            self._settings["exposure"] = value
+    
     @property
     def auto_white_balance_temperature(self) -> bool:
         if not self._active or self._camera is None:
             return False
+        if self._settings is not None and "auto_white_balance_temperature" in self._settings:
+            return self._settings["auto_white_balance_temperature"]
         return bool(self._camera.get(cv2.CAP_PROP_AUTO_WB))
 
     @auto_white_balance_temperature.setter
     def auto_white_balance_temperature(self, value: bool):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_AUTO_WB, 1.0 if value else 0.0)
-
-    # @property
-    # def auto_backlight_compensation(self) -> bool:
-    #     if not self._active or self._camera is None:
-    #         return False
-    #     return bool(self._camera.get(cv2.CAP_PROP_AUTO_BACKLIGHT_COMPENSATION))
-
-    # @auto_backlight_compensation.setter
-    # def auto_backlight_compensation(self, value: bool):
-    #     if self._active and self._camera is not None:
-    #         self._camera.set(cv2.CAP_PROP_AUTO_BACKLIGHT_COMPENSATION, 1.0 if value else 0.0)
-
-    # @property
-    # def auto_gain(self) -> bool:
-    #     if not self._active or self._camera is None:
-    #         return False
-    #     return bool(self._camera.get(cv2.CAP_PROP_AUTO_GAIN))
-
-    # @auto_gain.setter
-    # def auto_gain(self, value: bool):
-    #     if self._active and self._camera is not None:
-    #         self._camera.set(cv2.CAP_PROP_AUTO_GAIN, 1.0 if value else 0.0)
+        except Exception as e:
+            print(f"Error setting auto_white_balance_temperature: {e}")
+        if self._settings is not None and "auto_white_balance_temperature" in self._settings:
+            self._settings["auto_white_balance_temperature"] = value
 
     @property
     def auto_focus(self) -> bool:
         if not self._active or self._camera is None:
             return False
+        if self._settings is not None and "auto_focus" in self._settings:
+            return self._settings["auto_focus"]
         return bool(self._camera.get(cv2.CAP_PROP_AUTOFOCUS))
 
     @auto_focus.setter
     def auto_focus(self, value: bool):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_AUTOFOCUS, 1.0 if value else 0.0)
+        except Exception as e:
+            print(f"Error setting auto_focus: {e}")
+        if self._settings is not None and "auto_focus" in self._settings:
+            self._settings["auto_focus"] = value
 
     @property
     def auto_exposure(self) -> bool:
         if not self._active or self._camera is None:
             return False
+        if self._settings is not None and "auto_exposure" in self._settings:
+            return self._settings["auto_exposure"]
         return bool(self._camera.get(cv2.CAP_PROP_AUTO_EXPOSURE))
 
     @auto_exposure.setter
     def auto_exposure(self, value: bool):
-        if self._active and self._camera is not None:
+        if not self._active or self._camera is None:
+            return
+        try:
             self._camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0 if value else 0.0)
+        except Exception as e:
+            print(f"Error setting auto_exposure: {e}")
+        if self._settings is not None and "auto_exposure" in self._settings:
+            self._settings["auto_exposure"] = value
 
     def open(self):
         self._camera = cv2.VideoCapture(self._index)
@@ -452,12 +528,21 @@ class Camera:
             (8192, 4608)
         ]
         supported_resolutions = []
+        startup_width = 640
+        startup_height = 480
         # Check if supported resolutions are available
         for width, height in common_resolutions:
             self.width = width
             self.height = height
             if self.width == width and self.height == height:
-                supported_resolutions.append({"width": width, "height": height})
+                supported_resolutions.append({"width": width, "height": height, "label": f"{width} x {height}"})
+                # check if there is a supported resolution that is 1920x1080 and set it as the startup resolution
+                if width ==1920 and height == 1080:
+                    startup_width = width
+                    startup_height = height
+        # set the startup resolution
+        self.width = startup_width
+        self.height = startup_height
         self.supported_resolutions = supported_resolutions
         # Reset the fps of the nodes (post processing filters)
         self.reset_nodes_fps()
@@ -493,7 +578,7 @@ class Camera:
             "sharpness": self.sharpness,
             "gamma": self.gamma,
             "white_balance_temperature": self.white_balance_temperature,
-            "backlight_compensation": self.backlight,
+            "backlight": self.backlight,
             "gain": self.gain,
             "focus": self.focus,
             "exposure": self.exposure,
@@ -508,8 +593,6 @@ class Camera:
         self.width = self._settings["width"]
         self.height = self._settings["height"]
         self.fps = self._settings["fps"]
-        self.bitrate = self._settings["bitrate"]
-        self.buffer_size = self._settings["buffer_size"]
         self.flip_horizontal = self._settings["flip_horizontal"]
         self.flip_vertical = self._settings["flip_vertical"]
         self.rotate = self._settings["rotate"]
@@ -520,7 +603,8 @@ class Camera:
         self.sharpness = self._settings["sharpness"]
         self.gamma = self._settings["gamma"]
         self.white_balance_temperature = self._settings["white_balance_temperature"]
-        self.backlight = self._settings["backlight"]
+        # Support both "backlight" and "backlight_compensation" for backward compatibility
+        self.backlight = self._settings.get("backlight", self._settings.get("backlight_compensation", 0))
         self.gain = self._settings["gain"]
         self.focus = self._settings["focus"]
         self.exposure = self._settings["exposure"]

@@ -5,7 +5,7 @@ import time
 
 def main():
     cameras_controller = CamerasController()
-    camera = cameras_controller.cameras[0]
+    camera = cameras_controller.cameras[1]
     #camera.fps = 30
     # camera.open()
     s = camera.to_dict()
@@ -18,18 +18,18 @@ def main():
     previous_time = time.time()
     frames_count = 0
     while True:
-        ret, image_ai = camera.image_ai.get_frame()
-        if not ret:
-            break
+        # ret, image_ai = camera.image_ai.get_frame()
+        # if not ret:
+        #     break
         # ret, image_cropped_resized = camera.image_cropped_resized.get_frame()
         # if not ret:
         #     break
-        # ret, image = camera.image.get_frame()
-        # if not ret:
-        #     break
-        # cv2.imshow('image', image)
+        ret, image = camera.image.get_frame()
+        if not ret:
+            break
+        cv2.imshow('image', image)
         # cv2.imshow('image_cropped_resized', image_cropped_resized)
-        cv2.imshow('image_ai', image_ai)
+        # cv2.imshow('image_ai', image_ai)
         # wait if the escape key is pressed
         if cv2.waitKey(1) & 0xFF == 27:
             break
