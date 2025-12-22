@@ -1106,6 +1106,13 @@ Update Cameras web page -> Manual Control Input Img. Modal window. Add an Apply 
 between Save and Cancel button in a similar way like it is on the Camera Modal Window
 Do not implement any backend action at this moment.
 
+Update Cameras web page -> Manual Control Input Img. Modal window. Add a business
+validation. If the Crop left + Crop right >= 99% or Crop top + Crop bottom >= 99% then
+show the red error button. When user clicks on it, display appropriate error
+message (see examples in the Motors page how the errors and warnings on the Modal
+windows should be developed). If there are errors on the Modal window, the Apply
+and Save buttons are disabled.
+
 
 Update Cameras web page. Rename "preferred resolution" to just "resolution" and get rid of
 "accepted resolution"

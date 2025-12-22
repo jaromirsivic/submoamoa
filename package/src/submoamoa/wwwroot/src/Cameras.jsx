@@ -483,6 +483,27 @@ const Cameras = () => {
             });
     }, [fetchCameraList]);
 
+    // Validation for Manual Modal
+    const getManualValidationErrors = () => {
+        if (activeModal !== 'manual') return [];
+        const errors = [];
+        const top = Number(tempState.manualCropTop || 0);
+        const left = Number(tempState.manualCropLeft || 0);
+        const bottom = Number(tempState.manualCropBottom || 0);
+        const right = Number(tempState.manualCropRight || 0);
+
+        if (left + right >= 99) {
+            errors.push('Total horizontal crop (Left + Right) cannot exceed 99%');
+        }
+        if (top + bottom >= 99) {
+            errors.push('Total vertical crop (Top + Bottom) cannot exceed 99%');
+        }
+        return errors;
+    };
+
+    const manualValidationErrors = getManualValidationErrors();
+    const isManualValid = manualValidationErrors.length === 0;
+
     return (
         <div className="page-container">
             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
@@ -739,12 +760,15 @@ const Cameras = () => {
                     onOk={() => saveModal(true)}
                     onCancel={closeModal}
                     okLabel="Save"
+                    validationErrors={manualValidationErrors}
+                    okDisabled={!isManualValid}
                     customFooterButtons={[
                         <Button
                             key="apply"
                             label="Apply"
                             onClick={() => saveModal(false)}
-                            color="#3b82f6"
+                            color={!isManualValid ? '#94a3b8' : '#3b82f6'}
+                            disabled={!isManualValid}
                             style={{ height: '40px', display: 'flex', alignItems: 'center' }}
                         />
                     ]}
