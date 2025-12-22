@@ -1139,3 +1139,17 @@ Update Cameras web page. When Camera web page is loaded the page should load
 as well the primaryCamera and automatically select the input device
 which is equal to the primaryCamera.index (you should add a new rest
 api endpoint "getPrimaryCamera")
+
+When user opens the camera modal window you should remember the settings used when the modal window was opened because if the user updates some properties or changes the input device and then at the end he clicks on the “Cancel” button you should revert back to the original settings used when the modal window was opened to undo all user updates.
+When the user changes anything on the camera modal window and then if he clicks on the “Cancel” button you should ask him a question shown in the orrange modal window: Modifications you have made will be lost. Do you want to continue? If he clicks on “Yes” then you should reapply the original settings and close the modal window.
+
+1. Update Camera web page and the backend application rest api to allow user to apply changes
+of the Manual Control - Input Img Modal window to the
+master_controller.cameras_controller.cameras[CAMERA_INDEX].image_cropped_resized when
+the user presses Apply button. You will probably need to extend "list" api.
+2. Implement as well the functionallity for the Save button.
+Take a look how it is done in the Camera Modal Window and do it the similar way.
+3. Do not forget on the initialization phase. When the page is loaded you should
+update properties on the Manual Control panel and take them from the list.
+4. You should handle unsaved changes the same way as the Camera Modal window
+

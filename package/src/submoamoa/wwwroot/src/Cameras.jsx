@@ -99,6 +99,8 @@ const Cameras = () => {
     const [activeModal, setActiveModal] = useState(null); // 'camera', 'manual', 'ai', or null
     const [showReloadModal, setShowReloadModal] = useState(false);
     const [isReloading, setIsReloading] = useState(false);
+    const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+    const [originalModalState, setOriginalModalState] = useState({});
 
     // Derived values
     const { width: resWidth, height: resHeight } = getResolutionDimensions(preferredResolution);
@@ -344,6 +346,7 @@ const Cameras = () => {
             state.aiStretchHeight = aiStretchHeight;
         }
         setTempState(state);
+        setOriginalModalState(JSON.parse(JSON.stringify(state))); // Deep copy
         setActiveModal(modalName);
     }, [
         inputDevices, // Add inputDevices to dependencies
@@ -357,7 +360,68 @@ const Cameras = () => {
     const closeModal = useCallback(() => {
         setActiveModal(null);
         setTempState({});
+        setOriginalModalState({});
+        setShowCancelConfirmModal(false);
     }, []);
+
+    const hasModalChanges = useCallback(() => {
+        return JSON.stringify(tempState) !== JSON.stringify(originalModalState);
+    }, [tempState, originalModalState]);
+
+    const handleCancelRequest = useCallback(() => {
+        if (activeModal === 'camera' && hasModalChanges()) {
+            setShowCancelConfirmModal(true);
+        } else {
+            closeModal();
+        }
+    }, [activeModal, hasModalChanges, closeModal]);
+
+    const handleCancelConfirm = useCallback(async () => {
+        // Revert to original settings if camera modal
+        if (activeModal === 'camera' && originalModalState.inputDeviceIndex) {
+            // Re-apply original camera settings to backend (Apply without saving)
+            try {
+                const selectedDevice = inputDevices.find(d => String(d.index) === String(originalModalState.inputDeviceIndex));
+                const payload = {
+                    index: Number(originalModalState.inputDeviceIndex),
+                    name: selectedDevice ? selectedDevice.name : '',
+                    width: Number(originalModalState.preferredResolution.split(' x ')[0]),
+                    height: Number(originalModalState.preferredResolution.split(' x ')[1]),
+                    fps: Number(originalModalState.fps),
+                    flip_horizontal: originalModalState.flipHorizontally,
+                    flip_vertical: originalModalState.flipVertically,
+                    rotate: Number(originalModalState.rotateDegrees),
+                    brightness: Number(originalModalState.brightness),
+                    contrast: Number(originalModalState.contrast),
+                    hue: Number(originalModalState.hue),
+                    saturation: Number(originalModalState.saturation),
+                    sharpness: Number(originalModalState.sharpness),
+                    gamma: Number(originalModalState.gamma),
+                    white_balance_temperature: Number(originalModalState.whiteBalanceTemperature),
+                    backlight: Number(originalModalState.backlight),
+                    gain: Number(originalModalState.gain),
+                    focus: Number(originalModalState.focus),
+                    exposure: Number(originalModalState.exposure),
+                    auto_white_balance_temperature: originalModalState.autoWhiteBalance,
+                    auto_focus: originalModalState.autoFocus,
+                    auto_exposure: originalModalState.autoExposure,
+                    saveToDisk: false
+                };
+
+                await fetch('/api/cameras/savecamera', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Update global state back to original
+                setInputDeviceIndex(String(originalModalState.inputDeviceIndex));
+            } catch (err) {
+                console.error("Failed to revert camera settings:", err);
+            }
+        }
+        closeModal();
+    }, [activeModal, originalModalState, inputDevices, closeModal]);
 
     const saveModal = useCallback((saveToDisk = false) => {
         let payload = {};
@@ -752,7 +816,7 @@ const Cameras = () => {
                     isOpen={true}
                     title="Edit Camera Settings"
                     onOk={() => saveModal(true)}
-                    onCancel={closeModal}
+                    onCancel={handleCancelRequest}
                     okLabel="Save"
                     customFooterButtons={[
                         <Button
@@ -1077,6 +1141,24 @@ const Cameras = () => {
                 >
                     <div style={{ padding: '1rem' }}>
                         Do you want to refresh list of camera devices? This operation may take several seconds.
+                    </div>
+                </ModalWindow>
+            )}
+
+            {/* ======================== */}
+            {/* Modal: Cancel Confirmation */}
+            {/* ======================== */}
+            {showCancelConfirmModal && (
+                <ModalWindow
+                    isOpen={true}
+                    title="Unsaved Changes"
+                    onOk={handleCancelConfirm}
+                    onCancel={() => setShowCancelConfirmModal(false)}
+                    okLabel="Yes"
+                    cancelLabel="No"
+                >
+                    <div style={{ padding: '1rem' }}>
+                        Modifications you have made will be lost. Do you want to continue?
                     </div>
                 </ModalWindow>
             )}

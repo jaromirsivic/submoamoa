@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from .common import epsilon
 from .yolomodels import YOLOModels
+from ultralytics import YOLO
 
 
 class NodeImage:
@@ -68,65 +69,94 @@ class NodeImage:
 
 
 class NodeImageCroppedResized(NodeImage):
-    def __init__(self, *, parent, fps: int | None, crop_top: float, crop_left: float, crop_bottom: float, crop_right: float,
-                 width: int, height: int):
+    def __init__(self, *, parent, fps: int | None, settings: dict | None = None):
         super().__init__(parent=parent, fps=fps)
-        self._crop_top = crop_top
-        self._crop_left = crop_left
-        self._crop_bottom = crop_bottom
-        self._crop_right = crop_right
-        self._width = width
-        self._height = height
+        if settings is None:
+            settings = self.reset_settings()
+        else:
+            self._settings = settings
+        #self.reload_settings()
+
+    @property
+    def settings(self) -> dict:
+        return self._settings
+    
+    @settings.setter
+    def settings(self, value: dict):
+        self._settings = value
+        self.reload_settings()
 
     @property
     def crop_top(self) -> float:
-        return self._crop_top
+        return self._settings["crop_top"] if "crop_top" in self._settings else 0
     
-    @crop_top.setter
-    def crop_top(self, value: float):
-        self._crop_top = max(0, min(value, 1))
-
     @property
     def crop_left(self) -> float:
-        return self._crop_left
+        return self._settings["crop_left"] if "crop_left" in self._settings else 0
     
-    @crop_left.setter
-    def crop_left(self, value: float):
-        self._crop_left = max(0, min(value, 1))
-        
     @property
     def crop_bottom(self) -> float:
-        return self._crop_bottom
+        return self._settings["crop_bottom"] if "crop_bottom" in self._settings else 0  
     
-    @crop_bottom.setter
-    def crop_bottom(self, value: float):
-        self._crop_bottom = max(0, min(value, 1))
-        
-        
     @property
     def crop_right(self) -> float:
-        return self._crop_right
-    
-    @crop_right.setter
-    def crop_right(self, value: float):
-        self._crop_right = max(0, min(value, 1))
+        return self._settings["crop_right"] if "crop_right" in self._settings else 0
 
     @property
     def width(self) -> int:
-        return self._width
-    
-    @width.setter
-    def width(self, value: int):
-        self._width = max(0, value)
+        return self._settings["width"] if "width" in self._settings else 0
 
     @property
     def height(self) -> int:
-        return self._height
-    
-    @height.setter
-    def height(self, value: int):
-        self._height = max(0, value)
+        return self._settings["height"] if "height" in self._settings else 0
 
+    @property
+    def static_reticle_x(self) -> float:
+        return self._settings["static_reticle_x"] if "static_reticle_x" in self._settings else 0.5
+    
+    @property
+    def static_reticle_y(self) -> float:
+        return self._settings["static_reticle_y"] if "static_reticle_y" in self._settings else 0.5
+    
+    @property
+    def static_reticle_color(self) -> str:
+        return self._settings["static_reticle_color"] if "static_reticle_color" in self._settings else "#ff0000cc"
+    
+    @property
+    def static_reticle_size(self) -> float:
+        return self._settings["static_reticle_size"] if "static_reticle_size" in self._settings else 1
+
+    def to_dict(self) -> dict:
+        return self._settings
+        # return {
+        #     "crop_top": self._crop_top,
+        #     "crop_left": self._crop_left,
+        #     "crop_bottom": self._crop_bottom,
+        #     "crop_right": self._crop_right,
+        #     "width": self._width,
+        #     "height": self._height,
+        #     "static_reticle_x": self._static_reticle_x,
+        #     "static_reticle_y": self._static_reticle_y,
+        #     "static_reticle_color": self._static_reticle_color,
+        #     "static_reticle_size": self._static_reticle_size
+        # }
+
+    def reset_settings(self):
+        self.settings = {
+            "crop_top": 0,
+            "crop_left": 0,
+            "crop_bottom": 0,
+            "crop_right": 0,
+            "width": 0,
+            "height": 0,
+            "static_reticle_x": 0.5,
+            "static_reticle_y": 0.5,
+            "static_reticle_color": "#ff0000cc",
+            "static_reticle_size": 1
+        }
+
+    def reload_settings(self):
+        return
 
     def get_frame(self) -> tuple[bool, np.ndarray]:
         now = time.time()
@@ -141,10 +171,10 @@ class NodeImageCroppedResized(NodeImage):
         # if crop and resize are enabled, crop and resize the frame
         if self._frame_valid:
             # if crop and resize are not enabled, return the frame as is
-            if (self._crop_top == 0 and self._crop_left == 0 and \
-                self._crop_bottom == 0 and self._crop_right == 0) and \
-                (self._width == 0 or self._width == self._frame.shape[1]) and \
-                (self._height == 0 or self._height == self._frame.shape[0]):
+            if (self.crop_top == 0 and self.crop_left == 0 and \
+                self.crop_bottom == 0 and self.crop_right == 0) and \
+                (self.width == 0 or self.width == self._frame.shape[1]) and \
+                (self.height == 0 or self.height == self._frame.shape[0]):
                 return self._frame_valid, self._frame
             else:
                 self._frame = self.crop_and_resize_frame(src_frame=self._frame)
@@ -161,10 +191,10 @@ class NodeImageCroppedResized(NodeImage):
         """
         # convert crop coordinates to pixels
         # crop coordinates are between 0 and 1
-        crop_top_px = int(self._crop_top * src_frame.shape[0])
-        crop_left_px = int(self._crop_left * src_frame.shape[1])
-        crop_bottom_px = int(self._crop_bottom * src_frame.shape[0])
-        crop_right_px = int(self._crop_right * src_frame.shape[1])
+        crop_top_px = int(self.crop_top * src_frame.shape[0])
+        crop_left_px = int(self.crop_left * src_frame.shape[1])
+        crop_bottom_px = int(self.crop_bottom * src_frame.shape[0])
+        crop_right_px = int(self.crop_right * src_frame.shape[1])
         # calculate source frame coordinates in pixels
         src_x = crop_left_px
         src_y = crop_top_px
@@ -188,31 +218,61 @@ class NodeImageCroppedResized(NodeImage):
         if not is_valid:
             return src_frame.copy()
         # if source frame coordinates are valid, return cropped and resized frame
-        return cv2.resize(src_frame[src_y:src_y + src_height, src_x:src_x + src_width], (self._width, self._height))
+        return cv2.resize(src_frame[src_y:src_y + src_height, src_x:src_x + src_width], (self.width, self.height))
+
+    def draw_static_reticle(self, *, frame: np.ndarray) -> np.ndarray:
+        # draw a cross created by 4 lines with gaps and a dot in the center
+        # gap size is 5 percent of the bigger dimension of the frame multiplied by static_reticle_size
+        gap_size = max(frame.shape[0], frame.shape[1]) * 0.05 * self.static_reticle_size
+        # line length is 14 percent of the bigger dimension of the frame multiplied by static_reticle_size
+        line_length = max(frame.shape[0], frame.shape[1]) * 0.14 * self.static_reticle_size
+        # dot radius is 2 percent of the bigger dimension of the frame multiplied by static_reticle_size
+        dot_radius = max(frame.shape[0], frame.shape[1]) * 0.02 * self.static_reticle_size
+        # line width is 2 percent of the bigger dimension of the frame multiplied by static_reticle_size
+        line_width = max(frame.shape[0], frame.shape[1]) * 0.02 * self.static_reticle_size
+        # draw the cross
+        cv2.line(frame, (int(self.static_reticle_x * frame.shape[1]), int(self.static_reticle_y * frame.shape[0]) - gap_size), (int(self.static_reticle_x * frame.shape[1]), int(self.static_reticle_y * frame.shape[0]) - gap_size - line_length), self.static_reticle_color, line_width)
+        cv2.line(frame, (int(self.static_reticle_x * frame.shape[1]), int(self.static_reticle_y * frame.shape[0]) + gap_size), (int(self.static_reticle_x * frame.shape[1]), int(self.static_reticle_y * frame.shape[0]) + gap_size + line_length), self.static_reticle_color, line_width)
+        cv2.line(frame, (int(self.static_reticle_x * frame.shape[1]) - gap_size, int(self.static_reticle_y * frame.shape[0])), (int(self.static_reticle_x * frame.shape[1]) - gap_size - line_length, int(self.static_reticle_y * frame.shape[0])), self.static_reticle_color, line_width)
+        cv2.line(frame, (int(self.static_reticle_x * frame.shape[1]) + gap_size, int(self.static_reticle_y * frame.shape[0])), (int(self.static_reticle_x * frame.shape[1]) + gap_size + line_length, int(self.static_reticle_y * frame.shape[0])), self.static_reticle_color, line_width)
+        # draw the dot
+        cv2.circle(frame, (int(self.static_reticle_x * frame.shape[1]), int(self.static_reticle_y * frame.shape[0])), dot_radius, self.static_reticle_color, -1)
+        return frame
 
 
 class NodeImageAI(NodeImageCroppedResized):
-    def __init__(self, *, parent, fps: int | None,crop_top: float, crop_left: float, crop_bottom: float, crop_right: float,
-                 width: int, height: int, attention_polygons: list[list[tuple[float, float]]], model_name: str):
-        # check if model name is valid
-        if model_name not in YOLOModels().models:
-            model_name = YOLOModels().default_model_name
-        super().__init__(parent=parent, fps=fps, crop_top=crop_top, crop_left=crop_left, crop_bottom=crop_bottom, crop_right=crop_right,
-                 width=width, height=height)
-        self.attention_polygons = attention_polygons
-        self._model_name = model_name
-        self._model = YOLOModels().models[model_name]
+    def __init__(self, *, parent, fps: int | None, settings: dict | None = None):
+        super().__init__(parent=parent, fps=fps, settings=settings)
+        self._model_name = YOLOModels().default_model_name
+        self._model = None
+        self._mask_polygons = None
+        self.reload_settings()
 
     @property
     def model_name(self) -> str:
-        return self._model_name
+        return self._settings["model_name"] if "model_name" in self._settings else YOLOModels().default_model_name
 
-    @model_name.setter
-    def model_name(self, value: str):
-        if value not in YOLOModels().models:
-            value = YOLOModels().default_model_name
-        self._model_name = value
-        self._model = YOLOModels().models[value]
+    @property
+    def model(self) -> YOLO:
+        if self._model is None:
+            self._model = YOLOModels().models[self.model_name]
+        return self._model
+
+    @property
+    def mask_polygons(self) -> list[list[tuple[int, int]]]:
+        return self._settings["mask_polygons"] if "mask_polygons" in self._settings else []
+
+    def reload_settings(self):
+        if self._settings is None:
+            return
+        # load model
+        model_name = self._settings["model_name"] if "model_name" in self._settings else YOLOModels().default_model_name
+        if model_name not in YOLOModels().models:
+            model_name = YOLOModels().default_model_name
+        self._model_name = model_name
+        self._model = YOLOModels().models[model_name]
+        # load mask polygons
+        self._mask_polygons = self._settings["mask_polygons"] if "mask_polygons" in self._settings else []
 
     def get_frame(self) -> tuple[bool, np.ndarray]:
         now = time.time()
@@ -227,10 +287,10 @@ class NodeImageAI(NodeImageCroppedResized):
         # if crop and resize are enabled, crop and resize the frame
         if self._frame_valid:
             # if crop and resize are not enabled, return the frame as is
-            if (self._crop_top == 0 and self._crop_left == 0 and \
-                self._crop_bottom == 0 and self._crop_right == 0) and \
-                (self._width == 0 or self._width == self._frame.shape[1]) and \
-                (self._height == 0 or self._height == self._frame.shape[0]):
+            if (self.crop_top == 0 and self.crop_left == 0 and \
+                self.crop_bottom == 0 and self.crop_right == 0) and \
+                (self.width == 0 or self.width == self._frame.shape[1]) and \
+                (self.height == 0 or self.height == self._frame.shape[0]):
                 pass
             else:
                 self._frame = self.crop_and_resize_frame(src_frame=self._frame)

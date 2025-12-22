@@ -393,7 +393,7 @@
                 "flip_horizontal": false,
                 "flip_vertical": false,
                 "rotate": 0,
-                "brightness": 128.0,
+                "brightness": 139.0,
                 "contrast": 32.0,
                 "hue": 0.0,
                 "saturation": 64.0,
@@ -407,6 +407,46 @@
                 "auto_white_balance_temperature": true,
                 "auto_focus": true,
                 "auto_exposure": true
+            },
+            "ManualControl": {
+                "crop_top": 0,
+                "crop_left": 0,
+                "crop_bottom": 0,
+                "crop_right": 0,
+                "width": 640,
+                "height": 480,
+                "static_reticle_x": 0.5,
+                "static_reticle_y": 0.5,
+                "static_reticle_color": "#ff0000cc",
+                "static_reticle_size": 1
+            },
+            "AIControl": {
+                "crop_top": 0,
+                "crop_left": 0,
+                "crop_bottom": 0,
+                "crop_right": 0,
+                "width": 640,
+                "height": 480,
+                "static_reticle_x": 0.5,
+                "static_reticle_y": 0.5,
+                "static_reticle_color": "#ff0000cc",
+                "static_reticle_size": 1,
+                "mask_polygons": [
+                    [
+                        {
+                            "x": 0.1,
+                            "y": 0.1
+                        },
+                        {
+                            "x": 0.2,
+                            "y": 0.2
+                        },
+                        {
+                            "x": 0.3,
+                            "y": 0.3
+                        }
+                    ]
+                ]
             }
         },
         {

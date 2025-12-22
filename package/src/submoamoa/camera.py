@@ -11,7 +11,12 @@ FLIP_VERTICAL = 0
 FLIP_BOTH = -1
 
 class Camera:
-    def __init__(self, *, index: int, settings: dict = None):
+    def __init__(
+        self, *, index: int,
+        settings: dict = None,
+        image_cropped_resized_settings: dict = None,
+        image_ai_settings: dict = None
+    ):
         # OpenCV camera object
         self._camera:cv2.VideoCapture = None
         # Camera index
@@ -34,19 +39,11 @@ class Camera:
         # NodeImage object
         self._image: NodeImage = NodeImage(parent=self, fps=None)
         # NodeImageCroppedResized object
-        self._image_cropped_resized: NodeImageCroppedResized = NodeImageCroppedResized(
-            parent=self, fps=None,
-            crop_top=0, crop_left=0, crop_bottom=0, crop_right=0,
-            width=0, height=0
-        )
+        self._image_cropped_resized_settings = image_cropped_resized_settings
+        self._image_cropped_resized: NodeImageCroppedResized = NodeImageCroppedResized(parent=self, fps=None, settings=self._image_cropped_resized_settings)
         # NodeImageAI object
-        self._image_ai: NodeImageAI = NodeImageAI(
-            parent=self, fps=None,
-            crop_top=0, crop_left=0, crop_bottom=0, crop_right=0,
-            width=0, height=0,
-            attention_polygons=[],
-            model_name="yolo11x-pose"
-        )
+        self._image_ai_settings = image_ai_settings
+        self._image_ai: NodeImageAI = NodeImageAI(parent=self, fps=None, settings=self._image_ai_settings)
         # open camera
         self.open()
 
@@ -655,6 +652,8 @@ class Camera:
         auto_exposure = self.auto_exposure
         self.auto_exposure = auto_exposure
 
+    # Settings properties
+
     @property
     def settings(self) -> dict:
         return self._settings
@@ -663,6 +662,26 @@ class Camera:
     def settings(self, value: dict):
         self._settings = value
         self.reload_settings()
+    
+    @property
+    def image_cropped_resized_settings(self) -> dict:
+        return self._image_cropped_resized_settings
+
+    @image_cropped_resized_settings.setter
+    def image_cropped_resized_settings(self, value: dict):
+        self._image_cropped_resized_settings = value
+        self._image_cropped_resized.reload_settings()
+    
+    @property
+    def image_ai_settings(self) -> dict:
+        return self._image_ai_settings
+
+    @image_ai_settings.setter
+    def image_ai_settings(self, value: dict):
+        self._image_ai_settings = value
+        self._image_ai.reload_settings()
+
+    # Frame properties
 
     @property
     def frame(self) -> np.ndarray:
