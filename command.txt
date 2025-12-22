@@ -1027,3 +1027,16 @@ connected to the camera live feed in the same way like it is done on the Camera 
 except here it is always enabled and immediately consumes a camera live feed. When the modal is closed
 the preview on the Modal window stops consuming live feed.
 The preview is not mentioned in the jsons exchanged with the backend. It exists only temporarily on the Modal Window.
+
+The preview section with the Polygon on the Camera -> Edit -> Modal Window should 
+display the live feed only in case the Enabled switch in the Preview section on the
+Camera panel is turned on. Otherwise there should be displayed the same icon
+as in the Camera panel and live feed is not consumed.
+
+1. Add a preview section into the Manual Control - Input Img -> Modal Window. The behavior should be analogous
+to the behavior of the Preview section in the Camera -> Modal Window.
+2. Add a preview section into the AI Agent - Input Img -> Modal Window. The behavior should be analogous
+to the behavior of the Preview section in the Camera -> Modal Window.
+
+Update Camera web page -> edit button -> Modal window. When user changes "Input Device"
+all live feeds in all polygons (on modal windows and as well in panels) should be restarted.

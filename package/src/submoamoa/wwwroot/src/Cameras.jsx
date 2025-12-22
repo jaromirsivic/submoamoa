@@ -398,7 +398,7 @@ const Cameras = () => {
                                 src={previewEnabled ? `/api/cameras/stream/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
                                 mode="viewer"
-                                background="#222"
+                                background="#000099"
                             />
                         </ColumnLayout>
                     </Panel>
@@ -440,7 +440,7 @@ const Cameras = () => {
                                 src={manualPreviewEnabled ? `/api/cameras/stream-manual/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
                                 mode="viewer"
-                                background="#222"
+                                background="#009900"
                             />
                         </ColumnLayout>
                     </Panel>
@@ -482,7 +482,7 @@ const Cameras = () => {
                                 src={aiPreviewEnabled ? `/api/cameras/stream-ai/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
                                 mode="viewer"
-                                background="#222"
+                                background="#990000"
                             />
                         </ColumnLayout>
                     </Panel>
@@ -594,10 +594,10 @@ const Cameras = () => {
                         <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
                         <Polygon
                             style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
-                            src={`/api/cameras/stream/${tempState.inputDeviceIndex}`}
+                            src={previewEnabled ? `/api/cameras/stream/${tempState.inputDeviceIndex}` : cameraOffIcon}
                             stretchMode="fit"
                             mode="viewer"
-                            background="#222"
+                            background="#000099"
                         />
                     </ColumnLayout>
                 </ModalWindow>
@@ -648,6 +648,15 @@ const Cameras = () => {
                             value={tempState.manualStretchHeight}
                             onChange={(val) => updateTempState('manualStretchHeight', val)}
                         />
+
+                        <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
+                        <Polygon
+                            style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
+                            src={manualPreviewEnabled ? `/api/cameras/stream-manual/${inputDeviceIndex}` : cameraOffIcon}
+                            stretchMode="fit"
+                            mode="viewer"
+                            background="#009900"
+                        />
                     </ColumnLayout>
                 </ModalWindow>
             )}
@@ -696,6 +705,15 @@ const Cameras = () => {
                             label="Height"
                             value={tempState.aiStretchHeight}
                             onChange={(val) => updateTempState('aiStretchHeight', val)}
+                        />
+
+                        <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
+                        <Polygon
+                            style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
+                            src={aiPreviewEnabled ? `/api/cameras/stream-ai/${inputDeviceIndex}` : cameraOffIcon}
+                            stretchMode="fit"
+                            mode="viewer"
+                            background="#990000"
                         />
                     </ColumnLayout>
                 </ModalWindow>
