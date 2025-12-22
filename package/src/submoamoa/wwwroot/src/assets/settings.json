@@ -382,14 +382,14 @@
         {
             "index": 0,
             "general": {
-                "width": 1920,
-                "height": 1080,
+                "width": 1280,
+                "height": 720,
                 "fps": 30.0,
                 "flip_horizontal": false,
                 "flip_vertical": false,
                 "rotate": 0,
-                "brightness": 212.0,
-                "contrast": 14.0,
+                "brightness": 131.0,
+                "contrast": 32.0,
                 "hue": 0.0,
                 "saturation": 64.0,
                 "sharpness": 3.0,

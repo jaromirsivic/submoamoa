@@ -1039,4 +1039,5 @@ to the behavior of the Preview section in the Camera -> Modal Window.
 to the behavior of the Preview section in the Camera -> Modal Window.
 
 Update Camera web page -> edit button -> Modal window. When user changes "Input Device"
-all live feeds in all polygons (on modal windows and as well in panels) should be restarted.
+all live feeds in all polygons (on modal windows and as well in panels) should be stopped.
+Then those live feeds which are enabled should be started again this time with different input device id.

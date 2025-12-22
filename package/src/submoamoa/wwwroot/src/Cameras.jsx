@@ -331,6 +331,68 @@ const Cameras = () => {
         setShowReloadModal(true);
     }, []);
 
+    // Force refresh streams when input device changes
+    const refreshStreams = useCallback((newDeviceIndex) => {
+        // We do this by toggling enabled states momentarily or just by updating the index which triggers re-render
+        // But to ensure "stop" and "start", we might need to force a re-mount of Polygon components or
+        // update a version key. Here, React's diffing on the `src` prop change is usually enough to 
+        // trigger a new request. If we need to explicitly stop, we might need a short timeout.
+        // However, the prompt says "stopped... then... started again".
+        // The simplest way to force a "stop" in React is to unmount/remount or change key.
+        
+        // Let's use a stream version counter to force refresh of all video elements
+        setStreamVersion(v => v + 1);
+    }, []);
+
+    const [streamVersion, setStreamVersion] = useState(0);
+
+    const onInputDeviceChange = useCallback((val) => {
+        const newDevice = inputDevices.find(d => String(d.index) === String(val));
+        if (newDevice) {
+            setTempState(prev => ({
+                ...prev,
+                ...getDeviceStateFromDevice(newDevice)
+            }));
+            // Update global input device index if this is intended to be live immediately?
+            // The prompt implies changing "Input Device" in Modal affects "all live feeds".
+            // If the user is just editing in modal, usually we wait for "Apply/Save".
+            // BUT, if the requirement is "When user changes 'Input Device' ... all live feeds ... should be stopped... then started again with different input device id",
+            // it implies immediate effect or effect on the preview in modal + potentially others if they share state?
+            // "all live feeds in all polygons (on modal windows and as well in panels)"
+            // This suggests global state change.
+            
+            // If we are in the modal, we are editing `tempState`.
+            // The panel polygons use `inputDeviceIndex` (global state).
+            // The modal polygon uses `tempState.inputDeviceIndex`.
+            
+            // If the user changes it in the modal, and we want to update ALL panels:
+            // 1. We must update the global `inputDeviceIndex` immediately? 
+            //    Normally "Edit" implies temporary state until Save.
+            //    However, if the prompt asks for immediate effect on "all panels", 
+            //    maybe we should update global state or the prompt implies the behavior *after* Apply?
+            //    "When user changes 'Input Device' ... all live feeds ... should be stopped"
+            //    It refers to the action in the "Modal window".
+            
+            // Let's assume for the "Edit Camera" modal, changing device there *previews* it there,
+            // but if it affects "all panels", it implies we might need to temporarily switch the global view too?
+            // Or maybe the user meant "When saved"?
+            // "Update Camera web page -> edit button -> Modal window. When user changes 'Input Device'..."
+            // It sounds like the *event* of changing the combo box.
+            
+            // If I update `setInputDeviceIndex(val)` here, it updates the background panels too.
+            // That seems to match "all live feeds... should be stopped... started again... with different input device id".
+            // So we will update both temp and global state? Or just global?
+            // If we update global, `tempState` logic might be redundant for this field.
+            // Let's update global `inputDeviceIndex` as well to satisfy "all polygons... in panels".
+            
+            setInputDeviceIndex(String(val));
+            refreshStreams(val);
+        } else {
+            updateTempState('inputDeviceIndex', val);
+        }
+    }, [inputDevices, getDeviceStateFromDevice, refreshStreams, updateTempState]);
+
+
     const handleReloadConfirm = useCallback(() => {
         setIsReloading(true);
         setPreviewEnabled(false);
@@ -394,6 +456,7 @@ const Cameras = () => {
                                 onChange={setPreviewEnabled}
                             />
                             <Polygon
+                                key={`cam-prev-${streamVersion}`}
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
                                 src={previewEnabled ? `/api/cameras/stream/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
@@ -436,6 +499,7 @@ const Cameras = () => {
                                 onChange={setManualPreviewEnabled}
                             />
                             <Polygon
+                                key={`man-prev-${streamVersion}`}
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
                                 src={manualPreviewEnabled ? `/api/cameras/stream-manual/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
@@ -478,6 +542,7 @@ const Cameras = () => {
                                 onChange={setAiPreviewEnabled}
                             />
                             <Polygon
+                                key={`ai-prev-${streamVersion}`}
                                 style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
                                 src={aiPreviewEnabled ? `/api/cameras/stream-ai/${inputDeviceIndex}` : cameraOffIcon}
                                 stretchMode="fit"
@@ -515,17 +580,7 @@ const Cameras = () => {
                             label="Input Device"
                             items={inputDeviceOptions}
                             value={tempState.inputDeviceIndex}
-                            onChange={(val) => {
-                                const newDevice = inputDevices.find(d => String(d.index) === String(val));
-                                if (newDevice) {
-                                    setTempState(prev => ({
-                                        ...prev,
-                                        ...getDeviceStateFromDevice(newDevice)
-                                    }));
-                                } else {
-                                    updateTempState('inputDeviceIndex', val);
-                                }
-                            }}
+                            onChange={onInputDeviceChange}
                             labelWidth="160px"
                         />
                         <ComboBox
@@ -593,6 +648,7 @@ const Cameras = () => {
                         
                         <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
                         <Polygon
+                            key={`modal-cam-prev-${streamVersion}`}
                             style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
                             src={previewEnabled ? `/api/cameras/stream/${tempState.inputDeviceIndex}` : cameraOffIcon}
                             stretchMode="fit"
@@ -651,6 +707,7 @@ const Cameras = () => {
 
                         <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
                         <Polygon
+                            key={`modal-man-prev-${streamVersion}`}
                             style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
                             src={manualPreviewEnabled ? `/api/cameras/stream-manual/${inputDeviceIndex}` : cameraOffIcon}
                             stretchMode="fit"
@@ -709,6 +766,7 @@ const Cameras = () => {
 
                         <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
                         <Polygon
+                            key={`modal-ai-prev-${streamVersion}`}
                             style={{ width: '100%', height: 'auto', aspectRatio: '4/3', border: '1px solid #444' }}
                             src={aiPreviewEnabled ? `/api/cameras/stream-ai/${inputDeviceIndex}` : cameraOffIcon}
                             stretchMode="fit"
