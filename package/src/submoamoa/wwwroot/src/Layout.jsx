@@ -44,6 +44,7 @@ const Layout = () => {
       if (path === '/sandbox/editable-chart') return { title: 'Editable Chart', icon: componentsDemoIcon };
       if (path === '/sandbox/table-demo') return { title: 'Table Demo', icon: componentsDemoIcon };
       if (path === '/sandbox/chart2d') return { title: 'Chart2D Demo', icon: componentsDemoIcon };
+      if (path === '/sandbox/polygon-zoom-pan') return { title: 'Polygon Zoom Pan', icon: componentsDemoIcon };
       return { title: 'Developers Sandbox', icon: manualControlIcon };
     }
     if (path === '/tutorials') return { title: 'Tutorials', icon: tutorialsIcon };
@@ -143,6 +144,7 @@ const Layout = () => {
                   <li><MenuLink to="/sandbox/editable-chart" icon={componentsDemoIcon} label="Editable Chart" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/sandbox/table-demo" icon={componentsDemoIcon} label="Table Demo" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/sandbox/chart2d" icon={componentsDemoIcon} label="Chart2D Demo" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/sandbox/polygon-zoom-pan" icon={componentsDemoIcon} label="Polygon Zoom Pan" onClick={() => setIsMenuOpen(false)} /></li>
                 </ul>
               </li>
               <li><MenuLink to="/about" icon={aboutIcon} label="About" onClick={() => setIsMenuOpen(false)} /></li>

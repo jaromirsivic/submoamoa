@@ -46,7 +46,9 @@ const Polygon = ({
     joystickMoveInterval = 0, // interval in ms to throttle onJoystickMove calls (0 = no throttle)
     onJoystickMove, // callback with { x, y } normalized offset from center
     onJoystickStart, // callback when joystick becomes active
-    onJoystickEnd // callback when joystick is released
+    onJoystickEnd, // callback when joystick is released
+    // Zoom and pan props
+    zoomPanEnabled = false
 }) => {
     const [polygons, setPolygons] = useState(externalPolygons);
     const [currentPolygon, setCurrentPolygon] = useState(null); // Points being drawn (not yet closed)
@@ -65,6 +67,16 @@ const Polygon = ({
     const lastSentJoystickCoordsRef = useRef(null); // stores last sent {x, y}
     const joystickReleasedRef = useRef(false); // prevents throttle callbacks after release
     const joystickHadMovementRef = useRef(false); // tracks if there was movement since start
+
+    // Zoom and pan state
+    const [zoom, setZoom] = useState(1);
+    const [panX, setPanX] = useState(0); // Pan offset in pixels
+    const [panY, setPanY] = useState(0);
+    const [isPanning, setIsPanning] = useState(false);
+    const panStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+    const pinchStartDistanceRef = useRef(null);
+    const pinchStartZoomRef = useRef(1);
+    const pinchCenterRef = useRef({ x: 0, y: 0 });
 
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
@@ -118,7 +130,7 @@ const Polygon = ({
 
         updateSize();
         window.addEventListener('resize', onResize);
-        
+
         return () => {
             window.removeEventListener('resize', onResize);
             cancelAnimationFrame(animationFrameId);
@@ -177,6 +189,106 @@ const Polygon = ({
                 return Math.min(containerSize.width, containerSize.height);
         }
     }, [joystickLineMaxLengthMultiplierMode, containerSize]);
+
+    // Get content dimensions based on stretch mode (for zoom/pan calculations)
+    const getContentDimensions = useCallback(() => {
+        if (!containerSize.width || !containerSize.height) {
+            return { width: 0, height: 0 };
+        }
+
+        if (stretchMode === 'stretch') {
+            // In stretch mode, content fills the container
+            return { width: containerSize.width, height: containerSize.height };
+        }
+
+        // For 'fit' and 'originalSize', use image aspect ratio
+        if (!imageSize.width || !imageSize.height) {
+            return { width: containerSize.width, height: containerSize.height };
+        }
+
+        const containerAspect = containerSize.width / containerSize.height;
+        const imageAspect = imageSize.width / imageSize.height;
+
+        if (stretchMode === 'originalSize') {
+            // Original size, but capped at container
+            const width = Math.min(imageSize.width, containerSize.width);
+            const height = Math.min(imageSize.height, containerSize.height);
+            return { width, height };
+        }
+
+        // 'fit' mode - maintain aspect ratio
+        if (imageAspect > containerAspect) {
+            // Image is wider than container
+            return { width: containerSize.width, height: containerSize.width / imageAspect };
+        } else {
+            // Image is taller than container
+            return { width: containerSize.height * imageAspect, height: containerSize.height };
+        }
+    }, [containerSize, imageSize, stretchMode]);
+
+    // Clamp pan to keep image visible within boundaries
+    const clampPan = useCallback((newPanX, newPanY, currentZoom) => {
+        const content = getContentDimensions();
+        if (!content.width || !content.height) {
+            return { panX: 0, panY: 0 };
+        }
+
+        // Calculate the scaled content dimensions
+        const scaledWidth = content.width * currentZoom;
+        const scaledHeight = content.height * currentZoom;
+
+        // Calculate max pan limits (how far the content can move)
+        // At zoom 1.0, no panning allowed
+        // At higher zoom, allow panning up to the point where edge reaches container edge
+        const maxPanX = Math.max(0, (scaledWidth - content.width) / 2);
+        const maxPanY = Math.max(0, (scaledHeight - content.height) / 2);
+
+        return {
+            panX: Math.max(-maxPanX, Math.min(maxPanX, newPanX)),
+            panY: Math.max(-maxPanY, Math.min(maxPanY, newPanY))
+        };
+    }, [getContentDimensions]);
+
+    // Handle zoom change with optional center point
+    const handleZoomChange = useCallback((newZoom, centerX = null, centerY = null) => {
+        const clampedZoom = Math.max(1, Math.min(10, newZoom)); // Min 1x, max 10x
+
+        if (centerX !== null && centerY !== null && containerRef.current) {
+            // Zoom towards the center point
+            const rect = containerRef.current.getBoundingClientRect();
+            const content = getContentDimensions();
+
+            // Calculate the point relative to content center
+            const contentCenterX = rect.left + content.width / 2 + (content.width < containerSize.width ? (containerSize.width - content.width) / 2 : 0);
+            const contentCenterY = rect.top + content.height / 2 + (content.height < containerSize.height ? (containerSize.height - content.height) / 2 : 0);
+
+            const relX = centerX - contentCenterX - panX;
+            const relY = centerY - contentCenterY - panY;
+
+            // Calculate new pan to keep the point under cursor
+            const zoomRatio = clampedZoom / zoom;
+            const newPanX = panX - relX * (zoomRatio - 1);
+            const newPanY = panY - relY * (zoomRatio - 1);
+
+            const clamped = clampPan(newPanX, newPanY, clampedZoom);
+            setPanX(clamped.panX);
+            setPanY(clamped.panY);
+        } else {
+            // Zoom without changing pan point, but clamp pan
+            const clamped = clampPan(panX, panY, clampedZoom);
+            setPanX(clamped.panX);
+            setPanY(clamped.panY);
+        }
+
+        setZoom(clampedZoom);
+    }, [zoom, panX, panY, clampPan, getContentDimensions, containerSize]);
+
+    // Reset zoom and pan
+    const resetZoomPan = useCallback(() => {
+        setZoom(1);
+        setPanX(0);
+        setPanY(0);
+    }, []);
 
     // Check if screen point is near a normalized point
     const isNearPoint = (screenX, screenY, normPoint, threshold = 10) => {
@@ -432,6 +544,193 @@ const Polygon = ({
             }
         };
     }, []);
+
+    // Handle wheel zoom
+    const handleWheel = useCallback((e) => {
+        if (!zoomPanEnabled) return;
+
+        e.preventDefault();
+        const zoomFactor = 0.1;
+        const delta = e.deltaY > 0 ? -zoomFactor : zoomFactor;
+        const newZoom = zoom * (1 + delta);
+
+        handleZoomChange(newZoom, e.clientX, e.clientY);
+    }, [zoomPanEnabled, zoom, handleZoomChange]);
+
+    // Handle keyboard shortcuts for zoom/pan
+    const handleKeyDown = useCallback((e) => {
+        if (!zoomPanEnabled) return;
+
+        // Check for Ctrl key
+        if (!e.ctrlKey && !e.metaKey) return;
+
+        const panStep = 0.05; // 5% of view
+        const content = getContentDimensions();
+
+        switch (e.key) {
+            case '+':
+            case '=':
+                e.preventDefault();
+                handleZoomChange(zoom * 1.1);
+                break;
+            case '-':
+            case '_':
+                e.preventDefault();
+                handleZoomChange(zoom * 0.9);
+                break;
+            case '0':
+                e.preventDefault();
+                resetZoomPan();
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                {
+                    const newPanX = panX + content.width * panStep;
+                    const clamped = clampPan(newPanX, panY, zoom);
+                    setPanX(clamped.panX);
+                    setPanY(clamped.panY);
+                }
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                {
+                    const newPanX = panX - content.width * panStep;
+                    const clamped = clampPan(newPanX, panY, zoom);
+                    setPanX(clamped.panX);
+                    setPanY(clamped.panY);
+                }
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                {
+                    const newPanY = panY + content.height * panStep;
+                    const clamped = clampPan(panX, newPanY, zoom);
+                    setPanX(clamped.panX);
+                    setPanY(clamped.panY);
+                }
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                {
+                    const newPanY = panY - content.height * panStep;
+                    const clamped = clampPan(panX, newPanY, zoom);
+                    setPanX(clamped.panX);
+                    setPanY(clamped.panY);
+                }
+                break;
+            default:
+                break;
+        }
+    }, [zoomPanEnabled, zoom, panX, panY, handleZoomChange, resetZoomPan, clampPan, getContentDimensions]);
+
+    // Attach keyboard listener
+    useEffect(() => {
+        if (!zoomPanEnabled) return;
+
+        const container = containerRef.current;
+        if (!container) return;
+
+        container.addEventListener('keydown', handleKeyDown);
+        return () => {
+            container.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [zoomPanEnabled, handleKeyDown]);
+
+    // Handle right mouse button pan start
+    const handleContextMenu = useCallback((e) => {
+        if (zoomPanEnabled) {
+            e.preventDefault();
+        }
+    }, [zoomPanEnabled]);
+
+    // Handle mouse down for right-click pan
+    const handlePanMouseDown = useCallback((e) => {
+        if (!zoomPanEnabled) return;
+        if (e.button !== 2) return; // Only right mouse button
+
+        e.preventDefault();
+        setIsPanning(true);
+        panStartRef.current = {
+            x: e.clientX,
+            y: e.clientY,
+            panX: panX,
+            panY: panY
+        };
+    }, [zoomPanEnabled, panX, panY]);
+
+    // Handle mouse move for panning
+    const handlePanMouseMove = useCallback((e) => {
+        if (!zoomPanEnabled || !isPanning) return;
+
+        const dx = e.clientX - panStartRef.current.x;
+        const dy = e.clientY - panStartRef.current.y;
+        const newPanX = panStartRef.current.panX + dx;
+        const newPanY = panStartRef.current.panY + dy;
+
+        const clamped = clampPan(newPanX, newPanY, zoom);
+        setPanX(clamped.panX);
+        setPanY(clamped.panY);
+    }, [zoomPanEnabled, isPanning, zoom, clampPan]);
+
+    // Handle mouse up for panning
+    const handlePanMouseUp = useCallback(() => {
+        if (isPanning) {
+            setIsPanning(false);
+        }
+    }, [isPanning]);
+
+    // Handle touch events for pinch-to-zoom
+    const handlePinchTouchStart = useCallback((e) => {
+        if (!zoomPanEnabled) return;
+        if (e.touches.length !== 2) return;
+
+        // Calculate initial distance between two fingers
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const dx = touch2.clientX - touch1.clientX;
+        const dy = touch2.clientY - touch1.clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        pinchStartDistanceRef.current = distance;
+        pinchStartZoomRef.current = zoom;
+        pinchCenterRef.current = {
+            x: (touch1.clientX + touch2.clientX) / 2,
+            y: (touch1.clientY + touch2.clientY) / 2
+        };
+    }, [zoomPanEnabled, zoom]);
+
+    const handlePinchTouchMove = useCallback((e) => {
+        if (!zoomPanEnabled) return;
+        if (e.touches.length !== 2) return;
+        if (pinchStartDistanceRef.current === null) return;
+
+        e.preventDefault();
+
+        // Calculate current distance between two fingers
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const dx = touch2.clientX - touch1.clientX;
+        const dy = touch2.clientY - touch1.clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Calculate zoom based on pinch gesture
+        const scale = distance / pinchStartDistanceRef.current;
+        const newZoom = pinchStartZoomRef.current * scale;
+
+        // Calculate new center
+        const centerX = (touch1.clientX + touch2.clientX) / 2;
+        const centerY = (touch1.clientY + touch2.clientY) / 2;
+
+        handleZoomChange(newZoom, centerX, centerY);
+    }, [zoomPanEnabled, handleZoomChange]);
+
+    const handlePinchTouchEnd = useCallback((e) => {
+        if (!zoomPanEnabled) return;
+        // Reset pinch state when fingers are lifted
+        if (e.touches.length < 2) {
+            pinchStartDistanceRef.current = null;
+        }
+    }, [zoomPanEnabled]);
 
     // Handle click
     const handleClick = (e) => {
@@ -783,9 +1082,22 @@ const Polygon = ({
         height: stretchMode === 'originalSize' ? 'auto' : '100%',
         backgroundColor: background,
         position: 'relative',
-        cursor: mode === 'designer' && currentPolygon ? 'crosshair' : (mode === 'joystick' ? 'pointer' : 'default'),
-        touchAction: (mode === 'designer' || mode === 'joystick') ? 'none' : 'auto', // Prevent browser scroll on touch
+        cursor: isPanning ? 'grabbing' : (mode === 'designer' && currentPolygon ? 'crosshair' : (mode === 'joystick' ? 'pointer' : (zoomPanEnabled ? 'default' : 'default'))),
+        touchAction: (mode === 'designer' || mode === 'joystick' || zoomPanEnabled) ? 'none' : 'auto',
+        overflow: 'hidden',
+        outline: 'none', // Prevent focus outline
         ...style
+    };
+
+    // Get transform style for zoom/pan content wrapper
+    const getContentTransformStyle = () => {
+        if (!zoomPanEnabled || (zoom === 1 && panX === 0 && panY === 0)) {
+            return {};
+        }
+        return {
+            transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
+            transformOrigin: 'center center'
+        };
     };
 
     // Update canvas size
@@ -806,37 +1118,94 @@ const Polygon = ({
             className="custom-polygon"
             ref={containerRef}
             style={containerStyle}
+            tabIndex={zoomPanEnabled ? 0 : undefined}
             onClick={isInteractive ? handleClick : undefined}
-            onMouseDown={isInteractive ? handleMouseDown : undefined}
-            onMouseMove={isInteractive ? handleMouseMove : undefined}
-            onMouseUp={isInteractive ? handleMouseUp : undefined}
-            onMouseLeave={isInteractive ? handleMouseUp : undefined}
-            onTouchStart={isInteractive ? handleTouchStart : undefined}
-            onTouchMove={isInteractive ? handleTouchMove : undefined}
-            onTouchEnd={isInteractive ? handleTouchEnd : undefined}
+            onMouseDown={(e) => {
+                if (zoomPanEnabled && e.button === 2) {
+                    handlePanMouseDown(e);
+                } else if (isInteractive) {
+                    handleMouseDown(e);
+                }
+            }}
+            onMouseMove={(e) => {
+                if (isPanning) {
+                    handlePanMouseMove(e);
+                } else if (isInteractive) {
+                    handleMouseMove(e);
+                }
+            }}
+            onMouseUp={(e) => {
+                if (isPanning) {
+                    handlePanMouseUp();
+                }
+                if (isInteractive) {
+                    handleMouseUp(e);
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (isPanning) {
+                    handlePanMouseUp();
+                }
+                if (isInteractive) {
+                    handleMouseUp(e);
+                }
+            }}
+            onTouchStart={(e) => {
+                if (zoomPanEnabled && e.touches.length === 2) {
+                    handlePinchTouchStart(e);
+                } else if (isInteractive) {
+                    handleTouchStart(e);
+                }
+            }}
+            onTouchMove={(e) => {
+                if (zoomPanEnabled && e.touches.length === 2) {
+                    handlePinchTouchMove(e);
+                } else if (isInteractive) {
+                    handleTouchMove(e);
+                }
+            }}
+            onTouchEnd={(e) => {
+                if (zoomPanEnabled) {
+                    handlePinchTouchEnd(e);
+                }
+                if (isInteractive) {
+                    handleTouchEnd(e);
+                }
+            }}
             onDoubleClick={isInteractive ? handleDoubleClick : undefined}
+            onWheel={zoomPanEnabled ? handleWheel : undefined}
+            onContextMenu={handleContextMenu}
         >
-            {src && (
-                <img
-                    ref={imageRef}
-                    src={src}
-                    alt=""
-                    style={getImageStyle()}
-                    onLoad={handleImageLoad}
-                    draggable={false}
-                />
-            )}
-            <canvas
-                ref={canvasRef}
+            <div
                 style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
                     width: '100%',
                     height: '100%',
-                    pointerEvents: 'none'
+                    position: 'relative',
+                    ...getContentTransformStyle()
                 }}
-            />
+            >
+                {src && (
+                    <img
+                        ref={imageRef}
+                        src={src}
+                        alt=""
+                        style={getImageStyle()}
+                        onLoad={handleImageLoad}
+                        draggable={false}
+                    />
+                )}
+                <canvas
+                    ref={canvasRef}
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        pointerEvents: 'none'
+                    }}
+                />
+            </div>
         </div>
     );
 };

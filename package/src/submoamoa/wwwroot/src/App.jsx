@@ -20,6 +20,7 @@ import ModalWindowsDemo from './ModalWindowsDemo';
 import EditableChartDemo from './EditableChartDemo';
 import TableDemo from './TableDemo';
 import Chart2DDemo from './Chart2DDemo';
+import PolygonZoomPanDemo from './PolygonZoomPanDemo';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
             <Route path="editable-chart" element={<EditableChartDemo />} />
             <Route path="table-demo" element={<TableDemo />} />
             <Route path="chart2d" element={<Chart2DDemo />} />
+            <Route path="polygon-zoom-pan" element={<PolygonZoomPanDemo />} />
           </Route>
           <Route path="about" element={<About />} />
         </Route>

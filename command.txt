@@ -1054,3 +1054,23 @@ be called and cameras.general section of each camera should be deleted in settin
 Update the reset button functionallity on the Cameras web page.
 When the reset is finished call /api/cameras/list and update
 values of input components on all panels and in Modal Windows.
+
+Update the Polygon component. Add new porps "zoomPanEnabled". Default value is false.
+If the zoomPanEnabled props is true
+the user can use ctrl+"+" and ctrl+"-" to zoom in and zoom out and ctrl+0 to reset zoom.
+User can also use mouse scroll wheel to zoom in and zoom out. In that case it zooms into the
+position of the mouse cursor. User cannot zoom out (negative zoom is not allowed).
+Zoom works in all stretch modes
+always maintaining the correct aspect ratio (if the stretchMode is "fit" or "original"
+the aspect ratio is the same as the aspect ratio of the original image. If
+the stretchMode is "stretch" the aspect ratio is the ratio between width and height of
+the Polygon component).
+When implementing this feature make sure it works on mobile devices where
+user uses two fingers to zoom in and zoom out.
+
+To pan left and right user can use ctrl+"arrow left" and ctrl+"arrow right".
+To pan up and down user can use ctrl+"arrow up" and ctrl+"arrow down".
+User can also use mouse to pan left and right and up and down by pressing
+right mouse button and moving mouse cursor left and right and up and down.
+User cannot pan outside of the image meaning the image cannot be moved
+outside of the visible area of the Polygon component.
