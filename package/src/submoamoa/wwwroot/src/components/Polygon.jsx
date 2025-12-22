@@ -249,26 +249,32 @@ const Polygon = ({
         };
     }, [getContentDimensions]);
 
-    // Handle zoom change with optional center point
+    // Handle zoom change with optional center point (in screen coordinates)
     const handleZoomChange = useCallback((newZoom, centerX = null, centerY = null) => {
         const clampedZoom = Math.max(1, Math.min(10, newZoom)); // Min 1x, max 10x
 
         if (centerX !== null && centerY !== null && containerRef.current) {
-            // Zoom towards the center point
+            // Zoom towards the cursor position
             const rect = containerRef.current.getBoundingClientRect();
-            const content = getContentDimensions();
 
-            // Calculate the point relative to content center
-            const contentCenterX = rect.left + content.width / 2 + (content.width < containerSize.width ? (containerSize.width - content.width) / 2 : 0);
-            const contentCenterY = rect.top + content.height / 2 + (content.height < containerSize.height ? (containerSize.height - content.height) / 2 : 0);
+            // Calculate cursor position relative to container center
+            const containerCenterX = rect.left + rect.width / 2;
+            const containerCenterY = rect.top + rect.height / 2;
 
-            const relX = centerX - contentCenterX - panX;
-            const relY = centerY - contentCenterY - panY;
+            // Position of cursor relative to container center (in screen pixels)
+            const cursorRelX = centerX - containerCenterX;
+            const cursorRelY = centerY - containerCenterY;
 
-            // Calculate new pan to keep the point under cursor
+            // Current position adjusted for existing pan
+            const currentRelX = cursorRelX - panX;
+            const currentRelY = cursorRelY - panY;
+
+            // Calculate zoom ratio
             const zoomRatio = clampedZoom / zoom;
-            const newPanX = panX - relX * (zoomRatio - 1);
-            const newPanY = panY - relY * (zoomRatio - 1);
+
+            // New pan to keep cursor point stable
+            const newPanX = panX - currentRelX * (zoomRatio - 1);
+            const newPanY = panY - currentRelY * (zoomRatio - 1);
 
             const clamped = clampPan(newPanX, newPanY, clampedZoom);
             setPanX(clamped.panX);
@@ -281,7 +287,7 @@ const Polygon = ({
         }
 
         setZoom(clampedZoom);
-    }, [zoom, panX, panY, clampPan, getContentDimensions, containerSize]);
+    }, [zoom, panX, panY, clampPan]);
 
     // Reset zoom and pan
     const resetZoomPan = useCallback(() => {
@@ -623,16 +629,38 @@ const Polygon = ({
         }
     }, [zoomPanEnabled, zoom, panX, panY, handleZoomChange, resetZoomPan, clampPan, getContentDimensions]);
 
-    // Attach keyboard listener
+    // Attach keyboard listener at window level to intercept browser shortcuts
     useEffect(() => {
         if (!zoomPanEnabled) return;
 
         const container = containerRef.current;
         if (!container) return;
 
-        container.addEventListener('keydown', handleKeyDown);
+        // Use window-level listener with capture phase to intercept before browser
+        const windowKeyHandler = (e) => {
+            // Only handle if container or its children have focus, or if mouse is over container
+            const hasFocus = container.contains(document.activeElement) || document.activeElement === container;
+            const rect = container.getBoundingClientRect();
+            const isMouseOver = window.lastMouseX >= rect.left && window.lastMouseX <= rect.right &&
+                window.lastMouseY >= rect.top && window.lastMouseY <= rect.bottom;
+
+            if (!hasFocus && !isMouseOver) return;
+
+            handleKeyDown(e);
+        };
+
+        // Track mouse position for keyboard shortcut activation
+        const trackMouse = (e) => {
+            window.lastMouseX = e.clientX;
+            window.lastMouseY = e.clientY;
+        };
+
+        window.addEventListener('keydown', windowKeyHandler, true); // capture phase
+        window.addEventListener('mousemove', trackMouse);
+
         return () => {
-            container.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keydown', windowKeyHandler, true);
+            window.removeEventListener('mousemove', trackMouse);
         };
     }, [zoomPanEnabled, handleKeyDown]);
 
