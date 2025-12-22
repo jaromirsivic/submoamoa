@@ -4,3 +4,4 @@ Add business rules for the histogram.
 
 Polygon fit does not work properly
 Polygon zoom
+Colsing and opening only the camera which is used

@@ -1113,6 +1113,24 @@ message (see examples in the Motors page how the errors and warnings on the Moda
 windows should be developed). If there are errors on the Modal window, the Apply
 and Save buttons are disabled.
 
+Update Cameras web page -> AI Agent Input Img Modal window.
+There should be the same features implemented in this modal window as they are in the
+Manual Control input img Modal Window. Namely:
+- Crop section - Sliders should be used. Dynamic recalculation to pixels should be
+implemented
+- Stretch section - The similar behavior like in Manual Control Modal window
+- Apply button should be added
+- Business validations should be added
+- ...
+
+Update Cameras web page. On the Manual Control - Input Img Panel and
+AI Agent - Input Img Panel the values in the crop section
+in percentages should always be displayed with 2 decimal places.
 
 Update Cameras web page. Rename "preferred resolution" to just "resolution" and get rid of
-"accepted resolution"
+"accepted resolution". Accepted resolution should not be used anywhere
+
+When Saving camera setup by clicking on the Save button in the Camera Modal Window
+save the "name" of the camera - send it to the backend API.
+Camera Index and Name should be stored as well in the
+"primaryCamera" section in the settings.json.

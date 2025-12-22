@@ -41,7 +41,6 @@ const Cameras = () => {
     // ========================
     const [inputDeviceIndex, setInputDeviceIndex] = useState('0');
     const [preferredResolution, setPreferredResolution] = useState('1920 x 1080');
-    const [acceptedResolution, setAcceptedResolution] = useState('1920 x 1080');
     const [fps, setFps] = useState(30);
     const [flipHorizontally, setFlipHorizontally] = useState(false);
     const [flipVertically, setFlipVertically] = useState(false);
@@ -76,12 +75,12 @@ const Cameras = () => {
     // ========================
     // State: AI Agent - Input Img Panel
     // ========================
-    const [aiCropTop, setAiCropTop] = useState('0% (0 pixels)');
-    const [aiCropLeft, setAiCropLeft] = useState('0% (0 pixels)');
-    const [aiCropBottom, setAiCropBottom] = useState('0% (0 pixels)');
-    const [aiCropRight, setAiCropRight] = useState('0% (0 pixels)');
-    const [aiStretchWidth, setAiStretchWidth] = useState('640 pixels');
-    const [aiStretchHeight, setAiStretchHeight] = useState('480 pixels');
+    const [aiCropTop, setAiCropTop] = useState(0);
+    const [aiCropLeft, setAiCropLeft] = useState(0);
+    const [aiCropBottom, setAiCropBottom] = useState(0);
+    const [aiCropRight, setAiCropRight] = useState(0);
+    const [aiStretchWidth, setAiStretchWidth] = useState(640);
+    const [aiStretchHeight, setAiStretchHeight] = useState(480);
 
     // ========================
     // State: Preview Section (Manual and AI panels)
@@ -126,7 +125,6 @@ const Cameras = () => {
                     // Update panel state from device
                     setInputDeviceIndex(String(currentDevice.index));
                     setPreferredResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
-                    setAcceptedResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
                     setFps(currentDevice.fps);
                     setFlipHorizontally(currentDevice.flip_horizontal);
                     setFlipVertically(currentDevice.flip_vertical);
@@ -155,7 +153,6 @@ const Cameras = () => {
                     // Fallback: update from top-level data if available
                     if (data.inputDeviceIndex !== undefined) setInputDeviceIndex(String(data.inputDeviceIndex));
                     if (data.preferredResolution) setPreferredResolution(data.preferredResolution);
-                    if (data.acceptedResolution) setAcceptedResolution(data.acceptedResolution);
                     if (data.flipHorizontally !== undefined) setFlipHorizontally(data.flipHorizontally);
                     if (data.flipVertically !== undefined) setFlipVertically(data.flipVertically);
                     if (data.rotateDegrees !== undefined) setRotateDegrees(String(data.rotateDegrees));
@@ -211,7 +208,6 @@ const Cameras = () => {
         return {
             inputDeviceIndex: String(device.index),
             preferredResolution: device.width && device.height ? `${device.width} x ${device.height}` : '0 x 0',
-            acceptedResolution: device.width && device.height ? `${device.width} x ${device.height}` : '0 x 0',
             fps: device.fps,
             flipHorizontally: device.flip_horizontal,
             flipVertically: device.flip_vertical,
@@ -244,7 +240,6 @@ const Cameras = () => {
                 // Fallback to current global state
                 state.inputDeviceIndex = inputDeviceIndex;
                 state.preferredResolution = preferredResolution;
-                state.acceptedResolution = acceptedResolution;
                 state.fps = fps;
                 state.flipHorizontally = flipHorizontally;
                 state.flipVertically = flipVertically;
@@ -283,7 +278,7 @@ const Cameras = () => {
         setActiveModal(modalName);
     }, [
         inputDevices, // Add inputDevices to dependencies
-        inputDeviceIndex, preferredResolution, acceptedResolution, flipHorizontally, flipVertically, rotateDegrees,
+        inputDeviceIndex, preferredResolution, flipHorizontally, flipVertically, rotateDegrees,
         brightness, contrast, hue, saturation, sharpness, gamma, whiteBalanceTemperature, backlight, gain, focus, exposure,
         autoWhiteBalance, autoFocus, autoExposure,
         manualCropTop, manualCropLeft, manualCropBottom, manualCropRight, manualStretchWidth, manualStretchHeight,
@@ -375,6 +370,17 @@ const Cameras = () => {
                 setManualCropRight(Number(tempState.manualCropRight));
                 setManualStretchWidth(Number(tempState.manualStretchWidth));
                 setManualStretchHeight(Number(tempState.manualStretchHeight));
+                // Only close modal if Save (saveToDisk=true), not on Apply
+                if (saveToDisk) {
+                    closeModal();
+                }
+            } else if (activeModal === 'ai') {
+                setAiCropTop(Number(tempState.aiCropTop));
+                setAiCropLeft(Number(tempState.aiCropLeft));
+                setAiCropBottom(Number(tempState.aiCropBottom));
+                setAiCropRight(Number(tempState.aiCropRight));
+                setAiStretchWidth(Number(tempState.aiStretchWidth));
+                setAiStretchHeight(Number(tempState.aiStretchHeight));
                 // Only close modal if Save (saveToDisk=true), not on Apply
                 if (saveToDisk) {
                     closeModal();
@@ -501,8 +507,29 @@ const Cameras = () => {
         return errors;
     };
 
+    // Validation for AI Agent Modal
+    const getAiValidationErrors = () => {
+        if (activeModal !== 'ai') return [];
+        const errors = [];
+        const top = Number(tempState.aiCropTop || 0);
+        const left = Number(tempState.aiCropLeft || 0);
+        const bottom = Number(tempState.aiCropBottom || 0);
+        const right = Number(tempState.aiCropRight || 0);
+
+        if (left + right >= 99) {
+            errors.push('Total horizontal crop (Left + Right) cannot exceed 99%');
+        }
+        if (top + bottom >= 99) {
+            errors.push('Total vertical crop (Top + Bottom) cannot exceed 99%');
+        }
+        return errors;
+    };
+
     const manualValidationErrors = getManualValidationErrors();
     const isManualValid = manualValidationErrors.length === 0;
+
+    const aiValidationErrors = getAiValidationErrors();
+    const isAiValid = aiValidationErrors.length === 0;
 
     return (
         <div className="page-container">
@@ -575,10 +602,10 @@ const Cameras = () => {
                     >
                         <ColumnLayout gap="0.75rem">
                             <HorizontalSeparator label="Crop" fullWidth={true} />
-                            <RenderStaticField label="Top" value={`${manualCropTop}% (${Math.round(manualCropTop * resHeight / 100)} pixels)`} />
-                            <RenderStaticField label="Left" value={`${manualCropLeft}% (${Math.round(manualCropLeft * resWidth / 100)} pixels)`} />
-                            <RenderStaticField label="Bottom" value={`${manualCropBottom}% (${Math.round(manualCropBottom * resHeight / 100)} pixels)`} />
-                            <RenderStaticField label="Right" value={`${manualCropRight}% (${Math.round(manualCropRight * resWidth / 100)} pixels)`} />
+                            <RenderStaticField label="Top" value={`${Number(manualCropTop).toFixed(2)}% (${Math.round(manualCropTop * resHeight / 100)} pixels)`} />
+                            <RenderStaticField label="Left" value={`${Number(manualCropLeft).toFixed(2)}% (${Math.round(manualCropLeft * resWidth / 100)} pixels)`} />
+                            <RenderStaticField label="Bottom" value={`${Number(manualCropBottom).toFixed(2)}% (${Math.round(manualCropBottom * resHeight / 100)} pixels)`} />
+                            <RenderStaticField label="Right" value={`${Number(manualCropRight).toFixed(2)}% (${Math.round(manualCropRight * resWidth / 100)} pixels)`} />
 
                             <HorizontalSeparator label="Stretch" fullWidth={true} />
                             <RenderStaticField label="Width" value={`${manualStretchWidth} pixels`} />
@@ -618,14 +645,14 @@ const Cameras = () => {
                     >
                         <ColumnLayout gap="0.75rem">
                             <HorizontalSeparator label="Crop" fullWidth={true} />
-                            <RenderStaticField label="Top" value={aiCropTop} />
-                            <RenderStaticField label="Left" value={aiCropLeft} />
-                            <RenderStaticField label="Bottom" value={aiCropBottom} />
-                            <RenderStaticField label="Right" value={aiCropRight} />
+                            <RenderStaticField label="Top" value={`${Number(aiCropTop).toFixed(2)}% (${Math.round(aiCropTop * resHeight / 100)} pixels)`} />
+                            <RenderStaticField label="Left" value={`${Number(aiCropLeft).toFixed(2)}% (${Math.round(aiCropLeft * resWidth / 100)} pixels)`} />
+                            <RenderStaticField label="Bottom" value={`${Number(aiCropBottom).toFixed(2)}% (${Math.round(aiCropBottom * resHeight / 100)} pixels)`} />
+                            <RenderStaticField label="Right" value={`${Number(aiCropRight).toFixed(2)}% (${Math.round(aiCropRight * resWidth / 100)} pixels)`} />
 
                             <HorizontalSeparator label="Stretch" fullWidth={true} />
-                            <RenderStaticField label="Width" value={aiStretchWidth} />
-                            <RenderStaticField label="Height" value={aiStretchHeight} />
+                            <RenderStaticField label="Width" value={`${aiStretchWidth} pixels`} />
+                            <RenderStaticField label="Height" value={`${aiStretchHeight} pixels`} />
 
                             <HorizontalSeparator label="Preview" fullWidth={true} />
                             <Switch
@@ -864,43 +891,91 @@ const Cameras = () => {
                 <ModalWindow
                     isOpen={true}
                     title="Edit AI Agent Settings"
-                    onOk={saveModal}
+                    onOk={() => saveModal(true)}
                     onCancel={closeModal}
                     okLabel="Save"
+                    validationErrors={aiValidationErrors}
+                    okDisabled={!isAiValid}
+                    customFooterButtons={[
+                        <Button
+                            key="apply"
+                            label="Apply"
+                            onClick={() => saveModal(false)}
+                            color={!isAiValid ? '#94a3b8' : '#3b82f6'}
+                            disabled={!isAiValid}
+                            style={{ height: '40px', display: 'flex', alignItems: 'center' }}
+                        />
+                    ]}
                 >
                     <ColumnLayout gap="0.75rem">
                         <HorizontalSeparator label="Crop" fullWidth={true} bleed="1rem" />
-                        <Textbox
-                            label="Top"
+                        <Slider
+                            label={`Top % (${Math.round((tempState.aiCropTop || 0) * resHeight / 100)} pixels)`}
                             value={tempState.aiCropTop}
                             onChange={(val) => updateTempState('aiCropTop', val)}
+                            min={0}
+                            max={100}
+                            step={0.01}
+                            decimalPlaces={2}
+                            allowManualInput={true}
+                            labelWidth="150px"
                         />
-                        <Textbox
-                            label="Left"
+                        <Slider
+                            label={`Left % (${Math.round((tempState.aiCropLeft || 0) * resWidth / 100)} pixels)`}
                             value={tempState.aiCropLeft}
                             onChange={(val) => updateTempState('aiCropLeft', val)}
+                            min={0}
+                            max={100}
+                            step={0.01}
+                            decimalPlaces={2}
+                            allowManualInput={true}
+                            labelWidth="150px"
                         />
-                        <Textbox
-                            label="Bottom"
+                        <Slider
+                            label={`Bottom % (${Math.round((tempState.aiCropBottom || 0) * resHeight / 100)} pixels)`}
                             value={tempState.aiCropBottom}
                             onChange={(val) => updateTempState('aiCropBottom', val)}
+                            min={0}
+                            max={100}
+                            step={0.01}
+                            decimalPlaces={2}
+                            allowManualInput={true}
+                            labelWidth="150px"
                         />
-                        <Textbox
-                            label="Right"
+                        <Slider
+                            label={`Right % (${Math.round((tempState.aiCropRight || 0) * resWidth / 100)} pixels)`}
                             value={tempState.aiCropRight}
                             onChange={(val) => updateTempState('aiCropRight', val)}
+                            min={0}
+                            max={100}
+                            step={0.01}
+                            decimalPlaces={2}
+                            allowManualInput={true}
+                            labelWidth="150px"
                         />
 
                         <HorizontalSeparator label="Stretch" fullWidth={true} bleed="1rem" />
-                        <Textbox
+                        <NumericInput
                             label="Width"
                             value={tempState.aiStretchWidth}
                             onChange={(val) => updateTempState('aiStretchWidth', val)}
+                            min={0}
+                            max={8192}
+                            step={1}
+                            decimalPlaces={0}
+                            labelWidth="150px"
+                            labelPosition="left"
                         />
-                        <Textbox
+                        <NumericInput
                             label="Height"
                             value={tempState.aiStretchHeight}
                             onChange={(val) => updateTempState('aiStretchHeight', val)}
+                            min={0}
+                            max={4608}
+                            step={1}
+                            decimalPlaces={0}
+                            labelWidth="150px"
+                            labelPosition="left"
                         />
 
                         <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />

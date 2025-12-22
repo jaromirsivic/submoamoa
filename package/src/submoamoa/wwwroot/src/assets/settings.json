@@ -378,9 +378,14 @@
         "reticleColor": "#ff0000cc",
         "reticleSize": 1
     },
+    "primaryCamera": {
+        "index": 0,
+        "name": "cam1"
+    },
     "cameras": [
         {
             "index": 0,
+            "name": "cam1",
             "general": {
                 "width": 1920,
                 "height": 1080,
@@ -388,9 +393,9 @@
                 "flip_horizontal": false,
                 "flip_vertical": false,
                 "rotate": 0,
-                "brightness": 143.0,
+                "brightness": 125.0,
                 "contrast": 32.0,
-                "hue": 0.0,
+                "hue": 14.0,
                 "saturation": 64.0,
                 "sharpness": 3.0,
                 "gamma": 120.0,
@@ -400,34 +405,12 @@
                 "focus": -1.0,
                 "exposure": -6.0,
                 "auto_white_balance_temperature": true,
-                "auto_focus": true,
+                "auto_focus": false,
                 "auto_exposure": true
             }
         },
         {
-            "index": 1,
-            "general": {
-                "width": 1920,
-                "height": 1080,
-                "fps": 30.0,
-                "flip_horizontal": false,
-                "flip_vertical": false,
-                "rotate": 0,
-                "brightness": -1.0,
-                "contrast": -1.0,
-                "hue": -1.0,
-                "saturation": -1.0,
-                "sharpness": -1.0,
-                "gamma": -1.0,
-                "white_balance_temperature": -1.0,
-                "backlight": -1.0,
-                "gain": -1.0,
-                "focus": -1.0,
-                "exposure": -1.0,
-                "auto_white_balance_temperature": true,
-                "auto_focus": true,
-                "auto_exposure": true
-            }
+            "index": 1
         }
     ],
     "hotZone": {
