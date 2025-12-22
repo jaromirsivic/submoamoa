@@ -101,10 +101,10 @@ const Cameras = () => {
                 }
 
                 // Find current device from the list
-                const currentDeviceIndex = data.inputDeviceIndex !== undefined 
-                    ? String(data.inputDeviceIndex) 
+                const currentDeviceIndex = data.inputDeviceIndex !== undefined
+                    ? String(data.inputDeviceIndex)
                     : inputDeviceIndex;
-                const currentDevice = data.input_devices?.find(d => 
+                const currentDevice = data.input_devices?.find(d =>
                     String(d.index) === String(currentDeviceIndex)
                 );
 
@@ -307,55 +307,55 @@ const Cameras = () => {
                 auto_exposure: tempState.autoExposure
             };
         }
-        
+
         if (Object.keys(payload).length > 0) {
             fetch('/api/cameras/savecamera', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...payload, saveToDisk })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // Refresh camera list
-                    fetch('/api/cameras/list')
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.input_devices) {
-                                setInputDevices(data.input_devices);
-                                // If Apply (saveToDisk=false), refresh current modal values
-                                if (!saveToDisk && activeModal === 'camera') {
-                                    const device = data.input_devices.find(d => String(d.index) === String(tempState.inputDeviceIndex));
-                                    if (device) {
-                                        setTempState(prev => ({
-                                            ...prev,
-                                            ...getDeviceStateFromDevice(device)
-                                        }));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh camera list
+                        fetch('/api/cameras/list')
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.input_devices) {
+                                    setInputDevices(data.input_devices);
+                                    // If Apply (saveToDisk=false), refresh current modal values
+                                    if (!saveToDisk && activeModal === 'camera') {
+                                        const device = data.input_devices.find(d => String(d.index) === String(tempState.inputDeviceIndex));
+                                        if (device) {
+                                            setTempState(prev => ({
+                                                ...prev,
+                                                ...getDeviceStateFromDevice(device)
+                                            }));
+                                        }
                                     }
                                 }
-                            }
-                            // Update main panel fields if saved or applied (for selected device)
-                            const currentDevice = data.input_devices?.find(d => String(d.index) === String(inputDeviceIndex));
-                            if (currentDevice) {
-                                setPreferredResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
-                                setFps(currentDevice.fps);
-                                setFlipHorizontally(currentDevice.flip_horizontal);
-                                setFlipVertically(currentDevice.flip_vertical);
-                                setRotateDegrees(String(currentDevice.rotate));
-                            }
-                        });
-                    
-                    if (saveToDisk) {
-                        closeModal();
+                                // Update main panel fields if saved or applied (for selected device)
+                                const currentDevice = data.input_devices?.find(d => String(d.index) === String(inputDeviceIndex));
+                                if (currentDevice) {
+                                    setPreferredResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
+                                    setFps(currentDevice.fps);
+                                    setFlipHorizontally(currentDevice.flip_horizontal);
+                                    setFlipVertically(currentDevice.flip_vertical);
+                                    setRotateDegrees(String(currentDevice.rotate));
+                                }
+                            });
+
+                        if (saveToDisk) {
+                            closeModal();
+                        }
                     }
-                }
-            })
-            .catch(err => console.error("Failed to save camera settings:", err));
+                })
+                .catch(err => console.error("Failed to save camera settings:", err));
         } else {
             // For other modals (manual, ai), just close for now as per previous logic (or add logic if needed)
             // Assuming requirement only specified Camera modal for now for save/apply logic
             if (activeModal !== 'camera') {
-                 closeModal();
+                closeModal();
             }
         }
     }, [activeModal, tempState, closeModal, inputDeviceIndex, getDeviceStateFromDevice]);
@@ -376,7 +376,7 @@ const Cameras = () => {
         // trigger a new request. If we need to explicitly stop, we might need a short timeout.
         // However, the prompt says "stopped... then... started again".
         // The simplest way to force a "stop" in React is to unmount/remount or change key.
-        
+
         // Let's use a stream version counter to force refresh of all video elements
         setStreamVersion(v => v + 1);
     }, []);
@@ -397,11 +397,11 @@ const Cameras = () => {
             // it implies immediate effect or effect on the preview in modal + potentially others if they share state?
             // "all live feeds in all polygons (on modal windows and as well in panels)"
             // This suggests global state change.
-            
+
             // If we are in the modal, we are editing `tempState`.
             // The panel polygons use `inputDeviceIndex` (global state).
             // The modal polygon uses `tempState.inputDeviceIndex`.
-            
+
             // If the user changes it in the modal, and we want to update ALL panels:
             // 1. We must update the global `inputDeviceIndex` immediately? 
             //    Normally "Edit" implies temporary state until Save.
@@ -409,19 +409,19 @@ const Cameras = () => {
             //    maybe we should update global state or the prompt implies the behavior *after* Apply?
             //    "When user changes 'Input Device' ... all live feeds ... should be stopped"
             //    It refers to the action in the "Modal window".
-            
+
             // Let's assume for the "Edit Camera" modal, changing device there *previews* it there,
             // but if it affects "all panels", it implies we might need to temporarily switch the global view too?
             // Or maybe the user meant "When saved"?
             // "Update Camera web page -> edit button -> Modal window. When user changes 'Input Device'..."
             // It sounds like the *event* of changing the combo box.
-            
+
             // If I update `setInputDeviceIndex(val)` here, it updates the background panels too.
             // That seems to match "all live feeds... should be stopped... started again... with different input device id".
             // So we will update both temp and global state? Or just global?
             // If we update global, `tempState` logic might be redundant for this field.
             // Let's update global `inputDeviceIndex` as well to satisfy "all polygons... in panels".
-            
+
             setInputDeviceIndex(String(val));
             refreshStreams(val);
         } else {
@@ -506,6 +506,7 @@ const Cameras = () => {
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#000099"
+                                zoomPanEnabled={true}
                             />
                         </ColumnLayout>
                     </Panel>
@@ -689,7 +690,7 @@ const Cameras = () => {
 
                         <Switch label="Auto Exposure" value={tempState.autoExposure} onChange={(val) => updateTempState('autoExposure', val)} labelWidth="160px" />
                         <Slider label="Exposure" value={tempState.exposure} onChange={(val) => updateTempState('exposure', val)} min={-1000} max={1000} minSlider={-256} maxSlider={256} step={1} decimalPlaces={1} allowManualInput={true} labelWidth="160px" />
-                        
+
                         <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
                         <Polygon
                             key={`modal-cam-prev-${streamVersion}`}

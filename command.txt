@@ -1074,3 +1074,7 @@ User can also use mouse to pan left and right and up and down by pressing
 right mouse button and moving mouse cursor left and right and up and down.
 User cannot pan outside of the image meaning the image cannot be moved
 outside of the visible area of the Polygon component.
+
+Remove panning functionality from Polygon component. Remove as well all keyboard interactions.
+Focus only on zooming functionality. Zoom can be done by mouse scroll wheel or two fingers on mobile devices.
+Center of the zoom is always the mouse cursor position or the center of the two fingers on mobile devices.

@@ -68,12 +68,9 @@ const Polygon = ({
     const joystickReleasedRef = useRef(false); // prevents throttle callbacks after release
     const joystickHadMovementRef = useRef(false); // tracks if there was movement since start
 
-    // Zoom and pan state
+    // Zoom state (no panning - zoom only)
     const [zoom, setZoom] = useState(1);
-    const [panX, setPanX] = useState(0); // Pan offset in pixels
-    const [panY, setPanY] = useState(0);
-    const [isPanning, setIsPanning] = useState(false);
-    const panStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+    const [zoomCenter, setZoomCenter] = useState({ x: 0.5, y: 0.5 }); // Normalized center point for zoom
     const pinchStartDistanceRef = useRef(null);
     const pinchStartZoomRef = useRef(1);
     const pinchCenterRef = useRef({ x: 0, y: 0 });
@@ -226,74 +223,25 @@ const Polygon = ({
         }
     }, [containerSize, imageSize, stretchMode]);
 
-    // Clamp pan to keep image visible within boundaries
-    const clampPan = useCallback((newPanX, newPanY, currentZoom) => {
-        const content = getContentDimensions();
-        if (!content.width || !content.height) {
-            return { panX: 0, panY: 0 };
-        }
-
-        // Calculate the scaled content dimensions
-        const scaledWidth = content.width * currentZoom;
-        const scaledHeight = content.height * currentZoom;
-
-        // Calculate max pan limits (how far the content can move)
-        // At zoom 1.0, no panning allowed
-        // At higher zoom, allow panning up to the point where edge reaches container edge
-        const maxPanX = Math.max(0, (scaledWidth - content.width) / 2);
-        const maxPanY = Math.max(0, (scaledHeight - content.height) / 2);
-
-        return {
-            panX: Math.max(-maxPanX, Math.min(maxPanX, newPanX)),
-            panY: Math.max(-maxPanY, Math.min(maxPanY, newPanY))
-        };
-    }, [getContentDimensions]);
-
-    // Handle zoom change with optional center point (in screen coordinates)
+    // Handle zoom change with center point (in screen coordinates)
     const handleZoomChange = useCallback((newZoom, centerX = null, centerY = null) => {
         const clampedZoom = Math.max(1, Math.min(10, newZoom)); // Min 1x, max 10x
 
         if (centerX !== null && centerY !== null && containerRef.current) {
-            // Zoom towards the cursor position
+            // Calculate normalized zoom center (0-1 range)
             const rect = containerRef.current.getBoundingClientRect();
-
-            // Calculate cursor position relative to container center
-            const containerCenterX = rect.left + rect.width / 2;
-            const containerCenterY = rect.top + rect.height / 2;
-
-            // Position of cursor relative to container center (in screen pixels)
-            const cursorRelX = centerX - containerCenterX;
-            const cursorRelY = centerY - containerCenterY;
-
-            // Current position adjusted for existing pan
-            const currentRelX = cursorRelX - panX;
-            const currentRelY = cursorRelY - panY;
-
-            // Calculate zoom ratio
-            const zoomRatio = clampedZoom / zoom;
-
-            // New pan to keep cursor point stable
-            const newPanX = panX - currentRelX * (zoomRatio - 1);
-            const newPanY = panY - currentRelY * (zoomRatio - 1);
-
-            const clamped = clampPan(newPanX, newPanY, clampedZoom);
-            setPanX(clamped.panX);
-            setPanY(clamped.panY);
-        } else {
-            // Zoom without changing pan point, but clamp pan
-            const clamped = clampPan(panX, panY, clampedZoom);
-            setPanX(clamped.panX);
-            setPanY(clamped.panY);
+            const normX = (centerX - rect.left) / rect.width;
+            const normY = (centerY - rect.top) / rect.height;
+            setZoomCenter({ x: normX, y: normY });
         }
 
         setZoom(clampedZoom);
-    }, [zoom, panX, panY, clampPan]);
+    }, []);
 
-    // Reset zoom and pan
-    const resetZoomPan = useCallback(() => {
+    // Reset zoom
+    const resetZoom = useCallback(() => {
         setZoom(1);
-        setPanX(0);
-        setPanY(0);
+        setZoomCenter({ x: 0.5, y: 0.5 });
     }, []);
 
     // Check if screen point is near a normalized point
@@ -563,150 +511,6 @@ const Polygon = ({
         handleZoomChange(newZoom, e.clientX, e.clientY);
     }, [zoomPanEnabled, zoom, handleZoomChange]);
 
-    // Handle keyboard shortcuts for zoom/pan
-    const handleKeyDown = useCallback((e) => {
-        if (!zoomPanEnabled) return;
-
-        // Check for Ctrl key
-        if (!e.ctrlKey && !e.metaKey) return;
-
-        const panStep = 0.05; // 5% of view
-        const content = getContentDimensions();
-
-        switch (e.key) {
-            case '+':
-            case '=':
-                e.preventDefault();
-                handleZoomChange(zoom * 1.1);
-                break;
-            case '-':
-            case '_':
-                e.preventDefault();
-                handleZoomChange(zoom * 0.9);
-                break;
-            case '0':
-                e.preventDefault();
-                resetZoomPan();
-                break;
-            case 'ArrowLeft':
-                e.preventDefault();
-                {
-                    const newPanX = panX + content.width * panStep;
-                    const clamped = clampPan(newPanX, panY, zoom);
-                    setPanX(clamped.panX);
-                    setPanY(clamped.panY);
-                }
-                break;
-            case 'ArrowRight':
-                e.preventDefault();
-                {
-                    const newPanX = panX - content.width * panStep;
-                    const clamped = clampPan(newPanX, panY, zoom);
-                    setPanX(clamped.panX);
-                    setPanY(clamped.panY);
-                }
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                {
-                    const newPanY = panY + content.height * panStep;
-                    const clamped = clampPan(panX, newPanY, zoom);
-                    setPanX(clamped.panX);
-                    setPanY(clamped.panY);
-                }
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                {
-                    const newPanY = panY - content.height * panStep;
-                    const clamped = clampPan(panX, newPanY, zoom);
-                    setPanX(clamped.panX);
-                    setPanY(clamped.panY);
-                }
-                break;
-            default:
-                break;
-        }
-    }, [zoomPanEnabled, zoom, panX, panY, handleZoomChange, resetZoomPan, clampPan, getContentDimensions]);
-
-    // Attach keyboard listener at window level to intercept browser shortcuts
-    useEffect(() => {
-        if (!zoomPanEnabled) return;
-
-        const container = containerRef.current;
-        if (!container) return;
-
-        // Use window-level listener with capture phase to intercept before browser
-        const windowKeyHandler = (e) => {
-            // Only handle if container or its children have focus, or if mouse is over container
-            const hasFocus = container.contains(document.activeElement) || document.activeElement === container;
-            const rect = container.getBoundingClientRect();
-            const isMouseOver = window.lastMouseX >= rect.left && window.lastMouseX <= rect.right &&
-                window.lastMouseY >= rect.top && window.lastMouseY <= rect.bottom;
-
-            if (!hasFocus && !isMouseOver) return;
-
-            handleKeyDown(e);
-        };
-
-        // Track mouse position for keyboard shortcut activation
-        const trackMouse = (e) => {
-            window.lastMouseX = e.clientX;
-            window.lastMouseY = e.clientY;
-        };
-
-        window.addEventListener('keydown', windowKeyHandler, true); // capture phase
-        window.addEventListener('mousemove', trackMouse);
-
-        return () => {
-            window.removeEventListener('keydown', windowKeyHandler, true);
-            window.removeEventListener('mousemove', trackMouse);
-        };
-    }, [zoomPanEnabled, handleKeyDown]);
-
-    // Handle right mouse button pan start
-    const handleContextMenu = useCallback((e) => {
-        if (zoomPanEnabled) {
-            e.preventDefault();
-        }
-    }, [zoomPanEnabled]);
-
-    // Handle mouse down for right-click pan
-    const handlePanMouseDown = useCallback((e) => {
-        if (!zoomPanEnabled) return;
-        if (e.button !== 2) return; // Only right mouse button
-
-        e.preventDefault();
-        setIsPanning(true);
-        panStartRef.current = {
-            x: e.clientX,
-            y: e.clientY,
-            panX: panX,
-            panY: panY
-        };
-    }, [zoomPanEnabled, panX, panY]);
-
-    // Handle mouse move for panning
-    const handlePanMouseMove = useCallback((e) => {
-        if (!zoomPanEnabled || !isPanning) return;
-
-        const dx = e.clientX - panStartRef.current.x;
-        const dy = e.clientY - panStartRef.current.y;
-        const newPanX = panStartRef.current.panX + dx;
-        const newPanY = panStartRef.current.panY + dy;
-
-        const clamped = clampPan(newPanX, newPanY, zoom);
-        setPanX(clamped.panX);
-        setPanY(clamped.panY);
-    }, [zoomPanEnabled, isPanning, zoom, clampPan]);
-
-    // Handle mouse up for panning
-    const handlePanMouseUp = useCallback(() => {
-        if (isPanning) {
-            setIsPanning(false);
-        }
-    }, [isPanning]);
-
     // Handle touch events for pinch-to-zoom
     const handlePinchTouchStart = useCallback((e) => {
         if (!zoomPanEnabled) return;
@@ -745,7 +549,7 @@ const Polygon = ({
         const scale = distance / pinchStartDistanceRef.current;
         const newZoom = pinchStartZoomRef.current * scale;
 
-        // Calculate new center
+        // Calculate center of pinch (midpoint between fingers)
         const centerX = (touch1.clientX + touch2.clientX) / 2;
         const centerY = (touch1.clientY + touch2.clientY) / 2;
 
@@ -1110,21 +914,23 @@ const Polygon = ({
         height: stretchMode === 'originalSize' ? 'auto' : '100%',
         backgroundColor: background,
         position: 'relative',
-        cursor: isPanning ? 'grabbing' : (mode === 'designer' && currentPolygon ? 'crosshair' : (mode === 'joystick' ? 'pointer' : (zoomPanEnabled ? 'default' : 'default'))),
+        cursor: mode === 'designer' && currentPolygon ? 'crosshair' : (mode === 'joystick' ? 'pointer' : 'default'),
         touchAction: (mode === 'designer' || mode === 'joystick' || zoomPanEnabled) ? 'none' : 'auto',
         overflow: 'hidden',
-        outline: 'none', // Prevent focus outline
         ...style
     };
 
-    // Get transform style for zoom/pan content wrapper
+    // Get transform style for zoom content wrapper
     const getContentTransformStyle = () => {
-        if (!zoomPanEnabled || (zoom === 1 && panX === 0 && panY === 0)) {
+        if (!zoomPanEnabled || zoom === 1) {
             return {};
         }
+        // Transform origin should be at the zoom center point
+        const originX = (zoomCenter.x * 100).toFixed(2);
+        const originY = (zoomCenter.y * 100).toFixed(2);
         return {
-            transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
-            transformOrigin: 'center center'
+            transform: `scale(${zoom})`,
+            transformOrigin: `${originX}% ${originY}%`
         };
     };
 
@@ -1146,38 +952,11 @@ const Polygon = ({
             className="custom-polygon"
             ref={containerRef}
             style={containerStyle}
-            tabIndex={zoomPanEnabled ? 0 : undefined}
             onClick={isInteractive ? handleClick : undefined}
-            onMouseDown={(e) => {
-                if (zoomPanEnabled && e.button === 2) {
-                    handlePanMouseDown(e);
-                } else if (isInteractive) {
-                    handleMouseDown(e);
-                }
-            }}
-            onMouseMove={(e) => {
-                if (isPanning) {
-                    handlePanMouseMove(e);
-                } else if (isInteractive) {
-                    handleMouseMove(e);
-                }
-            }}
-            onMouseUp={(e) => {
-                if (isPanning) {
-                    handlePanMouseUp();
-                }
-                if (isInteractive) {
-                    handleMouseUp(e);
-                }
-            }}
-            onMouseLeave={(e) => {
-                if (isPanning) {
-                    handlePanMouseUp();
-                }
-                if (isInteractive) {
-                    handleMouseUp(e);
-                }
-            }}
+            onMouseDown={isInteractive ? handleMouseDown : undefined}
+            onMouseMove={isInteractive ? handleMouseMove : undefined}
+            onMouseUp={isInteractive ? handleMouseUp : undefined}
+            onMouseLeave={isInteractive ? handleMouseUp : undefined}
             onTouchStart={(e) => {
                 if (zoomPanEnabled && e.touches.length === 2) {
                     handlePinchTouchStart(e);
@@ -1202,7 +981,6 @@ const Polygon = ({
             }}
             onDoubleClick={isInteractive ? handleDoubleClick : undefined}
             onWheel={zoomPanEnabled ? handleWheel : undefined}
-            onContextMenu={handleContextMenu}
         >
             <div
                 style={{
