@@ -1,10 +1,7 @@
-#from fastapi import FastAPI
-#from fastapi.staticfiles import StaticFiles
-#from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from typing import Any
-#from ultralytics import YOLO
 from .camera import Camera
+from .common import get_settings
 import time
 import cv2
 import numpy as np
@@ -32,11 +29,15 @@ class CamerasController:
         Parameters:
         max_index : int : The maximum index of the cameras to reload.
         """
+        settings = get_settings()
         for camera in self._cameras:
             camera.close()
         self._cameras = [Camera(index=i) for i in range(max_index)]
         for camera in self._cameras:
             camera.open()
+            # set the settings of the camera from the settings.json
+            if "cameras" in settings and camera.index < len(settings["cameras"]):
+                camera.settings = settings["cameras"][camera.index].get("general", {})
 
 
 def bitblt_frame(*, src_frame: np.ndarray, src_x: int, src_y: int, src_width: int, src_height: int,

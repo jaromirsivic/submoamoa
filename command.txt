@@ -1041,3 +1041,16 @@ to the behavior of the Preview section in the Camera -> Modal Window.
 Update Camera web page -> edit button -> Modal window. When user changes "Input Device"
 all live feeds in all polygons (on modal windows and as well in panels) should be stopped.
 Then those live feeds which are enabled should be started again this time with different input device id.
+
+Update Camera web page -> edit button -> Modal window. When user changes "Resolution"
+all live feeds in all polygons (on modal windows and as well in panels) should be stopped.
+Then those live feeds which are enabled should be started again.
+
+Update reset button functionallity.
+When user clicks on a reset button in the header of Camera panel and presses a yes button
+for all cameras the master_controller.cameras_controller.cameras[CAMERA_INDEX].reset_settings() should
+be called and cameras.general section of each camera should be deleted in settings.json
+
+Update the reset button functionallity on the Cameras web page.
+When the reset is finished call /api/cameras/list and update
+values of input components on all panels and in Modal Windows.

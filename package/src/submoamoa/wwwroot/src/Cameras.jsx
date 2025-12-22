@@ -90,30 +90,67 @@ const Cameras = () => {
     const [showReloadModal, setShowReloadModal] = useState(false);
     const [isReloading, setIsReloading] = useState(false);
 
-    useEffect(() => {
-        fetch('/api/cameras/list')
+    // Function to fetch camera list and update all state
+    const fetchCameraList = useCallback(() => {
+        return fetch('/api/cameras/list')
             .then(res => res.json())
             .then(data => {
-                // Update settings from backend
-                if (data.inputDeviceIndex !== undefined) setInputDeviceIndex(String(data.inputDeviceIndex));
-                if (data.preferredResolution) setPreferredResolution(data.preferredResolution);
-                if (data.acceptedResolution) setAcceptedResolution(data.acceptedResolution);
-                if (data.flipHorizontally !== undefined) setFlipHorizontally(data.flipHorizontally);
-                if (data.flipVertically !== undefined) setFlipVertically(data.flipVertically);
-                if (data.rotateDegrees !== undefined) setRotateDegrees(String(data.rotateDegrees));
-
-                // Update other properties if present (assuming backend sends them flattened or we map them)
-                // For now, based on instructions, just loading device list and general settings.
-                // If specific camera properties (brightness etc) are needed from backend, we might need a separate call 
-                // or they should be part of the response for the *current* camera. 
-                // The prompt says "Backend should return all properties of the Camera class stored in the settings.json camera -> general section."
-                // And "Create a list of those values... and incorporate this structure into the message".
-
+                // Update input devices list
                 if (data.input_devices) {
                     setInputDevices(data.input_devices);
                 }
+
+                // Find current device from the list
+                const currentDeviceIndex = data.inputDeviceIndex !== undefined 
+                    ? String(data.inputDeviceIndex) 
+                    : inputDeviceIndex;
+                const currentDevice = data.input_devices?.find(d => 
+                    String(d.index) === String(currentDeviceIndex)
+                );
+
+                if (currentDevice) {
+                    // Update panel state from device
+                    setInputDeviceIndex(String(currentDevice.index));
+                    setPreferredResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
+                    setAcceptedResolution(currentDevice.width && currentDevice.height ? `${currentDevice.width} x ${currentDevice.height}` : '0 x 0');
+                    setFps(currentDevice.fps);
+                    setFlipHorizontally(currentDevice.flip_horizontal);
+                    setFlipVertically(currentDevice.flip_vertical);
+                    setRotateDegrees(String(currentDevice.rotate));
+                    setBrightness(currentDevice.brightness);
+                    setContrast(currentDevice.contrast);
+                    setHue(currentDevice.hue);
+                    setSaturation(currentDevice.saturation);
+                    setSharpness(currentDevice.sharpness);
+                    setGamma(currentDevice.gamma);
+                    setWhiteBalanceTemperature(currentDevice.white_balance_temperature);
+                    setBacklight(currentDevice.backlight);
+                    setGain(currentDevice.gain);
+                    setFocus(currentDevice.focus);
+                    setExposure(currentDevice.exposure);
+                    setAutoWhiteBalance(currentDevice.auto_white_balance_temperature);
+                    setAutoFocus(currentDevice.auto_focus);
+                    setAutoExposure(currentDevice.auto_exposure);
+
+                    // Update modal tempState if camera modal is open
+                    if (activeModal === 'camera') {
+                        setTempState(getDeviceStateFromDevice(currentDevice));
+                    }
+                } else {
+                    // Fallback: update from top-level data if available
+                    if (data.inputDeviceIndex !== undefined) setInputDeviceIndex(String(data.inputDeviceIndex));
+                    if (data.preferredResolution) setPreferredResolution(data.preferredResolution);
+                    if (data.acceptedResolution) setAcceptedResolution(data.acceptedResolution);
+                    if (data.flipHorizontally !== undefined) setFlipHorizontally(data.flipHorizontally);
+                    if (data.flipVertically !== undefined) setFlipVertically(data.flipVertically);
+                    if (data.rotateDegrees !== undefined) setRotateDegrees(String(data.rotateDegrees));
+                }
             })
             .catch(err => console.error("Failed to load camera list:", err));
+    }, [inputDeviceIndex, activeModal]);
+
+    useEffect(() => {
+        fetchCameraList();
     }, []);
 
     // Temp state for editing
@@ -393,6 +430,11 @@ const Cameras = () => {
     }, [inputDevices, getDeviceStateFromDevice, refreshStreams, updateTempState]);
 
 
+    const onResolutionChange = useCallback((val) => {
+        updateTempState('preferredResolution', val);
+        refreshStreams();
+    }, [updateTempState, refreshStreams]);
+
     const handleReloadConfirm = useCallback(() => {
         setIsReloading(true);
         setPreviewEnabled(false);
@@ -404,6 +446,8 @@ const Cameras = () => {
             .then(data => {
                 if (data.success) {
                     console.log("Cameras reset successfully");
+                    // Refresh camera list and update all components
+                    return fetchCameraList();
                 }
             })
             .catch(err => console.error("Failed to reset cameras:", err))
@@ -411,7 +455,7 @@ const Cameras = () => {
                 setIsReloading(false);
                 setShowReloadModal(false);
             });
-    }, []);
+    }, [fetchCameraList]);
 
     return (
         <div className="page-container">
@@ -587,7 +631,7 @@ const Cameras = () => {
                             label="Resolution"
                             items={resolutionOptions}
                             value={tempState.preferredResolution}
-                            onChange={(val) => updateTempState('preferredResolution', val)}
+                            onChange={onResolutionChange}
                             labelWidth="160px"
                         />
                         <Slider

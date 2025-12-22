@@ -62,7 +62,24 @@ async def get_cameras_list_endpoint():
 
 @router.post("/api/reset")
 async def reset_cameras_endpoint():
-    """Reset camera list"""
+    """Reset camera settings to defaults"""
+    # Reset in-memory settings for all cameras
+    for camera in master_controller.cameras_controller.cameras:
+        camera.reset_settings()
+
+    # Update settings.json to remove general section for each camera
+    try:
+        current_settings = await settingscontroller.get_settings()
+        if "cameras" in current_settings:
+            for camera_config in current_settings["cameras"]:
+                if "general" in camera_config:
+                    del camera_config["general"]
+            
+            await settingscontroller.save_settings(current_settings)
+    except Exception as e:
+        print(f"Error resetting settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
     master_controller.cameras_controller.reset()
     return {"success": True}
 

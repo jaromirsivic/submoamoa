@@ -588,29 +588,72 @@ class Camera:
         }
 
     def reload_settings(self):
-        if not self._active or self._camera is None:
+        if not self._active or self._camera is None or self._settings is None:
             return
-        self.width = self._settings["width"]
-        self.height = self._settings["height"]
-        self.fps = self._settings["fps"]
-        self.flip_horizontal = self._settings["flip_horizontal"]
-        self.flip_vertical = self._settings["flip_vertical"]
-        self.rotate = self._settings["rotate"]
-        self.brightness = self._settings["brightness"]
-        self.contrast = self._settings["contrast"]
-        self.hue = self._settings["hue"]
-        self.saturation = self._settings["saturation"]
-        self.sharpness = self._settings["sharpness"]
-        self.gamma = self._settings["gamma"]
-        self.white_balance_temperature = self._settings["white_balance_temperature"]
+        self.width = self._settings["width"] if "width" in self._settings else self.width
+        self.height = self._settings["height"] if "height" in self._settings else self.height
+        self.fps = self._settings["fps"] if "fps" in self._settings else self.fps
+        self.flip_horizontal = self._settings["flip_horizontal"] if "flip_horizontal" in self._settings else self.flip_horizontal
+        self.flip_vertical = self._settings["flip_vertical"] if "flip_vertical" in self._settings else self.flip_vertical
+        self.rotate = self._settings["rotate"] if "rotate" in self._settings else self.rotate
+        self.brightness = self._settings["brightness"] if "brightness" in self._settings else self.brightness
+        self.contrast = self._settings["contrast"] if "contrast" in self._settings else self.contrast
+        self.hue = self._settings["hue"] if "hue" in self._settings else self.hue
+        self.saturation = self._settings["saturation"] if "saturation" in self._settings else self.saturation
+        self.sharpness = self._settings["sharpness"] if "sharpness" in self._settings else self.sharpness
+        self.gamma = self._settings["gamma"] if "gamma" in self._settings else self.gamma
+        self.white_balance_temperature = self._settings["white_balance_temperature"] if "white_balance_temperature" in self._settings else self.white_balance_temperature
         # Support both "backlight" and "backlight_compensation" for backward compatibility
-        self.backlight = self._settings.get("backlight", self._settings.get("backlight_compensation", 0))
-        self.gain = self._settings["gain"]
-        self.focus = self._settings["focus"]
-        self.exposure = self._settings["exposure"]
-        self.auto_white_balance_temperature = self._settings["auto_white_balance_temperature"]
-        self.auto_focus = self._settings["auto_focus"]
-        self.auto_exposure = self._settings["auto_exposure"]
+        self.backlight = self._settings.get("backlight", self._settings.get("backlight_compensation", 0)) if "backlight" in self._settings else self.backlight
+        self.gain = self._settings["gain"] if "gain" in self._settings else self.gain
+        self.focus = self._settings["focus"] if "focus" in self._settings else self.focus
+        self.exposure = self._settings["exposure"] if "exposure" in self._settings else self.exposure
+        self.auto_white_balance_temperature = self._settings["auto_white_balance_temperature"] if "auto_white_balance_temperature" in self._settings else self.auto_white_balance_temperature
+        self.auto_focus = self._settings["auto_focus"] if "auto_focus" in self._settings else self.auto_focus
+        self.auto_exposure = self._settings["auto_exposure"] if "auto_exposure" in self._settings else self.auto_exposure
+
+    def reset_settings(self):
+        self._settings = None
+        width = self.width
+        self.width = width
+        height = self.height
+        self.height = height
+        fps = self.fps
+        self.fps = fps
+        flip_horizontal = self.flip_horizontal
+        self.flip_horizontal = flip_horizontal
+        flip_vertical = self.flip_vertical
+        self.flip_vertical = flip_vertical
+        rotate = self.rotate
+        self.rotate = rotate
+        brightness = self.brightness
+        self.brightness = brightness
+        contrast = self.contrast
+        self.contrast = contrast
+        hue = self.hue
+        self.hue = hue
+        saturation = self.saturation
+        self.saturation = saturation
+        sharpness = self.sharpness
+        self.sharpness = sharpness
+        gamma = self.gamma
+        self.gamma = gamma
+        white_balance_temperature = self.white_balance_temperature
+        self.white_balance_temperature = white_balance_temperature
+        backlight = self.backlight
+        self.backlight = backlight
+        gain = self.gain
+        self.gain = gain
+        focus = self.focus
+        self.focus = focus
+        exposure = self.exposure
+        self.exposure = exposure
+        auto_white_balance_temperature = self.auto_white_balance_temperature
+        self.auto_white_balance_temperature = auto_white_balance_temperature
+        auto_focus = self.auto_focus
+        self.auto_focus = auto_focus
+        auto_exposure = self.auto_exposure
+        self.auto_exposure = auto_exposure
 
     @property
     def settings(self) -> dict:
@@ -646,9 +689,9 @@ class Camera:
             frame = cv2.flip(frame, FLIP_VERTICAL)
         # Rotate camera input
         if self._rotate == 90:
-            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+            frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
         elif self._rotate == 180:
             frame = cv2.rotate(frame, cv2.ROTATE_180)
         elif self._rotate == 270:
-            frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         return True, frame

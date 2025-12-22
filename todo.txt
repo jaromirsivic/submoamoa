@@ -1,3 +1,6 @@
 Setup of pin factory.
 Add reset strategy, reset timeout.
 Add business rules for the histogram.
+
+Polygon fit does not work properly
+Polygon zoom
