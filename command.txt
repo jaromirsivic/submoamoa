@@ -1172,3 +1172,7 @@ Modify the Preview on the Manual Control - Input Img and in the Modal window.
 If the Preview is enabled the Reticle should be displayed in the Polygon
 Use reticle props and set showReticle to true. If the Preview
 is not Enabled set showReticle to false.
+
+Update the Polygon component. At the moment the behavior is almost as expected except the following scenario: What is OK: The first zoom and pan action when using mouse wheel is OK. When the user scrolls the Polygon for the first time the image zooms in/out correctly with the center of the zoom in the mouse cursor position. That is OK.
+What is not OK: if the image was already zoomed and panned before the second mouse wheel scroll and user moves mouse cursor before he scrolls and then he scrolls the image moves rapidly. It is probably because the anchor point is not calculated correctly. It should take into account position of the previously zoomed in and panned image. That means the second zoom with mouse scroll wheel on the already zoomed in image should use the center point of the mouse cursor as the anchor but this time the anchor will be related to the already zoomed in image.
+

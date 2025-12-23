@@ -866,6 +866,7 @@ const Cameras = () => {
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#009900"
+                                zoomPanEnabled={true}
                                 showReticle={manualPreviewEnabled}
                                 reticleX={manualReticleX}
                                 reticleY={manualReticleY}
@@ -914,6 +915,7 @@ const Cameras = () => {
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#990000"
+                                zoomPanEnabled={true}
                             />
                         </ColumnLayout>
                     </Panel>
@@ -1019,6 +1021,7 @@ const Cameras = () => {
                             stretchMode="fit"
                             mode="viewer"
                             background="#000099"
+                            zoomPanEnabled={true}
                         />
                     </ColumnLayout>
                 </ModalWindow>
@@ -1123,9 +1126,9 @@ const Cameras = () => {
                             label="X coord"
                             value={tempState.manualReticleX}
                             onChange={(val) => updateTempState('manualReticleX', val)}
-                            min={-1}
+                            min={0}
                             max={1}
-                            step={0.01}
+                            step={0.0001}
                             decimalPlaces={4}
                             allowManualInput={true}
                             labelWidth="150px"
@@ -1134,9 +1137,9 @@ const Cameras = () => {
                             label="Y coord"
                             value={tempState.manualReticleY}
                             onChange={(val) => updateTempState('manualReticleY', val)}
-                            min={-1}
+                            min={0}
                             max={1}
-                            step={0.01}
+                            step={0.0001}
                             decimalPlaces={4}
                             allowManualInput={true}
                             labelWidth="150px"
@@ -1168,6 +1171,7 @@ const Cameras = () => {
                             stretchMode="fit"
                             mode="viewer"
                             background="#009900"
+                            zoomPanEnabled={true}
                             showReticle={manualPreviewEnabled}
                             reticleX={tempState.manualReticleX}
                             reticleY={tempState.manualReticleY}
@@ -1280,6 +1284,7 @@ const Cameras = () => {
                             stretchMode="fit"
                             mode="viewer"
                             background="#990000"
+                            zoomPanEnabled={true}
                         />
                     </ColumnLayout>
                 </ModalWindow>
