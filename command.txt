@@ -1197,3 +1197,28 @@ When the page is closed or user navigates to another page, the live feed should 
 in the Polygon component based on reticle settings of the primary camera
 see settings.json -> cameras[PRIMARY_CAMERA_INDEX].ManualControl["static_reticle_..."].
 5. Joystick props should be enabled. joystickLineMaxLength should be 0.33.
+
+1. Update the Manual Control web page. Add following behavior:
+Add "Setup" button to the right bottom corner of the content area.
+Z-index is top most. Add some small margin between bottom and right of the web browser
+and the Button. There is no text in the button. There is only a "settings.svg" icon displayed
+in the button. The button is 20% transparent.
+Add "full screen button" to the left side of the setup button use the same approach as for
+the setup button, btu the icon of the button will be fullscreen.svg or
+fullscreenExit.svg depending on the situation.
+2. If the User clicks on the "full screen" button. The page is switched into the full screen
+mode. This behavior should work in the desktop web browser as well as in the mobile
+phone web browser. The menu is hidden and the content area (covered with Polygon)
+fills entire screen. The icon of the full screen button changes to fullscreenExit.svg.
+When user double clicks on the "full screen" button again or when he presses
+the escape key on the keyboard (native behavior of desktop web browsers)
+the full screen mode is canceled and the top menu appears as usual.
+
+1. Ok. I need to correct myself. The setup button and fullscreen button should not have
+topmost z-index. They should just be placed above the Polygon component, but below
+the main menu, which appears when the menu button is clicked. The background color
+of the setup button and the fullscreen button should be the same as the color
+of the menu button in the header.
+2. When user clicks on the fullscreen button the header panel with the menu button
+remains visible, but it should be hidden and the Polyton should
+cover the entire page (while in fullscreen mode).

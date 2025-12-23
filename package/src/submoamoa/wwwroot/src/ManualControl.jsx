@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Polygon from './components/Polygon';
+import settingsIcon from './assets/icons/settings.svg';
+import fullscreenIcon from './assets/icons/fullscreen.svg';
+import fullscreenExitIcon from './assets/icons/fullscreenExit.svg';
 
 /**
  * ManualControl page - Full-screen camera view with joystick control.
@@ -10,6 +13,8 @@ import Polygon from './components/Polygon';
  * - Zoom and pan support
  * - Joystick control overlay
  * - Reticle display based on camera settings
+ * - Setup button for settings access
+ * - Fullscreen mode toggle
  */
 const ManualControl = () => {
     // Reticle settings from camera configuration
@@ -21,6 +26,7 @@ const ManualControl = () => {
     });
     const [streamUrl, setStreamUrl] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     /**
      * Fetch primary camera info and manual control settings.
@@ -70,6 +76,73 @@ const ManualControl = () => {
         fetchCameraSettings();
     }, [fetchCameraSettings]);
 
+    // Listen for fullscreen changes (handles Escape key and other exit methods)
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            const isNowFullscreen = !!(
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement
+            );
+            setIsFullscreen(isNowFullscreen);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+        };
+    }, []);
+
+    /**
+     * Toggle fullscreen mode.
+     */
+    const toggleFullscreen = useCallback(async () => {
+        try {
+            if (!isFullscreen) {
+                // Enter fullscreen
+                const element = document.documentElement;
+                if (element.requestFullscreen) {
+                    await element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    await element.webkitRequestFullscreen();
+                } else if (element.mozRequestFullScreen) {
+                    await element.mozRequestFullScreen();
+                } else if (element.msRequestFullscreen) {
+                    await element.msRequestFullscreen();
+                }
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    await document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    await document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    await document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    await document.msExitFullscreen();
+                }
+            }
+        } catch (error) {
+            console.error('Fullscreen toggle failed:', error);
+        }
+    }, [isFullscreen]);
+
+    /**
+     * Handle Setup button click - navigate to camera settings.
+     */
+    const handleSetupClick = useCallback(() => {
+        // Navigate to camera settings page
+        window.location.href = '/settings/cameras';
+    }, []);
+
     // Handle joystick move events
     const handleJoystickMove = useCallback((coords) => {
         // coords: { x: -1 to 1, y: -1 to 1 }
@@ -86,6 +159,26 @@ const ManualControl = () => {
     const handleJoystickEnd = useCallback(() => {
         console.log('Joystick ended');
     }, []);
+
+    // Button style - 20% transparent (opacity 0.8), z-index below menu (48-50)
+    // Background color matches menu button (#887700)
+    const buttonStyle = {
+        position: 'absolute',
+        bottom: '16px',
+        zIndex: 10,
+        width: '48px',
+        height: '48px',
+        padding: '8px',
+        backgroundColor: '#887700',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: 0.8,
+        transition: 'opacity 0.2s, background-color 0.2s'
+    };
 
     if (isLoading) {
         return (
@@ -104,12 +197,14 @@ const ManualControl = () => {
 
     return (
         <div style={{
-            width: '100%',
-            height: '100%',
-            margin: 0,
-            padding: 0,
-            overflow: 'hidden'
-        }}>
+                width: '100%',
+                height: '100%',
+                margin: 0,
+                padding: 0,
+                overflow: 'hidden',
+                position: 'relative'
+            }}
+        >
             <Polygon
                 src={streamUrl}
                 stretchMode="fit"
@@ -130,6 +225,51 @@ const ManualControl = () => {
                     height: '100%'
                 }}
             />
+
+            {/* Fullscreen button - left of Setup button */}
+            <button
+                onClick={toggleFullscreen}
+                style={{
+                    ...buttonStyle,
+                    right: '80px' // 16px margin + 48px button width + 16px gap
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                    e.currentTarget.style.backgroundColor = '#885500';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '0.8';
+                    e.currentTarget.style.backgroundColor = '#887700';
+                }}
+                title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            >
+                <img 
+                    src={isFullscreen ? fullscreenExitIcon : fullscreenIcon} 
+                    alt={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'} 
+                    width="24" 
+                    height="24" 
+                />
+            </button>
+
+            {/* Setup button - right bottom corner */}
+            <button
+                onClick={handleSetupClick}
+                style={{
+                    ...buttonStyle,
+                    right: '16px'
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                    e.currentTarget.style.backgroundColor = '#885500';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '0.8';
+                    e.currentTarget.style.backgroundColor = '#887700';
+                }}
+                title="Setup"
+            >
+                <img src={settingsIcon} alt="Setup" width="24" height="24" />
+            </button>
         </div>
     );
 };

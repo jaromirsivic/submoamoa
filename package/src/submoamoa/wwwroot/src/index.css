@@ -145,6 +145,23 @@ h3 {
   overflow: hidden;
 }
 
+/* Fullscreen mode - hide header and expand content to cover entire page */
+:fullscreen .app-header,
+:-webkit-full-screen .app-header,
+:-moz-full-screen .app-header,
+:-ms-fullscreen .app-header {
+  display: none !important;
+}
+
+:fullscreen .main-content,
+:-webkit-full-screen .main-content,
+:-moz-full-screen .main-content,
+:-ms-fullscreen .main-content {
+  margin-top: 0 !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+
 /* New Styles for Responsive Layout */
 .main-content {
   background-color: #90b0c0;
