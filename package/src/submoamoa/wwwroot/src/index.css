@@ -139,6 +139,12 @@ h3 {
   width: 100%;
 }
 
+/* Full-bleed pages (no padding, no scrollbars) */
+.main-content.full-bleed {
+  padding: 0;
+  overflow: hidden;
+}
+
 /* New Styles for Responsive Layout */
 .main-content {
   background-color: #90b0c0;

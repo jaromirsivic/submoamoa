@@ -265,7 +265,7 @@ async def save_manual_control_settings(settings: ManualControlSettings):
                 current_settings["cameras"].append(camera_config)
             
             # Update manual control settings for this camera
-            camera_config["manual_control"] = {
+            camera_config["manualControl"] = {
                 "crop_top": settings.crop_top / 100.0,
                 "crop_left": settings.crop_left / 100.0,
                 "crop_bottom": settings.crop_bottom / 100.0,

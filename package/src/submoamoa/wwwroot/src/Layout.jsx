@@ -54,6 +54,9 @@ const Layout = () => {
 
   const { title, icon } = getPageInfo();
 
+  // Pages that should use full-bleed layout (no padding, no scrollbars)
+  const isFullBleedPage = location.pathname === '/manual-control' || location.pathname === '/ai-agent';
+
   const MenuLink = ({ to, icon, label, onClick }) => (
     <Link
       to={to}
@@ -153,7 +156,7 @@ const Layout = () => {
         </>
       )}
 
-      <main className="main-content">
+      <main className={`main-content${isFullBleedPage ? ' full-bleed' : ''}`}>
         <Outlet />
       </main>
 

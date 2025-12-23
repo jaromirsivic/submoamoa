@@ -408,19 +408,19 @@
                 "auto_focus": true,
                 "auto_exposure": true
             },
-            "ManualControl": {
-                "crop_top": 0,
-                "crop_left": 0,
-                "crop_bottom": 0,
-                "crop_right": 0,
-                "width": 640,
-                "height": 480,
+            "manualControl": {
+                "crop_top": 0.0,
+                "crop_left": 0.0,
+                "crop_bottom": 0.0,
+                "crop_right": 0.0,
+                "width": 0,
+                "height": 0,
                 "static_reticle_x": 0.5,
                 "static_reticle_y": 0.5,
                 "static_reticle_color": "#ff0000cc",
-                "static_reticle_size": 1
+                "static_reticle_size": 1.0
             },
-            "AIControl": {
+            "aiControl": {
                 "crop_top": 0,
                 "crop_left": 0,
                 "crop_bottom": 0,

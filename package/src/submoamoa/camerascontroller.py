@@ -36,8 +36,8 @@ class CamerasController:
         for i in range(max_index):
             if "cameras" in settings and i < len(settings["cameras"]):
                 camera_settings = settings["cameras"][i].get("general", {})
-                image_cropped_resized_settings = settings["cameras"][i].get("ManualControl", {})
-                image_ai_settings = settings["cameras"][i].get("AIControl", {})
+                image_cropped_resized_settings = settings["cameras"][i].get("manualControl", {})
+                image_ai_settings = settings["cameras"][i].get("aiControl", {})
                 self._cameras.append(Camera(index=i, settings=camera_settings, image_cropped_resized_settings=image_cropped_resized_settings, image_ai_settings=image_ai_settings))
             else:
                 self._cameras.append(Camera(index=i))
@@ -46,8 +46,8 @@ class CamerasController:
             # set the settings of the camera from the settings.json
             if "cameras" in settings and camera.index < len(settings["cameras"]):
                 camera.settings = settings["cameras"][camera.index].get("general", {})
-                camera.image_cropped_resized_settings = settings["cameras"][camera.index].get("ManualControl", {})
-                camera.image_ai_settings = settings["cameras"][camera.index].get("AIControl", {})
+                camera.image_cropped_resized_settings = settings["cameras"][camera.index].get("manualControl", {})
+                camera.image_ai_settings = settings["cameras"][camera.index].get("aiControl", {})
 
 
 def bitblt_frame(*, src_frame: np.ndarray, src_x: int, src_y: int, src_width: int, src_height: int,

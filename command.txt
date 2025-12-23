@@ -1179,3 +1179,21 @@ What is not OK: if the image was already zoomed and panned before the second mou
 Update the Polygon component. At the moment the behavior is almost as expected except the following issues:
 1. When user uses mouse wheel to zoom in/out the image the page or modal window should not scroll. You should not allow the page to scroll (either entire content or content of modal window) when user uses mouse wheel above a Polygon component which has the zoomAndPan enabled.
 2. You should implement the pan functionallity. When user clicks and holds the mouse middle button and moves the mouse cursor the image should pan/move relative to the image in current state (original or already zoomed in and panned). Other functionalities of the Polygon component (such as joystick functionality) should not be affected.
+
+1. In the settings.json rename "ManualControl" to "manualControl". Perform an impact analysis of
+this change in the rest api scripts and Cameras.jsx and rename it there as well if necessary.
+2. In the settings.json rename "AIControl" to "aiControl". Perform an impact analysis of
+this change in the rest api scripts and Cameras.jsx and rename it there as well if necessary.
+
+1. Update the ManualControl web page. There should be a Polygon component filling in entire content area
+without any spaces. No padding, no margin. When user resizes the web browser, the Polygon
+component should adapt always filling in entire content area. Horizontal and vertical
+scrollbars should not be displayed on this page.
+2. The Polygon component should be zoomable. It should display live feed from
+the master_controller.cameras_controller.cameras[PRIMARY_CAMERA_INDEX].image_cropped_resized.
+When the page is closed or user navigates to another page, the live feed should be released.
+3. The stretchMode of the Polygon should be set to "fit".
+4. There should be reticle displayed
+in the Polygon component based on reticle settings of the primary camera
+see settings.json -> cameras[PRIMARY_CAMERA_INDEX].ManualControl["static_reticle_..."].
+5. Joystick props should be enabled. joystickLineMaxLength should be 0.33.
