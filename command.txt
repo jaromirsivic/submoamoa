@@ -1243,3 +1243,5 @@ size of parent panel.
 
 Something went wrong during last change. Now the user can see the calendar above the parent panel.
 But when he clicks on it or tries to perform any action, the popup disapears and DatePicker value is not changed.
+
+The SVG icon used in the DatePicker component should be saved into the assets/icons folder and loaded from there.
