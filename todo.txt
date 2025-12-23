@@ -1,7 +1,5 @@
-Setup of pin factory.
-Add reset strategy, reset timeout.
-Add business rules for the histogram.
-
-Polygon fit does not work properly
-Polygon zoom
 Colsing and opening only the camera which is used
+
+Duty cycle on the ManualControl
+Position on the ManualControl
+Polygon when rotated 90 degrees does not work properly in the Chrome browser

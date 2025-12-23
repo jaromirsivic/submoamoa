@@ -21,6 +21,7 @@ import EditableChartDemo from './EditableChartDemo';
 import TableDemo from './TableDemo';
 import Chart2DDemo from './Chart2DDemo';
 import PolygonZoomPanDemo from './PolygonZoomPanDemo';
+import DatePickerDemo from './DatePickerDemo';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             <Route path="table-demo" element={<TableDemo />} />
             <Route path="chart2d" element={<Chart2DDemo />} />
             <Route path="polygon-zoom-pan" element={<PolygonZoomPanDemo />} />
+            <Route path="datepicker" element={<DatePickerDemo />} />
           </Route>
           <Route path="about" element={<About />} />
         </Route>

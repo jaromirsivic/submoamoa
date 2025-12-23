@@ -1,0 +1,9 @@
+---
+trigger: always_on
+---
+
+The application uses Python FastAPI in the backend and HTML5 + React in the frontend. Everything should be packed as one Python package. Python source code root is in the folder ./package/submoamoa. WWW root folder is in ./package/submoamoa/wwwroot.
+Code must be clear and well-documented. Every method in Python must use explicit parameters policy (each method of every class will be written as: “def method(self, *, param1, param2, …)”).
+The front end is a single-page application written using the React framework. It must be developed as a responsive, “Mobile First” application. The webpage will be multilingual, but English en-US will be the default language.
+Front-end must follow these rules: there is a fixed bar on the top of the page called “menu bar”. The menu bar contains a button in the top right corner (with hamburger icon and text “Menu” if enough space on the screen). On the left side there is a page name and other actions related to the context of the page displayed in the content area.
+Content area is below the menu bar and it is scrollable.

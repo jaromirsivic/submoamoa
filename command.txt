@@ -1226,3 +1226,20 @@ cover the entire page (while in fullscreen mode).
 When user switches to the fullscreen the header (menu bar) which contains
 text "Manual Control" and the main "Menu" button is still visible. Take some
 effort to figure out, why it is still visible. Fix the behavior.
+
+Create DatePicker component:
+The DatePicker will allow users to select a date from the calendar. The DatePicker should have at least following props:
+- timeZone - by default set to local time zone
+- value - by default set to midnight off current day
+- minValue - By default set to 1st of January 1900
+- maxvalue - by default set to 31st of December 2199
+- format - by default using general notation yyyy-mm-dd
+When user selects a date, the value should be midnight/beginning of the selected date in the timeZone. When user enters the DatePicker the calendar should appear in the popup. There are similar rules used for the popup, like they are in the colorPicker. User can either select a date from the calendar or write the date using keyboard or use copy/paste of a text representing the date. The calendar uses modern approach and UX design allowing the user to quickly find the date.
+Demonstrate the usage of DatePicker in the Sandbox.
+
+When user clicks on the ComboBox like arrow in the DatePicker the Popup should appear
+above the parent Panel. At the moment the popup is trimmed/cropped by the
+size of parent panel.
+
+Something went wrong during last change. Now the user can see the calendar above the parent panel.
+But when he clicks on it or tries to perform any action, the popup disapears and DatePicker value is not changed.
