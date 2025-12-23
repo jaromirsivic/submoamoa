@@ -156,6 +156,26 @@ const Cameras = () => {
                          setAutoFocus(currentDevice.auto_focus);
                          setAutoExposure(currentDevice.auto_exposure);
                          setAutoExposure(currentDevice.auto_exposure);
+                         
+                         // Update Manual Control settings from device
+                         if (currentDevice.manual_control) {
+                             setManualCropTop((currentDevice.manual_control.crop_top || 0) * 100);
+                             setManualCropLeft((currentDevice.manual_control.crop_left || 0) * 100);
+                             setManualCropBottom((currentDevice.manual_control.crop_bottom || 0) * 100);
+                             setManualCropRight((currentDevice.manual_control.crop_right || 0) * 100);
+                             setManualStretchWidth(currentDevice.manual_control.width || 0);
+                             setManualStretchHeight(currentDevice.manual_control.height || 0);
+                         }
+                         
+                         // Update AI Agent settings from device
+                         if (currentDevice.ai_agent) {
+                             setAiCropTop((currentDevice.ai_agent.crop_top || 0) * 100);
+                             setAiCropLeft((currentDevice.ai_agent.crop_left || 0) * 100);
+                             setAiCropBottom((currentDevice.ai_agent.crop_bottom || 0) * 100);
+                             setAiCropRight((currentDevice.ai_agent.crop_right || 0) * 100);
+                             setAiStretchWidth(currentDevice.ai_agent.width || 0);
+                             setAiStretchHeight(currentDevice.ai_agent.height || 0);
+                         }
                     }
 
                     // Update modal tempState if camera modal is open
@@ -369,7 +389,7 @@ const Cameras = () => {
     }, [tempState, originalModalState]);
 
     const handleCancelRequest = useCallback(() => {
-        if (activeModal === 'camera' && hasModalChanges()) {
+        if ((activeModal === 'camera' || activeModal === 'manual') && hasModalChanges()) {
             setShowCancelConfirmModal(true);
         } else {
             closeModal();
@@ -419,9 +439,39 @@ const Cameras = () => {
             } catch (err) {
                 console.error("Failed to revert camera settings:", err);
             }
+        } else if (activeModal === 'manual') {
+            // Revert manual control settings to original
+            try {
+                const manualPayload = {
+                    index: Number(inputDeviceIndex),
+                    crop_top: Number(originalModalState.manualCropTop),
+                    crop_left: Number(originalModalState.manualCropLeft),
+                    crop_bottom: Number(originalModalState.manualCropBottom),
+                    crop_right: Number(originalModalState.manualCropRight),
+                    width: Number(originalModalState.manualStretchWidth),
+                    height: Number(originalModalState.manualStretchHeight),
+                    saveToDisk: false
+                };
+
+                await fetch('/api/cameras/savemanualcontrol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(manualPayload)
+                });
+
+                // Update local state back to original
+                setManualCropTop(Number(originalModalState.manualCropTop));
+                setManualCropLeft(Number(originalModalState.manualCropLeft));
+                setManualCropBottom(Number(originalModalState.manualCropBottom));
+                setManualCropRight(Number(originalModalState.manualCropRight));
+                setManualStretchWidth(Number(originalModalState.manualStretchWidth));
+                setManualStretchHeight(Number(originalModalState.manualStretchHeight));
+            } catch (err) {
+                console.error("Failed to revert manual control settings:", err);
+            }
         }
         closeModal();
-    }, [activeModal, originalModalState, inputDevices, closeModal]);
+    }, [activeModal, originalModalState, inputDevices, closeModal, inputDeviceIndex]);
 
     const saveModal = useCallback((saveToDisk = false) => {
         let payload = {};
@@ -497,18 +547,45 @@ const Cameras = () => {
                 })
                 .catch(err => console.error("Failed to save camera settings:", err));
         } else {
-            // For Manual modal, update local state
+            // For Manual modal, call API and update local state
             if (activeModal === 'manual') {
-                setManualCropTop(Number(tempState.manualCropTop));
-                setManualCropLeft(Number(tempState.manualCropLeft));
-                setManualCropBottom(Number(tempState.manualCropBottom));
-                setManualCropRight(Number(tempState.manualCropRight));
-                setManualStretchWidth(Number(tempState.manualStretchWidth));
-                setManualStretchHeight(Number(tempState.manualStretchHeight));
-                // Only close modal if Save (saveToDisk=true), not on Apply
-                if (saveToDisk) {
-                    closeModal();
-                }
+                const manualPayload = {
+                    index: Number(inputDeviceIndex),
+                    crop_top: Number(tempState.manualCropTop),
+                    crop_left: Number(tempState.manualCropLeft),
+                    crop_bottom: Number(tempState.manualCropBottom),
+                    crop_right: Number(tempState.manualCropRight),
+                    width: Number(tempState.manualStretchWidth),
+                    height: Number(tempState.manualStretchHeight),
+                    saveToDisk
+                };
+                
+                fetch('/api/cameras/savemanualcontrol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(manualPayload)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update local state
+                            setManualCropTop(Number(tempState.manualCropTop));
+                            setManualCropLeft(Number(tempState.manualCropLeft));
+                            setManualCropBottom(Number(tempState.manualCropBottom));
+                            setManualCropRight(Number(tempState.manualCropRight));
+                            setManualStretchWidth(Number(tempState.manualStretchWidth));
+                            setManualStretchHeight(Number(tempState.manualStretchHeight));
+                            
+                            // Refresh camera list to get updated values
+                            fetchCameraList();
+                            
+                            // Only close modal if Save (saveToDisk=true), not on Apply
+                            if (saveToDisk) {
+                                closeModal();
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Failed to save manual control settings:", err));
             } else if (activeModal === 'ai') {
                 setAiCropTop(Number(tempState.aiCropTop));
                 setAiCropLeft(Number(tempState.aiCropLeft));
@@ -525,7 +602,7 @@ const Cameras = () => {
                 closeModal();
             }
         }
-    }, [activeModal, tempState, closeModal, inputDeviceIndex, getDeviceStateFromDevice]);
+    }, [activeModal, tempState, closeModal, inputDeviceIndex, getDeviceStateFromDevice, fetchCameraList, inputDevices]);
 
     const updateTempState = useCallback((key, value) => {
         setTempState(prev => ({ ...prev, [key]: value }));
@@ -920,7 +997,7 @@ const Cameras = () => {
                     isOpen={true}
                     title="Edit Manual Control Settings"
                     onOk={() => saveModal(true)}
-                    onCancel={closeModal}
+                    onCancel={handleCancelRequest}
                     okLabel="Save"
                     validationErrors={manualValidationErrors}
                     okDisabled={!isManualValid}

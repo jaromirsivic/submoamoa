@@ -33,6 +33,16 @@ class CameraSettings(BaseModel):
     auto_exposure: bool
     saveToDisk: bool = False
 
+class ManualControlSettings(BaseModel):
+    index: int
+    crop_top: float
+    crop_left: float
+    crop_bottom: float
+    crop_right: float
+    width: int
+    height: int
+    saveToDisk: bool = False
+
 @router.get("/api/cameras/list")
 async def get_cameras_list_endpoint():
     """Get connected cameras info and general settings"""
@@ -53,6 +63,12 @@ async def get_cameras_list_endpoint():
                  "label": f"{res['width']} x {res['height']}"
              })
         device_info["supported_resolutions"] = resolutions_with_labels
+        
+        # Add image_cropped_resized settings (Manual Control)
+        device_info["manual_control"] = cam.image_cropped_resized.to_dict()
+        
+        # Add image_ai settings (AI Agent)
+        device_info["ai_agent"] = cam.image_ai.to_dict()
              
         input_devices.append(device_info)
         
@@ -188,6 +204,74 @@ async def save_camera_settings(settings: CameraSettings):
 
     except Exception as e:
         print(f"Error saving camera settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/cameras/savemanualcontrol")
+async def save_manual_control_settings(settings: ManualControlSettings):
+    """
+    Save or apply manual control (image_cropped_resized) settings.
+    If saveToDisk is True, saves to settings.json.
+    Always applies settings to the running camera instance.
+    """
+    try:
+        # Find the camera by index
+        camera = None
+        for cam in master_controller.cameras_controller.cameras:
+            if cam.index == settings.index:
+                camera = cam
+                break
+        
+        if not camera:
+            raise HTTPException(status_code=404, detail=f"Camera with index {settings.index} not found")
+
+        # Apply settings to the running camera instance
+        # Crop values are in percent (0-100), convert to 0-1 range for backend
+        new_settings = {
+            "crop_top": settings.crop_top / 100.0,
+            "crop_left": settings.crop_left / 100.0,
+            "crop_bottom": settings.crop_bottom / 100.0,
+            "crop_right": settings.crop_right / 100.0,
+            "width": settings.width,
+            "height": settings.height
+        }
+        camera.image_cropped_resized.settings = new_settings
+
+        # If saveToDisk is True, update settings.json
+        if settings.saveToDisk:
+            current_settings = await settingscontroller.get_settings()
+            
+            # Ensure "cameras" list exists in settings
+            if "cameras" not in current_settings:
+                current_settings["cameras"] = []
+            
+            # Find or create the camera config in settings
+            camera_config = None
+            for conf in current_settings["cameras"]:
+                if conf.get("index") == settings.index:
+                    camera_config = conf
+                    break
+            
+            if not camera_config:
+                camera_config = {"index": settings.index}
+                current_settings["cameras"].append(camera_config)
+            
+            # Update manual control settings for this camera
+            camera_config["manual_control"] = {
+                "crop_top": settings.crop_top / 100.0,
+                "crop_left": settings.crop_left / 100.0,
+                "crop_bottom": settings.crop_bottom / 100.0,
+                "crop_right": settings.crop_right / 100.0,
+                "width": settings.width,
+                "height": settings.height
+            }
+            
+            await settingscontroller.save_settings(current_settings)
+
+        return {"success": True}
+
+    except Exception as e:
+        print(f"Error saving manual control settings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

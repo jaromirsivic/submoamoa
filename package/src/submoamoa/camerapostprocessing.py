@@ -191,15 +191,15 @@ class NodeImageCroppedResized(NodeImage):
         """
         # convert crop coordinates to pixels
         # crop coordinates are between 0 and 1
-        crop_top_px = int(self.crop_top * src_frame.shape[0])
-        crop_left_px = int(self.crop_left * src_frame.shape[1])
-        crop_bottom_px = int(self.crop_bottom * src_frame.shape[0])
-        crop_right_px = int(self.crop_right * src_frame.shape[1])
+        crop_top_px = int(round(self.crop_top * src_frame.shape[0]))
+        crop_left_px = int(round(self.crop_left * src_frame.shape[1]))
+        crop_bottom_px = int(round(self.crop_bottom * src_frame.shape[0]))
+        crop_right_px = int(round(self.crop_right * src_frame.shape[1]))
         # calculate source frame coordinates in pixels
         src_x = crop_left_px
         src_y = crop_top_px
-        src_width = src_frame.shape[1] - crop_right_px 
-        src_height = src_frame.shape[0] - crop_bottom_px
+        src_width = src_frame.shape[1] - crop_right_px - crop_left_px
+        src_height = src_frame.shape[0] - crop_bottom_px - crop_top_px
         # check if source frame coordinates are valid
         is_valid = True
         if src_x < 0 or src_x > src_frame.shape[1]:

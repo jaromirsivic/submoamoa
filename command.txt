@@ -1151,5 +1151,5 @@ the user presses Apply button. You will probably need to extend "list" api.
 Take a look how it is done in the Camera Modal Window and do it the similar way.
 3. Do not forget on the initialization phase. When the page is loaded you should
 update properties on the Manual Control panel and take them from the list.
-4. You should handle unsaved changes the same way as the Camera Modal window
+4. You should handle unsaved changes the same way as the Camera Modal window.
 

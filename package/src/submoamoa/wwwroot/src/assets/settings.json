@@ -447,6 +447,14 @@
                         }
                     ]
                 ]
+            },
+            "manual_control": {
+                "crop_top": 0.2863,
+                "crop_left": 0.058600000000000006,
+                "crop_bottom": 0.0676,
+                "crop_right": 0.3533,
+                "width": 640,
+                "height": 480
             }
         },
         {
