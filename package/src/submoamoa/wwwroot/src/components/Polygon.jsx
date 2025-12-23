@@ -229,15 +229,58 @@ const Polygon = ({
         const clampedZoom = Math.max(1, Math.min(10, newZoom)); // Min 1x, max 10x
 
         if (centerX !== null && centerY !== null && containerRef.current) {
-            // Calculate normalized zoom center (0-1 range)
             const rect = containerRef.current.getBoundingClientRect();
-            const normX = (centerX - rect.left) / rect.width;
-            const normY = (centerY - rect.top) / rect.height;
-            setZoomCenter({ x: normX, y: normY });
+
+            // Calculate cursor position as normalized (0-1) container coordinates
+            const cursorNormX = (centerX - rect.left) / rect.width;
+            const cursorNormY = (centerY - rect.top) / rect.height;
+
+            // Calculate where the cursor points in "content space" given current zoom and zoomCenter
+            // The transform is: scale(zoom) with origin at zoomCenter
+            // A point in content space maps to screen as: screenPos = zoomCenter + (contentPos - zoomCenter) * zoom
+            // So contentPos = zoomCenter + (screenPos - zoomCenter) / zoom
+            const contentPointX = zoomCenter.x + (cursorNormX - zoomCenter.x) / zoom;
+            const contentPointY = zoomCenter.y + (cursorNormY - zoomCenter.y) / zoom;
+
+            // Now we want to find the new zoomCenter such that contentPoint maps to cursorNorm at newZoom
+            // cursorNormX = newZoomCenter.x + (contentPointX - newZoomCenter.x) * newZoom
+            // Solving for newZoomCenter.x:
+            // cursorNormX = newZoomCenter.x + contentPointX * newZoom - newZoomCenter.x * newZoom
+            // cursorNormX = newZoomCenter.x * (1 - newZoom) + contentPointX * newZoom
+            // newZoomCenter.x = (cursorNormX - contentPointX * newZoom) / (1 - newZoom)
+            // But this has a singularity at newZoom = 1, so let's rearrange:
+            // newZoomCenter.x * (1 - newZoom) = cursorNormX - contentPointX * newZoom
+            // newZoomCenter.x = cursorNormX + (cursorNormX - contentPointX * newZoom) / (newZoom - 1)  -- still problematic
+
+            // Alternative approach: keep the content point under cursor stable
+            // For zoom from oldZoom to newZoom, if contentPoint should stay at cursorNorm:
+            // cursorNormX = newZoomCenterX + (contentPointX - newZoomCenterX) * clampedZoom
+            // cursorNormX = newZoomCenterX * (1 - clampedZoom) + contentPointX * clampedZoom
+            // newZoomCenterX * (1 - clampedZoom) = cursorNormX - contentPointX * clampedZoom
+            // newZoomCenterX = (cursorNormX - contentPointX * clampedZoom) / (1 - clampedZoom)
+
+            let newZoomCenterX, newZoomCenterY;
+
+            if (clampedZoom === 1) {
+                // At zoom 1, center doesn't matter, reset to middle
+                newZoomCenterX = 0.5;
+                newZoomCenterY = 0.5;
+            } else {
+                newZoomCenterX = (cursorNormX - contentPointX * clampedZoom) / (1 - clampedZoom);
+                newZoomCenterY = (cursorNormY - contentPointY * clampedZoom) / (1 - clampedZoom);
+
+                // Clamp zoom center to valid range (keeping content visible)
+                const minCenter = 0.5 - (0.5 * (clampedZoom - 1) / clampedZoom);
+                const maxCenter = 0.5 + (0.5 * (clampedZoom - 1) / clampedZoom);
+                newZoomCenterX = Math.max(minCenter, Math.min(maxCenter, newZoomCenterX));
+                newZoomCenterY = Math.max(minCenter, Math.min(maxCenter, newZoomCenterY));
+            }
+
+            setZoomCenter({ x: newZoomCenterX, y: newZoomCenterY });
         }
 
         setZoom(clampedZoom);
-    }, []);
+    }, [zoom, zoomCenter]);
 
     // Reset zoom
     const resetZoom = useCallback(() => {
