@@ -41,6 +41,10 @@ class ManualControlSettings(BaseModel):
     crop_right: float
     width: int
     height: int
+    static_reticle_x: float
+    static_reticle_y: float
+    static_reticle_color: str
+    static_reticle_size: float
     saveToDisk: bool = False
 
 @router.get("/api/cameras/list")
@@ -233,7 +237,11 @@ async def save_manual_control_settings(settings: ManualControlSettings):
             "crop_bottom": settings.crop_bottom / 100.0,
             "crop_right": settings.crop_right / 100.0,
             "width": settings.width,
-            "height": settings.height
+            "height": settings.height,
+            "static_reticle_x": settings.static_reticle_x,
+            "static_reticle_y": settings.static_reticle_y,
+            "static_reticle_color": settings.static_reticle_color,
+            "static_reticle_size": settings.static_reticle_size
         }
         camera.image_cropped_resized.settings = new_settings
 
@@ -263,7 +271,11 @@ async def save_manual_control_settings(settings: ManualControlSettings):
                 "crop_bottom": settings.crop_bottom / 100.0,
                 "crop_right": settings.crop_right / 100.0,
                 "width": settings.width,
-                "height": settings.height
+                "height": settings.height,
+                "static_reticle_x": settings.static_reticle_x,
+                "static_reticle_y": settings.static_reticle_y,
+                "static_reticle_color": settings.static_reticle_color,
+                "static_reticle_size": settings.static_reticle_size
             }
             
             await settingscontroller.save_settings(current_settings)

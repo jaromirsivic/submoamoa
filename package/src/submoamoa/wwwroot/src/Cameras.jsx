@@ -11,6 +11,7 @@ import StaticText from './components/StaticText';
 import Slider from './components/Slider';
 import NumericInput from './components/NumericInput';
 import Polygon from './components/Polygon';
+import ColorPicker from './components/ColorPicker';
 import editIcon from './assets/icons/edit.svg';
 import reloadIcon from './assets/icons/reload.svg';
 import cameraOffIcon from './assets/icons/cameraOff.svg';
@@ -71,6 +72,10 @@ const Cameras = () => {
     const [manualCropRight, setManualCropRight] = useState(0);
     const [manualStretchWidth, setManualStretchWidth] = useState(640);
     const [manualStretchHeight, setManualStretchHeight] = useState(480);
+    const [manualReticleX, setManualReticleX] = useState(0.5);
+    const [manualReticleY, setManualReticleY] = useState(0.5);
+    const [manualReticleColor, setManualReticleColor] = useState('#ff0000cc');
+    const [manualReticleSize, setManualReticleSize] = useState(1.0);
 
     // ========================
     // State: AI Agent - Input Img Panel
@@ -165,6 +170,10 @@ const Cameras = () => {
                              setManualCropRight((currentDevice.manual_control.crop_right || 0) * 100);
                              setManualStretchWidth(currentDevice.manual_control.width || 0);
                              setManualStretchHeight(currentDevice.manual_control.height || 0);
+                             setManualReticleX(currentDevice.manual_control.static_reticle_x !== undefined ? currentDevice.manual_control.static_reticle_x : 0.5);
+                             setManualReticleY(currentDevice.manual_control.static_reticle_y !== undefined ? currentDevice.manual_control.static_reticle_y : 0.5);
+                             setManualReticleColor(currentDevice.manual_control.static_reticle_color || '#ff0000cc');
+                             setManualReticleSize(currentDevice.manual_control.static_reticle_size !== undefined ? currentDevice.manual_control.static_reticle_size : 1.0);
                          }
                          
                          // Update AI Agent settings from device
@@ -357,6 +366,10 @@ const Cameras = () => {
             state.manualCropRight = manualCropRight;
             state.manualStretchWidth = manualStretchWidth;
             state.manualStretchHeight = manualStretchHeight;
+            state.manualReticleX = manualReticleX;
+            state.manualReticleY = manualReticleY;
+            state.manualReticleColor = manualReticleColor;
+            state.manualReticleSize = manualReticleSize;
         } else if (modalName === 'ai') {
             state.aiCropTop = aiCropTop;
             state.aiCropLeft = aiCropLeft;
@@ -374,6 +387,7 @@ const Cameras = () => {
         brightness, contrast, hue, saturation, sharpness, gamma, whiteBalanceTemperature, backlight, gain, focus, exposure,
         autoWhiteBalance, autoFocus, autoExposure,
         manualCropTop, manualCropLeft, manualCropBottom, manualCropRight, manualStretchWidth, manualStretchHeight,
+        manualReticleX, manualReticleY, manualReticleColor, manualReticleSize,
         aiCropTop, aiCropLeft, aiCropBottom, aiCropRight, aiStretchWidth, aiStretchHeight
     ]);
 
@@ -450,6 +464,10 @@ const Cameras = () => {
                     crop_right: Number(originalModalState.manualCropRight),
                     width: Number(originalModalState.manualStretchWidth),
                     height: Number(originalModalState.manualStretchHeight),
+                    static_reticle_x: Number(originalModalState.manualReticleX),
+                    static_reticle_y: Number(originalModalState.manualReticleY),
+                    static_reticle_color: originalModalState.manualReticleColor,
+                    static_reticle_size: Number(originalModalState.manualReticleSize),
                     saveToDisk: false
                 };
 
@@ -466,6 +484,10 @@ const Cameras = () => {
                 setManualCropRight(Number(originalModalState.manualCropRight));
                 setManualStretchWidth(Number(originalModalState.manualStretchWidth));
                 setManualStretchHeight(Number(originalModalState.manualStretchHeight));
+                setManualReticleX(Number(originalModalState.manualReticleX));
+                setManualReticleY(Number(originalModalState.manualReticleY));
+                setManualReticleColor(originalModalState.manualReticleColor);
+                setManualReticleSize(Number(originalModalState.manualReticleSize));
             } catch (err) {
                 console.error("Failed to revert manual control settings:", err);
             }
@@ -557,6 +579,10 @@ const Cameras = () => {
                     crop_right: Number(tempState.manualCropRight),
                     width: Number(tempState.manualStretchWidth),
                     height: Number(tempState.manualStretchHeight),
+                    static_reticle_x: Number(tempState.manualReticleX),
+                    static_reticle_y: Number(tempState.manualReticleY),
+                    static_reticle_color: tempState.manualReticleColor,
+                    static_reticle_size: Number(tempState.manualReticleSize),
                     saveToDisk
                 };
                 
@@ -575,6 +601,10 @@ const Cameras = () => {
                             setManualCropRight(Number(tempState.manualCropRight));
                             setManualStretchWidth(Number(tempState.manualStretchWidth));
                             setManualStretchHeight(Number(tempState.manualStretchHeight));
+                            setManualReticleX(Number(tempState.manualReticleX));
+                            setManualReticleY(Number(tempState.manualReticleY));
+                            setManualReticleColor(tempState.manualReticleColor);
+                            setManualReticleSize(Number(tempState.manualReticleSize));
                             
                             // Refresh camera list to get updated values
                             fetchCameraList();
@@ -836,6 +866,11 @@ const Cameras = () => {
                                 stretchMode="fit"
                                 mode="viewer"
                                 background="#009900"
+                                showReticle={manualPreviewEnabled}
+                                reticleX={manualReticleX}
+                                reticleY={manualReticleY}
+                                reticleColor={manualReticleColor}
+                                reticleSize={manualReticleSize}
                             />
                         </ColumnLayout>
                     </Panel>
@@ -1083,6 +1118,48 @@ const Cameras = () => {
                             labelPosition="left"
                         />
 
+                        <HorizontalSeparator label="Static Reticle" fullWidth={true} bleed="1rem" />
+                        <Slider
+                            label="X coord"
+                            value={tempState.manualReticleX}
+                            onChange={(val) => updateTempState('manualReticleX', val)}
+                            min={-1}
+                            max={1}
+                            step={0.01}
+                            decimalPlaces={4}
+                            allowManualInput={true}
+                            labelWidth="150px"
+                        />
+                        <Slider
+                            label="Y coord"
+                            value={tempState.manualReticleY}
+                            onChange={(val) => updateTempState('manualReticleY', val)}
+                            min={-1}
+                            max={1}
+                            step={0.01}
+                            decimalPlaces={4}
+                            allowManualInput={true}
+                            labelWidth="150px"
+                        />
+                        <ColorPicker
+                            label="Color"
+                            color={tempState.manualReticleColor}
+                            onChange={(val) => updateTempState('manualReticleColor', val)}
+                            showAlpha={true}
+                            labelWidth="150px"
+                        />
+                        <Slider
+                            label="Size"
+                            value={tempState.manualReticleSize}
+                            onChange={(val) => updateTempState('manualReticleSize', val)}
+                            min={0.1}
+                            max={10}
+                            step={0.1}
+                            decimalPlaces={1}
+                            allowManualInput={true}
+                            labelWidth="150px"
+                        />
+
                         <HorizontalSeparator label="Preview" fullWidth={true} bleed="1rem" />
                         <Polygon
                             key={`modal-man-prev-${streamVersion}`}
@@ -1091,6 +1168,11 @@ const Cameras = () => {
                             stretchMode="fit"
                             mode="viewer"
                             background="#009900"
+                            showReticle={manualPreviewEnabled}
+                            reticleX={tempState.manualReticleX}
+                            reticleY={tempState.manualReticleY}
+                            reticleColor={tempState.manualReticleColor}
+                            reticleSize={tempState.manualReticleSize}
                         />
                     </ColumnLayout>
                 </ModalWindow>

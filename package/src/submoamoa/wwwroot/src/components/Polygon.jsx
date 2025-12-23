@@ -74,6 +74,7 @@ const Polygon = ({
     const pinchStartDistanceRef = useRef(null);
     const pinchStartZoomRef = useRef(1);
     const pinchCenterRef = useRef({ x: 0, y: 0 });
+    const pinchStartZoomCenterRef = useRef({ x: 0.5, y: 0.5 }); // Store initial zoomCenter at pinch start
 
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
@@ -525,18 +526,22 @@ const Polygon = ({
 
         pinchStartDistanceRef.current = distance;
         pinchStartZoomRef.current = zoom;
+        pinchStartZoomCenterRef.current = { ...zoomCenter }; // Store current zoom center
         pinchCenterRef.current = {
             x: (touch1.clientX + touch2.clientX) / 2,
             y: (touch1.clientY + touch2.clientY) / 2
         };
-    }, [zoomPanEnabled, zoom]);
+    }, [zoomPanEnabled, zoom, zoomCenter]);
 
     const handlePinchTouchMove = useCallback((e) => {
         if (!zoomPanEnabled) return;
         if (e.touches.length !== 2) return;
         if (pinchStartDistanceRef.current === null) return;
+        if (!containerRef.current) return;
 
         e.preventDefault();
+
+        const rect = containerRef.current.getBoundingClientRect();
 
         // Calculate current distance between two fingers
         const touch1 = e.touches[0];
@@ -547,14 +552,37 @@ const Polygon = ({
 
         // Calculate zoom based on pinch gesture
         const scale = distance / pinchStartDistanceRef.current;
-        const newZoom = pinchStartZoomRef.current * scale;
+        const newZoom = Math.max(1, Math.min(10, pinchStartZoomRef.current * scale));
 
-        // Calculate center of pinch (midpoint between fingers)
-        const centerX = (touch1.clientX + touch2.clientX) / 2;
-        const centerY = (touch1.clientY + touch2.clientY) / 2;
+        // Calculate current center of pinch (midpoint between fingers)
+        const currentCenterX = (touch1.clientX + touch2.clientX) / 2;
+        const currentCenterY = (touch1.clientY + touch2.clientY) / 2;
 
-        handleZoomChange(newZoom, centerX, centerY);
-    }, [zoomPanEnabled, handleZoomChange]);
+        // Calculate how much the pinch center has moved in screen pixels
+        const screenDeltaX = currentCenterX - pinchCenterRef.current.x;
+        const screenDeltaY = currentCenterY - pinchCenterRef.current.y;
+
+        // Convert screen delta to normalized delta, accounting for zoom level
+        // When zoomed in, a small screen movement should cause a smaller normalized movement
+        const effectiveZoom = newZoom;
+        const normalizedDeltaX = (screenDeltaX / rect.width) / effectiveZoom;
+        const normalizedDeltaY = (screenDeltaY / rect.height) / effectiveZoom;
+
+        // Calculate new zoom center by subtracting the delta from the start position
+        // Subtract because moving fingers right should move the view left (pan right)
+        let newZoomCenterX = pinchStartZoomCenterRef.current.x - normalizedDeltaX;
+        let newZoomCenterY = pinchStartZoomCenterRef.current.y - normalizedDeltaY;
+
+        // Clamp zoom center to valid range (keeping content visible)
+        // At higher zoom, allow more movement; at zoom 1, center should stay at 0.5
+        const minCenter = 0.5 - (0.5 * (newZoom - 1) / newZoom);
+        const maxCenter = 0.5 + (0.5 * (newZoom - 1) / newZoom);
+        newZoomCenterX = Math.max(minCenter, Math.min(maxCenter, newZoomCenterX));
+        newZoomCenterY = Math.max(minCenter, Math.min(maxCenter, newZoomCenterY));
+
+        setZoom(newZoom);
+        setZoomCenter({ x: newZoomCenterX, y: newZoomCenterY });
+    }, [zoomPanEnabled]);
 
     const handlePinchTouchEnd = useCallback((e) => {
         if (!zoomPanEnabled) return;

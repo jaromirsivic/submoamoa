@@ -1153,3 +1153,22 @@ Take a look how it is done in the Camera Modal Window and do it the similar way.
 update properties on the Manual Control panel and take them from the list.
 4. You should handle unsaved changes the same way as the Camera Modal window.
 
+Update the Polygon component. At the moment the behavior is almost as expected except the following scenario: What is OK: The first zoom and pan action is OK. When the user touches the Polygon with two fingers on the mobile device and uses pinch/spread action on the Polygon the image zooms in/out correctly with the center of the zoom in the middle of those fingers. If the user moves fingers across the polygon maintaining constant distance between fingers the image pans/moves relative to the original size of the image from one side of the polygon to the other (for example from the left to the right). This is OK because the zoom pan action started on the original image which was not zoomed nor panned. Therefore at this stage it is correctly related to the absolute state/dimensions of the image.
+What is not OK: if the image was already zoomed and panned before the second touch and user again uses two fingers to move from the left of the Polygon to the right maintaining constant distance between fingers the image should move/pan much slower taking into account position of the previously zoomed in and panned image. That means the second zoompan touch of two fingers on the already zoomed in image should use the center point between fingers as the anchor but this time the anchor will be related to the already zoomed in image.
+
+Add a new section into the Cameras -> Manual Control - Input Img Modal Window.
+The section will be called "Static Reticle" and it will have the following components:
+	X coord: Slider(minValue=-1, maxValue=1, step=0.01, decimalPlaces=4)
+	Y coord: Slider(minValue=-1, maxValue=1, step=0.01, decimalPlaces=4)
+	color: ColorPicker
+	size: Slider(minValue=0.1, maxValue=10, ste=0.1, decimalPlaces=1)
+Update Appply action to modify settings
+of th master_controller.cameras_controller.cameras[CAMERA_INDEX].image_cropped_resized
+and Save button actions to persist the reticle setup in the settings.json
+
+Remove Static Reticle section from the Manual Control - Input Img panel.
+The section should be only on the Modal Window.
+Modify the Preview on the Manual Control - Input Img and in the Modal window.
+If the Preview is enabled the Reticle should be displayed in the Polygon
+Use reticle props and set showReticle to true. If the Preview
+is not Enabled set showReticle to false.
