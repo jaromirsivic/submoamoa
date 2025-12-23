@@ -1245,3 +1245,13 @@ Something went wrong during last change. Now the user can see the calendar above
 But when he clicks on it or tries to perform any action, the popup disapears and DatePicker value is not changed.
 
 The SVG icon used in the DatePicker component should be saved into the assets/icons folder and loaded from there.
+
+Rename the DatePicker component to DateTimePicker. There will be a new props named "precission":
+If the precission is:
+days – in that case the behavior of the component is the same as the behavior of the DatePicker in current state.
+hours – in that case the DateTimePicker allows user to select hours as well (take into account daylight saving hour, if the timeZone uses daylight saving hour)
+minutes – in that case the DateTimePicker allows user to select minutes as well
+seconds – in that case the DateTimePicker allows user to select seconds as well
+months - in that case user cannot select specific day, he can select only month
+years - in that case user can select only year
+

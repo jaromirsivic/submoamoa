@@ -45,7 +45,7 @@ const Layout = () => {
       if (path === '/sandbox/table-demo') return { title: 'Table Demo', icon: componentsDemoIcon };
       if (path === '/sandbox/chart2d') return { title: 'Chart2D Demo', icon: componentsDemoIcon };
       if (path === '/sandbox/polygon-zoom-pan') return { title: 'Polygon Zoom Pan', icon: componentsDemoIcon };
-      if (path === '/sandbox/datepicker') return { title: 'DatePicker Demo', icon: componentsDemoIcon };
+      if (path === '/sandbox/datetimepicker') return { title: 'DateTimePicker Demo', icon: componentsDemoIcon };
       return { title: 'Developers Sandbox', icon: manualControlIcon };
     }
     if (path === '/tutorials') return { title: 'Tutorials', icon: tutorialsIcon };
@@ -149,7 +149,7 @@ const Layout = () => {
                   <li><MenuLink to="/sandbox/table-demo" icon={componentsDemoIcon} label="Table Demo" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/sandbox/chart2d" icon={componentsDemoIcon} label="Chart2D Demo" onClick={() => setIsMenuOpen(false)} /></li>
                   <li><MenuLink to="/sandbox/polygon-zoom-pan" icon={componentsDemoIcon} label="Polygon Zoom Pan" onClick={() => setIsMenuOpen(false)} /></li>
-                  <li><MenuLink to="/sandbox/datepicker" icon={componentsDemoIcon} label="DatePicker Demo" onClick={() => setIsMenuOpen(false)} /></li>
+                  <li><MenuLink to="/sandbox/datetimepicker" icon={componentsDemoIcon} label="DateTimePicker Demo" onClick={() => setIsMenuOpen(false)} /></li>
                 </ul>
               </li>
               <li><MenuLink to="/about" icon={aboutIcon} label="About" onClick={() => setIsMenuOpen(false)} /></li>
