@@ -1222,3 +1222,7 @@ of the menu button in the header.
 2. When user clicks on the fullscreen button the header panel with the menu button
 remains visible, but it should be hidden and the Polyton should
 cover the entire page (while in fullscreen mode).
+
+When user switches to the fullscreen the header (menu bar) which contains
+text "Manual Control" and the main "Menu" button is still visible. Take some
+effort to figure out, why it is still visible. Fix the behavior.

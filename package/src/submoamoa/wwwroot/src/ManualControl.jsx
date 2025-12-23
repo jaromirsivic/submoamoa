@@ -86,6 +86,13 @@ const ManualControl = () => {
                 document.msFullscreenElement
             );
             setIsFullscreen(isNowFullscreen);
+            
+            // Add/remove class on body for reliable CSS targeting
+            if (isNowFullscreen) {
+                document.body.classList.add('is-fullscreen');
+            } else {
+                document.body.classList.remove('is-fullscreen');
+            }
         };
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -98,6 +105,8 @@ const ManualControl = () => {
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
             document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+            // Clean up class on unmount
+            document.body.classList.remove('is-fullscreen');
         };
     }, []);
 
