@@ -68,13 +68,18 @@ const Polygon = ({
     const joystickReleasedRef = useRef(false); // prevents throttle callbacks after release
     const joystickHadMovementRef = useRef(false); // tracks if there was movement since start
 
-    // Zoom state (no panning - zoom only)
+    // Zoom state
     const [zoom, setZoom] = useState(1);
     const [zoomCenter, setZoomCenter] = useState({ x: 0.5, y: 0.5 }); // Normalized center point for zoom
     const pinchStartDistanceRef = useRef(null);
     const pinchStartZoomRef = useRef(1);
     const pinchCenterRef = useRef({ x: 0, y: 0 });
     const pinchStartZoomCenterRef = useRef({ x: 0.5, y: 0.5 }); // Store initial zoomCenter at pinch start
+
+    // Middle-button pan state
+    const [isPanning, setIsPanning] = useState(false);
+    const panStartRef = useRef({ x: 0, y: 0 }); // Mouse position at pan start
+    const panStartZoomCenterRef = useRef({ x: 0.5, y: 0.5 }); // Store initial zoomCenter at pan start
 
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
@@ -543,17 +548,26 @@ const Polygon = ({
         };
     }, []);
 
+    // Ref to always have the latest wheel handler (avoids stale closure in native event listener)
+    const wheelHandlerRef = useRef(null);
+
     // Handle wheel zoom
     const handleWheel = useCallback((e) => {
         if (!zoomPanEnabled) return;
 
+        // Prevent page/modal scrolling and stop event propagation
         e.preventDefault();
+        e.stopPropagation();
+        
         const zoomFactor = 0.1;
         const delta = e.deltaY > 0 ? -zoomFactor : zoomFactor;
         const newZoom = zoom * (1 + delta);
 
         handleZoomChange(newZoom, e.clientX, e.clientY);
     }, [zoomPanEnabled, zoom, handleZoomChange]);
+
+    // Keep the ref updated with the latest handler
+    wheelHandlerRef.current = handleWheel;
 
     // Handle touch events for pinch-to-zoom
     const handlePinchTouchStart = useCallback((e) => {
@@ -633,6 +647,100 @@ const Polygon = ({
         if (e.touches.length < 2) {
             pinchStartDistanceRef.current = null;
         }
+    }, [zoomPanEnabled]);
+
+    // Handle middle mouse button pan start
+    const handlePanMouseDown = useCallback((e) => {
+        if (!zoomPanEnabled) return;
+        if (e.button !== 1) return; // Only middle mouse button
+
+        // Prevent browser's auto-scroll behavior (scroll anchor)
+        e.preventDefault();
+        e.stopPropagation();
+        
+        setIsPanning(true);
+        panStartRef.current = { x: e.clientX, y: e.clientY };
+        panStartZoomCenterRef.current = { ...zoomCenter };
+    }, [zoomPanEnabled, zoomCenter]);
+
+    // Handle middle mouse button pan move (works globally)
+    const handlePanMouseMoveGlobal = useCallback((e) => {
+        if (!containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+
+        // Calculate how much the mouse has moved in screen pixels
+        const screenDeltaX = e.clientX - panStartRef.current.x;
+        const screenDeltaY = e.clientY - panStartRef.current.y;
+
+        // Convert screen delta to normalized delta, accounting for zoom level
+        const normalizedDeltaX = (screenDeltaX / rect.width) / zoom;
+        const normalizedDeltaY = (screenDeltaY / rect.height) / zoom;
+
+        // Calculate new zoom center by subtracting the delta from the start position
+        let newZoomCenterX = panStartZoomCenterRef.current.x - normalizedDeltaX;
+        let newZoomCenterY = panStartZoomCenterRef.current.y - normalizedDeltaY;
+
+        // Clamp zoom center to valid range
+        const minCenter = 0.5 - (0.5 * (zoom - 1) / zoom);
+        const maxCenter = 0.5 + (0.5 * (zoom - 1) / zoom);
+        newZoomCenterX = Math.max(minCenter, Math.min(maxCenter, newZoomCenterX));
+        newZoomCenterY = Math.max(minCenter, Math.min(maxCenter, newZoomCenterY));
+
+        setZoomCenter({ x: newZoomCenterX, y: newZoomCenterY });
+    }, [zoom]);
+
+    // Handle middle mouse button pan end (works globally)
+    const handlePanMouseUpGlobal = useCallback((e) => {
+        // End panning on middle button release or any button release (for mouseup without button info)
+        if (e.button === 1 || e.button === undefined) {
+            setIsPanning(false);
+        }
+    }, []);
+
+    // Add/remove global event listeners for panning (allows panning even when mouse leaves the component)
+    useEffect(() => {
+        if (!isPanning) return;
+
+        const handleMouseMove = (e) => {
+            handlePanMouseMoveGlobal(e);
+        };
+
+        const handleMouseUp = (e) => {
+            handlePanMouseUpGlobal(e);
+        };
+
+        // Add global listeners
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isPanning, handlePanMouseMoveGlobal, handlePanMouseUpGlobal]);
+
+    // Handle wheel zoom with native listener (non-passive to allow preventDefault)
+    // This replaces the React onWheel handler to ensure scroll prevention works
+    useEffect(() => {
+        if (!zoomPanEnabled) return;
+
+        const container = containerRef.current;
+        if (!container) return;
+
+        const handleWheelNative = (e) => {
+            // Call the latest wheel handler via ref
+            if (wheelHandlerRef.current) {
+                wheelHandlerRef.current(e);
+            }
+        };
+
+        // Add non-passive wheel listener to prevent default scroll and handle zoom
+        container.addEventListener('wheel', handleWheelNative, { passive: false });
+
+        return () => {
+            container.removeEventListener('wheel', handleWheelNative);
+        };
     }, [zoomPanEnabled]);
 
     // Handle click
@@ -985,7 +1093,7 @@ const Polygon = ({
         height: stretchMode === 'originalSize' ? 'auto' : '100%',
         backgroundColor: background,
         position: 'relative',
-        cursor: mode === 'designer' && currentPolygon ? 'crosshair' : (mode === 'joystick' ? 'pointer' : 'default'),
+        cursor: isPanning ? 'grabbing' : (mode === 'designer' && currentPolygon ? 'crosshair' : (mode === 'joystick' ? 'pointer' : 'default')),
         touchAction: (mode === 'designer' || mode === 'joystick' || zoomPanEnabled) ? 'none' : 'auto',
         overflow: 'hidden',
         ...style
@@ -1024,10 +1132,32 @@ const Polygon = ({
             ref={containerRef}
             style={containerStyle}
             onClick={isInteractive ? handleClick : undefined}
-            onMouseDown={isInteractive ? handleMouseDown : undefined}
-            onMouseMove={isInteractive ? handleMouseMove : undefined}
-            onMouseUp={isInteractive ? handleMouseUp : undefined}
-            onMouseLeave={isInteractive ? handleMouseUp : undefined}
+            onMouseDown={(e) => {
+                if (zoomPanEnabled && e.button === 1) {
+                    handlePanMouseDown(e);
+                } else if (isInteractive) {
+                    handleMouseDown(e);
+                }
+            }}
+            onMouseMove={(e) => {
+                // Panning is handled by global listeners when isPanning is true
+                if (!isPanning && isInteractive) {
+                    handleMouseMove(e);
+                }
+            }}
+            onMouseUp={(e) => {
+                // Pan mouseup is handled by global listener
+                if (isInteractive) {
+                    handleMouseUp(e);
+                }
+            }}
+            onMouseLeave={(e) => {
+                // Don't stop panning on mouse leave - global listener handles it
+                // Only handle non-pan interactive mode events
+                if (!isPanning && isInteractive) {
+                    handleMouseUp(e);
+                }
+            }}
             onTouchStart={(e) => {
                 if (zoomPanEnabled && e.touches.length === 2) {
                     handlePinchTouchStart(e);
@@ -1051,7 +1181,12 @@ const Polygon = ({
                 }
             }}
             onDoubleClick={isInteractive ? handleDoubleClick : undefined}
-            onWheel={zoomPanEnabled ? handleWheel : undefined}
+            onAuxClick={(e) => {
+                // Prevent browser's auto-scroll behavior when middle-clicking
+                if (zoomPanEnabled && e.button === 1) {
+                    e.preventDefault();
+                }
+            }}
         >
             <div
                 style={{
