@@ -1289,3 +1289,12 @@ in the Horizontal mode instead of Polygon component.
 There is a problem with the Polygon component. Whenever user uses joystick in the Polygon
 component while the Polygon is zoomed in, the Joystick does not recognize that and still
 uses absolute coordinates instead of relative ones, therefore joystick is drawn in the wrong place
+
+Update the Polygon component. There is a problem with the joystick. When the Polygon is
+zoomed in and user clicks on the Polygon component the joystick does not spawn in the position
+of the mouse cursor. It does not take into account relative position.
+Props like joystickSize and joystickLineMaxLength should take into account relative position.
+The joystickSize and joystickLineMaxLength should optically be the same
+regardless of if the zoom and pan is used or not.
+
+There is an issue with

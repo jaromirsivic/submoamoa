@@ -35,8 +35,8 @@ const Polygon = ({
     mode = 'designer',
     // Joystick props
     joystickColor = '#999999cc',
-    joystickSize = 48, // ~0.5 inches at 96 DPI
-    joystickLineWidth = 2,
+    joystickSize = 24, // ~0.5 inches at 96 DPI
+    joystickLineWidth = 4,
     joystickLineMaxLength = 0.25, // 25% of smaller dimension
     joystickLineMaxLengthMultiplierMode = 'minWidthHeight', // 'minWidthHeight' | 'width' | 'height'
     joystickSnapAnimationDuration = 0.1, // seconds
@@ -496,7 +496,8 @@ const Polygon = ({
         if (mode === 'joystick' && joystickStatic && joystickDynamic) {
             const staticPos = normalizedToCanvas(joystickStatic.x, joystickStatic.y);
             const dynamicPos = normalizedToCanvas(joystickDynamic.x, joystickDynamic.y);
-            const radius = joystickSize / 2;
+            const zoomFactor = zoomPanEnabled ? zoom : 1;
+            const radius = (joystickSize / 2) / zoomFactor;
 
             ctx.save();
 
@@ -505,7 +506,7 @@ const Polygon = ({
             const dy = dynamicPos.y - staticPos.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             const referenceDim = getJoystickReferenceDimension();
-            const maxDist = referenceDim * joystickLineMaxLength;
+            const maxDist = (referenceDim * joystickLineMaxLength) / zoomFactor;
             const distRatio = Math.min(1, dist / maxDist);
 
             // Interpolate line color
@@ -528,9 +529,9 @@ const Polygon = ({
 
             // Draw dotted line connecting centers
             ctx.beginPath();
-            ctx.setLineDash([4, 4]);
+            ctx.setLineDash([4 / zoomFactor, 4 / zoomFactor]);
             ctx.strokeStyle = lineColor;
-            ctx.lineWidth = joystickLineWidth;
+            ctx.lineWidth = joystickLineWidth / zoomFactor;
             ctx.moveTo(staticPos.x, staticPos.y);
             ctx.lineTo(dynamicPos.x, dynamicPos.y);
             ctx.stroke();
@@ -542,7 +543,7 @@ const Polygon = ({
             ctx.fillStyle = joystickColor;
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2 / zoomFactor;
             ctx.stroke();
 
             // Draw dynamic circle (top)
@@ -551,12 +552,12 @@ const Polygon = ({
             ctx.fillStyle = joystickColor;
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2 / zoomFactor;
             ctx.stroke();
 
             ctx.restore();
         }
-    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleColor, mode, joystickStatic, joystickDynamic, joystickColor, joystickSize, joystickLineWidth, joystickLineColor1, joystickLineColor2, joystickLineMaxLength, containerSize, getJoystickReferenceDimension]);
+    }, [polygons, currentPolygon, imageLoaded, normalizedToCanvas, borderColor, fillColor, lineWidth, src, showReticle, reticleX, reticleY, reticleSize, reticleColor, mode, joystickStatic, joystickDynamic, joystickColor, joystickSize, joystickLineWidth, joystickLineColor1, joystickLineColor2, joystickLineMaxLength, containerSize, getJoystickReferenceDimension, zoom, zoomPanEnabled]);
 
     useEffect(() => {
         draw();
@@ -881,7 +882,9 @@ const Polygon = ({
 
             // Calculate max length in normalized coordinates based on reference dimension
             const referenceDim = getJoystickReferenceDimension();
-            const maxLengthPx = referenceDim * joystickLineMaxLength;
+            // Adjust for zoom to keep optical size constant
+            const zoomFactor = zoomPanEnabled ? zoom : 1;
+            const maxLengthPx = (referenceDim * joystickLineMaxLength) / zoomFactor;
 
             // Calculate distance from static point
             const dx = normCoords.x - joystickStatic.x;
