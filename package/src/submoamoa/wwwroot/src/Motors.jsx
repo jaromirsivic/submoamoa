@@ -13,8 +13,7 @@ import ColumnLayout from './components/ColumnLayout';
 import StaticText from './components/StaticText';
 import HorizontalSeparator from './components/HorizontalSeparator';
 import Chart2D from './components/Chart2D';
-import Polygon from './components/Polygon';
-import joystickTestIcon from './assets/joystick_test.svg';
+import Joystick1D from './components/Joystick1D';
 
 import { getMotorsSettings, saveMotorsSettings, startMotorAction, stopMotorAction, getSpeedHistogram, setMotorSpeed } from './lib/api';
 import masterData from './assets/masterdata.json';
@@ -217,7 +216,7 @@ const Motors = () => {
      * Only sends setMotorSpeed if canProcessJoystickMove is true.
      */
     const motorSpeedBeingSetRef = React.useRef(false);
-    const handleJoystickMove = async (coords) => {
+    const handleJoystickMove = async (data) => {
         if (!canProcessJoystickMoveRef.current || motorSpeedBeingSetRef.current) {
             // Should not process moves unless the joystick is active and no motor speed is being set
             return;
@@ -225,9 +224,9 @@ const Motors = () => {
         if (testMotor) {
             try {
                 motorSpeedBeingSetRef.current = true;
-                await setMotorSpeed(testMotor.name, coords.y);
+                await setMotorSpeed(testMotor.name, data.value);
                 motorSpeedBeingSetRef.current = false;
-                console.log('Joystick Moved: ' + coords.y);
+                console.log('Joystick Moved: ' + data.value);
             } catch (error) {
                 console.error('Failed to set motor speed:', error);
             }
@@ -909,17 +908,17 @@ const Motors = () => {
                     okLabel="Close"
                     onOk={handleCloseTestModal}
                 >
-                    <div style={{ width: '100%', aspectRatio: '1 / 1' }}>
-                        <Polygon
-                            mode="joystick"
-                            src={joystickTestIcon}
-                            border={0}
-                            joystickColor="#777777aa"
-                            joystickLineMaxLength={0.35} 
-                            joystickMoveInterval={50}                           
-                            onJoystickMove={handleJoystickMove}
-                            onJoystickStart={handleJoystickStart}
-                            onJoystickEnd={handleJoystickEnd}
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '20px 0' }}>
+                        <Joystick1D
+                            orientation="horizontal"
+                            width={350}
+                            height={60}
+                            valueOrigin={0}
+                            minValue={-1}
+                            maxValue={1}
+                            onChange={handleJoystickMove}
+                            onStart={handleJoystickStart}
+                            onEnd={handleJoystickEnd}
                         />
                     </div>
                 </ModalWindow>

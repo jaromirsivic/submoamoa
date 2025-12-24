@@ -1282,3 +1282,10 @@ but the grooving on the horizontally oriented button should be vertical.
 
 When user releases the button, the value should be immediately set to valueOrigin
 and there should be no more onChange events triggered
+
+Update the Motors Page. On the Test Motor modal window use the Joystick1D
+in the Horizontal mode instead of Polygon component.
+
+There is a problem with the Polygon component. Whenever user uses joystick in the Polygon
+component while the Polygon is zoomed in, the Joystick does not recognize that and still
+uses absolute coordinates instead of relative ones, therefore joystick is drawn in the wrong place
