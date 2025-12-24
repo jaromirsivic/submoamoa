@@ -1255,3 +1255,23 @@ seconds – in that case the DateTimePicker allows user to select seconds as wel
 months - in that case user cannot select specific day, he can select only month
 years - in that case user can select only year
 
+Create a new component Joystick1D. The component can be switched between horizontal mode and vertical mode. Joystick1D looks almost like a slider on the audio mixer. Take a look into the assets/ joystick1d.png. Where are three of those Joystick1D in a vertical mode. But imagine it as well in the horizontal position.
+The component is rectangular with a big rectangular button, which can be moved like a slider. When user releases it, the button snaps back to the position 0, but that is only animation. The events triggered when user releases the button are onChange(value=0) and onEnd(). User must click on the button and move it. User cannot click on the Joystick1D area and hope the button will move there automatically. He needs to actively move the button. If the user moves mouse cursor or finger out of the joystick area while dragging the button it must not stop the dragging. The dragging should continue until user releases the button even if mouse cursor is not above the Joystick1D. Design of the button is very similar to the buttons in the assets/joystick1d.png
+There are following props:
+backgroundColor – background color of the Joystick1D area (by default – transparent)
+rulerColor – color of the ruler and text in the ruler (by default blue same as used in the HorizontalSeparator)
+rulerShowText – true or false. By default true.
+rulerLineDistance – by default 0.2.
+buttonColor – color of the button. By default blue same as theme of regular buttons.
+buttonOutline – color of the button outline and inside grooving. By default blue.
+valueOrigin – the position where the button should snap and where it is if the user is not dragging it. By default 0.
+value – value telling where the button is rounded to 6 decimal places
+minValue – min value of the Joystick1D. By default -1.
+maxValue – max value of the Joystick1D. By default 1.
+snapAnimationDuration – this value describes how long it takes in seconds to move button from the position where user released it to the valueOrigin position. By default 0.1.
+Events:
+onStart – triggered when clicks on the button
+onChange – triggered when user drags the button and value changes.
+onEnd – triggered when user releases the button
+Demonstrate usage of Joystick1D in the sandbox
+

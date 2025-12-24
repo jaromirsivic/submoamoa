@@ -22,6 +22,7 @@ import TableDemo from './TableDemo';
 import Chart2DDemo from './Chart2DDemo';
 import PolygonZoomPanDemo from './PolygonZoomPanDemo';
 import DateTimePickerDemo from './DateTimePickerDemo';
+import Joystick1DDemo from './Joystick1DDemo';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
             <Route path="chart2d" element={<Chart2DDemo />} />
             <Route path="polygon-zoom-pan" element={<PolygonZoomPanDemo />} />
             <Route path="datetimepicker" element={<DateTimePickerDemo />} />
+            <Route path="joystick1d" element={<Joystick1DDemo />} />
           </Route>
           <Route path="about" element={<About />} />
         </Route>
