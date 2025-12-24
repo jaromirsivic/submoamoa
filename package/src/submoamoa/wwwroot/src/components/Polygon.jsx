@@ -152,14 +152,28 @@ const Polygon = ({
     }, []);
 
     // Convert screen coordinates to normalized coordinates (0-1 range relative to container)
+    // Accounts for zoom and pan
     const screenToNormalized = useCallback((screenX, screenY) => {
         if (!containerRef.current) return { x: 0, y: 0 };
         const rect = containerRef.current.getBoundingClientRect();
+        
+        // Base normalized coords relative to viewport
+        let x = (screenX - rect.left) / rect.width;
+        let y = (screenY - rect.top) / rect.height;
+
+        // Apply inverse zoom transform if enabled and zoomed
+        if (zoomPanEnabled && zoom !== 1) {
+            // Transform: screen = center + (image - center) * zoom
+            // Inverse: image = center + (screen - center) / zoom
+            x = zoomCenter.x + (x - zoomCenter.x) / zoom;
+            y = zoomCenter.y + (y - zoomCenter.y) / zoom;
+        }
+
         return {
-            x: Math.max(0, Math.min(1, (screenX - rect.left) / rect.width)),
-            y: Math.max(0, Math.min(1, (screenY - rect.top) / rect.height))
+            x: Math.max(0, Math.min(1, x)),
+            y: Math.max(0, Math.min(1, y))
         };
-    }, []);
+    }, [zoomPanEnabled, zoom, zoomCenter]);
 
     // Convert normalized coordinates to canvas coordinates
     const normalizedToCanvas = useCallback((normX, normY) => {
@@ -171,14 +185,26 @@ const Polygon = ({
     }, []);
 
     // Convert normalized coordinates to screen coordinates
+    // Accounts for zoom and pan
     const normalizedToScreen = useCallback((normX, normY) => {
         if (!containerRef.current) return { x: 0, y: 0 };
         const rect = containerRef.current.getBoundingClientRect();
+        
+        let screenNormX = normX;
+        let screenNormY = normY;
+
+        // Apply forward zoom transform if enabled and zoomed
+        if (zoomPanEnabled && zoom !== 1) {
+            // Transform: screen = center + (image - center) * zoom
+            screenNormX = zoomCenter.x + (normX - zoomCenter.x) * zoom;
+            screenNormY = zoomCenter.y + (normY - zoomCenter.y) * zoom;
+        }
+
         return {
-            x: normX * rect.width + rect.left,
-            y: normY * rect.height + rect.top
+            x: screenNormX * rect.width + rect.left,
+            y: screenNormY * rect.height + rect.top
         };
-    }, []);
+    }, [zoomPanEnabled, zoom, zoomCenter]);
 
     // Get reference dimension for joystick max length calculation based on mode
     const getJoystickReferenceDimension = useCallback(() => {
