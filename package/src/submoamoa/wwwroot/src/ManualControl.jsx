@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Polygon from './components/Polygon';
+import ModalWindow from './components/ModalWindow';
+import Switch from './components/Switch';
+import HorizontalSeparator from './components/HorizontalSeparator';
 import settingsIcon from './assets/icons/settings.svg';
 import fullscreenIcon from './assets/icons/fullscreen.svg';
 import fullscreenExitIcon from './assets/icons/fullscreenExit.svg';
@@ -27,6 +30,15 @@ const ManualControl = () => {
     const [streamUrl, setStreamUrl] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // Motor visibility settings
+    const [motorVisibility, setMotorVisibility] = useState({
+        blue: true,
+        purple: true,
+        yellow: true,
+        orange: true
+    });
 
     /**
      * Fetch primary camera info and manual control settings.
@@ -145,11 +157,21 @@ const ManualControl = () => {
     }, [isFullscreen]);
 
     /**
-     * Handle Setup button click - navigate to camera settings.
+     * Handle Setup button click - open modal settings.
      */
     const handleSetupClick = useCallback(() => {
-        // Navigate to camera settings page
-        window.location.href = '/settings/cameras';
+        setIsModalOpen(true);
+    }, []);
+
+    const handleCloseModal = useCallback(() => {
+        setIsModalOpen(false);
+    }, []);
+
+    const toggleMotorVisibility = useCallback((motor) => {
+        setMotorVisibility(prev => ({
+            ...prev,
+            [motor]: !prev[motor]
+        }));
     }, []);
 
     // Handle joystick move events
@@ -279,6 +301,39 @@ const ManualControl = () => {
             >
                 <img src={settingsIcon} alt="Setup" width="24" height="24" />
             </button>
+
+            <ModalWindow
+                isOpen={isModalOpen}
+                title="Manual Control Settings"
+                onCancel={handleCloseModal}
+                okLabel="Close"
+                onOk={handleCloseModal}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem' }}>
+                    <HorizontalSeparator label="Displayed Motors" />
+                    
+                    <Switch
+                        label="MotorBlue"
+                        checked={motorVisibility.blue}
+                        onChange={() => toggleMotorVisibility('blue')}
+                    />
+                    <Switch
+                        label="MotorPurple"
+                        checked={motorVisibility.purple}
+                        onChange={() => toggleMotorVisibility('purple')}
+                    />
+                    <Switch
+                        label="MotorYellow"
+                        checked={motorVisibility.yellow}
+                        onChange={() => toggleMotorVisibility('yellow')}
+                    />
+                    <Switch
+                        label="MotorOrange"
+                        checked={motorVisibility.orange}
+                        onChange={() => toggleMotorVisibility('orange')}
+                    />
+                </div>
+            </ModalWindow>
         </div>
     );
 };

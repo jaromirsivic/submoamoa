@@ -14,7 +14,7 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "inertia": 0.08,
+            "inertia": 0.1,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -211,11 +211,11 @@
             }
         },
         {
-            "enabled": false,
-            "name": "linearMotor3",
+            "enabled": true,
+            "name": "Blue Device",
             "type": "linear",
             "role": "general",
-            "forwardPin": 11,
+            "forwardPin": 0,
             "reversePin": 0,
             "mcp3008ForwardPin": 0,
             "mcp3008ReversePin": 0,
@@ -230,21 +230,6 @@
                     "pwmMultiplier": 0,
                     "forwardSeconds": 0,
                     "reverseSeconds": 0
-                },
-                {
-                    "pwmMultiplier": 0.1,
-                    "forwardSeconds": 0,
-                    "reverseSeconds": 0
-                },
-                {
-                    "pwmMultiplier": 0.5,
-                    "forwardSeconds": 55,
-                    "reverseSeconds": 55
-                },
-                {
-                    "pwmMultiplier": 0.75,
-                    "forwardSeconds": 40,
-                    "reverseSeconds": 40
                 },
                 {
                     "pwmMultiplier": 1,
@@ -270,35 +255,59 @@
                     ],
                     [
                         {
-                            "value": 0.1
+                            "value": 1
                         },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 25
+                        }
+                    ]
+                ]
+            }
+        },
+        {
+            "enabled": true,
+            "name": "Purple Device",
+            "type": "linear",
+            "role": "general",
+            "forwardPin": 0,
+            "reversePin": 0,
+            "mcp3008ForwardPin": 0,
+            "mcp3008ReversePin": 0,
+            "dutyCycle": {
+                "enabled": false,
+                "maxRunningTimeSeconds": 0,
+                "minRestTimeSeconds": 0
+            },
+            "inertia": 0.1,
+            "histogram": [
+                {
+                    "pwmMultiplier": 0,
+                    "forwardSeconds": 0,
+                    "reverseSeconds": 0
+                },
+                {
+                    "pwmMultiplier": 1,
+                    "forwardSeconds": 25,
+                    "reverseSeconds": 25
+                }
+            ],
+            "automaticCalibrationEnabled": true,
+            "speedHistogram": {
+                "pwmMultiplier": 1,
+                "defaultState": "stop",
+                "histogram": [
+                    [
                         {
                             "value": 0
                         },
                         {
                             "value": 0
-                        }
-                    ],
-                    [
-                        {
-                            "value": 0.5
                         },
                         {
-                            "value": 55
-                        },
-                        {
-                            "value": 55
-                        }
-                    ],
-                    [
-                        {
-                            "value": 0.75
-                        },
-                        {
-                            "value": 40
-                        },
-                        {
-                            "value": 40
+                            "value": 0
                         }
                     ],
                     [
@@ -316,12 +325,12 @@
             }
         },
         {
-            "enabled": false,
-            "name": "linearMotor4",
+            "enabled": true,
+            "name": "Yellow Device",
             "type": "linear",
             "role": "general",
-            "forwardPin": 16,
-            "reversePin": 18,
+            "forwardPin": 0,
+            "reversePin": 0,
             "mcp3008ForwardPin": 0,
             "mcp3008ReversePin": 0,
             "dutyCycle": {
@@ -337,19 +346,61 @@
                     "reverseSeconds": 0
                 },
                 {
-                    "pwmMultiplier": 0.1,
+                    "pwmMultiplier": 1,
+                    "forwardSeconds": 25,
+                    "reverseSeconds": 25
+                }
+            ],
+            "automaticCalibrationEnabled": true,
+            "speedHistogram": {
+                "pwmMultiplier": 1,
+                "defaultState": "stop",
+                "histogram": [
+                    [
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 25
+                        }
+                    ]
+                ]
+            }
+        },
+        {
+            "enabled": true,
+            "name": "Brown Device",
+            "type": "linear",
+            "role": "general",
+            "forwardPin": 0,
+            "reversePin": 0,
+            "mcp3008ForwardPin": 0,
+            "mcp3008ReversePin": 0,
+            "dutyCycle": {
+                "enabled": false,
+                "maxRunningTimeSeconds": 0,
+                "minRestTimeSeconds": 0
+            },
+            "inertia": 0.1,
+            "histogram": [
+                {
+                    "pwmMultiplier": 0,
                     "forwardSeconds": 0,
                     "reverseSeconds": 0
-                },
-                {
-                    "pwmMultiplier": 0.5,
-                    "forwardSeconds": 55,
-                    "reverseSeconds": 55
-                },
-                {
-                    "pwmMultiplier": 0.75,
-                    "forwardSeconds": 40,
-                    "reverseSeconds": 40
                 },
                 {
                     "pwmMultiplier": 1,
@@ -357,7 +408,35 @@
                     "reverseSeconds": 25
                 }
             ],
-            "automaticCalibrationEnabled": true
+            "automaticCalibrationEnabled": true,
+            "speedHistogram": {
+                "pwmMultiplier": 1,
+                "defaultState": "stop",
+                "histogram": [
+                    [
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        },
+                        {
+                            "value": 0
+                        }
+                    ],
+                    [
+                        {
+                            "value": 1
+                        },
+                        {
+                            "value": 25
+                        },
+                        {
+                            "value": 25
+                        }
+                    ]
+                ]
+            }
         }
     ],
     "camera": {
@@ -483,6 +562,26 @@
             "rightArmMinLength": 50,
             "rightArmMaxLength": 80
         }
+    },
+    "manualControl": {
+        "motors": [
+            {
+                "index": 2,
+                "enabled": true
+            },
+            {
+                "index": 3,
+                "enabled": true
+            },
+            {
+                "index": 4,
+                "enabled": true
+            },
+            {
+                "index": 5,
+                "enabled": true
+            }
+        ]
     },
     "general": {
         "controllerSetup": {

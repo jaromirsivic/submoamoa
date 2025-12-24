@@ -1315,3 +1315,51 @@ Update the polygon component. Whenever user clicks into polygon and starts to us
 and moves mouse cursor above another component or leaves the polygon component while
 still holding left mouse button down the joystick disengages. The joystick should be
 released after user releases mouse button.
+
+Update the Manual Control web page. When user clicks on the setup button
+the modal window is displayed. On the modal window there are the following components:
+Displayed Motors: HorizontalSeparator
+MotorBlue: Switch
+MotorPurple: Switch
+MotorYellow: Switch
+MotorOrange: Switch
+
+Update the Manual Control web page, Setup button, Modal window.
+There should be always at most 4 motor displayed in the "Displayed Motors" section.
+The settings.json -> manualControl -> motors section should contain at most 4 items.
+If there are more than 4 then ignore them. Only the first four will be displayed in the
+Displayed Motors section.
+The names of motors and the values of the boolean switches displayed on the Modal window
+should be loaded from the backend.
+Values of the switches are saved in the settings.json -> manualControl -> motors -> enabled. The names
+of the motors should be gathered by settings.json -> manualControl -> motors -> index which
+is an index of the settings.json -> motors item (you should find the name of the motor there).
+The switches on the modal form should be optically aligned. If user presses the save button
+on the modal window the state of the switches should be saved to 
+settings.json -> manualControl -> motors -> enabled.
+
+If the first displayed motor is enabled the Joystick1D should be displayed on
+the Manual Control web page above the Polygon component.
+It should be vertically aligned to the bottom and horizontally
+aligned to the middle of the page. The orientation of the Joystick1D should be horizontal.
+The color theme of the Joystick1D should be blue.
+
+If the second displayed motor is enabled the Joystick1D should be displayed on
+the Manual Control web page above the Polygon component..
+It should be vertically aligned to the middle and horizontally
+aligned to the right of the page. The orientation of the Joystick1D should be vertical.
+The color theme of the Joystick1D should be purple.
+
+If the third displayed motor is enabled the Joystick1D should be displayed on
+the Manual Control web page above the Polygon component..
+It should be vertically aligned to the top and horizontally
+aligned to the middle of the page. The orientation of the Joystick1D should be horizontal.
+The color theme of the Joystick1D should be yellow.
+
+If the fourth displayed motor is enabled the Joystick1D should be displayed on
+the Manual Control web page above the Polygon component.
+It should be vertically aligned to the middle and horizontally
+aligned to the left of the page. The orientation of the Joystick1D should be vertical.
+The color theme of the Joystick1D should be brown.
+
+

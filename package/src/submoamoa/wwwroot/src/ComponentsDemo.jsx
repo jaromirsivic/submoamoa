@@ -501,6 +501,7 @@ const ComponentsDemo = () => {
                                     lineWidth={2}
                                     maxPoints={32}
                                     polygons={polygons3}
+                                    zoomPanEnabled={true}
                                     onChange={setPolygons3}
                                 />
                             </div>
