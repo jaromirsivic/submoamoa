@@ -166,17 +166,23 @@ const Joystick1D = ({
         
         setIsDragging(false);
         
-        // Animate back to valueOrigin
+        // Immediately set value to valueOrigin and trigger events
         const startValue = currentValue;
         const targetValue = valueOrigin;
-        const startTime = performance.now();
-        const duration = snapAnimationDuration * 1000; // Convert to ms
         
+        // Immediately report the final value
+        onChange?.({ value: targetValue });
+        onEnd?.();
+        
+        // If already at target, no animation needed
         if (startValue === targetValue) {
-            onChange?.({ value: targetValue });
-            onEnd?.();
+            setInternalValue(targetValue);
             return;
         }
+        
+        // Visual-only animation back to valueOrigin (no more onChange events)
+        const startTime = performance.now();
+        const duration = snapAnimationDuration * 1000; // Convert to ms
         
         setIsAnimating(true);
         
@@ -186,18 +192,16 @@ const Joystick1D = ({
             
             // Ease out cubic
             const easeOut = 1 - Math.pow(1 - progress, 3);
-            const newValue = roundValue(startValue + (targetValue - startValue) * easeOut);
+            const animatedValue = roundValue(startValue + (targetValue - startValue) * easeOut);
             
-            setInternalValue(newValue);
-            onChange?.({ value: newValue });
+            // Only update visual position, don't trigger onChange
+            setInternalValue(animatedValue);
             
             if (progress < 1) {
                 animationRef.current = requestAnimationFrame(animate);
             } else {
                 setIsAnimating(false);
                 setInternalValue(targetValue);
-                onChange?.({ value: targetValue });
-                onEnd?.();
             }
         };
         
@@ -279,6 +283,7 @@ const Joystick1D = ({
     // Track area style (where the button moves)
     const trackAreaStyle = {
         position: 'absolute',
+        zIndex: 2, // Button should be above ruler
         ...(isVertical ? {
             top: 20,
             bottom: 20,
@@ -328,7 +333,9 @@ const Joystick1D = ({
             : '3px 3px 6px rgba(0,0,0,0.3)',
         transition: isAnimating ? 'none' : 'box-shadow 0.2s',
         display: 'flex',
-        flexDirection: 'column',
+        // Vertical: grooves are horizontal, stacked vertically (flexDirection: column)
+        // Horizontal: grooves are vertical, stacked horizontally (flexDirection: row)
+        flexDirection: isVertical ? 'column' : 'row',
         justifyContent: 'center',
         alignItems: 'center',
         gap: 2,
@@ -344,7 +351,8 @@ const Joystick1D = ({
         })
     };
     
-    // Groove lines on button
+    // Groove lines on button - perpendicular to movement direction
+    // Vertical joystick: horizontal grooves, Horizontal joystick: vertical grooves
     const grooveLines = Array.from({ length: 7 }, (_, i) => {
         const isCenter = i === 3;
         const isOuter = i === 0 || i === 6;
@@ -352,6 +360,8 @@ const Joystick1D = ({
             <div
                 key={i}
                 style={{
+                    // For vertical orientation: horizontal lines (width > height)
+                    // For horizontal orientation: vertical lines (height > width)
                     width: isVertical ? '70%' : 3,
                     height: isVertical ? 3 : '70%',
                     backgroundColor: isCenter ? '#f9fafb' : isOuter ? '#6b7280' : '#9ca3af',
@@ -365,6 +375,7 @@ const Joystick1D = ({
     // Ruler style
     const rulerStyle = {
         position: 'absolute',
+        zIndex: 1, // Ruler should be behind button
         ...(isVertical ? {
             right: 8,
             top: 20,

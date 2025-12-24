@@ -1275,3 +1275,10 @@ onChange – triggered when user drags the button and value changes.
 onEnd – triggered when user releases the button
 Demonstrate usage of Joystick1D in the sandbox
 
+THere are following issues with the Joystick 1D:
+The ruler seems to be in front of the button. I can see lines above the button.
+The grooving on the vertically oriented button is OK (it is horizontal),
+but the grooving on the horizontally oriented button should be vertical.
+
+When user releases the button, the value should be immediately set to valueOrigin
+and there should be no more onChange events triggered
