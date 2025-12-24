@@ -176,13 +176,25 @@ const Polygon = ({
     }, [zoomPanEnabled, zoom, zoomCenter]);
 
     // Convert normalized coordinates to canvas coordinates
+    // Apply zoom and pan transform to convert image coordinates to screen/canvas coordinates
     const normalizedToCanvas = useCallback((normX, normY) => {
         if (!canvasRef.current) return { x: 0, y: 0 };
+        
+        let screenNormX = normX;
+        let screenNormY = normY;
+
+        // Apply forward zoom transform if enabled and zoomed
+        if (zoomPanEnabled && zoom !== 1) {
+            // Transform: screen = center + (image - center) * zoom
+            screenNormX = zoomCenter.x + (normX - zoomCenter.x) * zoom;
+            screenNormY = zoomCenter.y + (normY - zoomCenter.y) * zoom;
+        }
+
         return {
-            x: normX * canvasRef.current.width,
-            y: normY * canvasRef.current.height
+            x: screenNormX * canvasRef.current.width,
+            y: screenNormY * canvasRef.current.height
         };
-    }, []);
+    }, [zoomPanEnabled, zoom, zoomCenter]);
 
     // Convert normalized coordinates to screen coordinates
     // Accounts for zoom and pan
@@ -400,18 +412,23 @@ const Polygon = ({
             ctx.fillStyle = fillColor;
             ctx.fill();
             ctx.strokeStyle = borderColor;
-            ctx.lineWidth = lineWidth;
+            const zoomFactor = zoomPanEnabled ? zoom : 1;
+            
+            // Adjust lineWidth based on zoom to maintain sharpness but keep "optical" size if desired
+            // Or keep it constant? User said "optically zoom in" for polygons.
+            // If we want it to look like it zoomed, we scale the width.
+            ctx.lineWidth = lineWidth * zoomFactor;
             ctx.stroke();
 
             // Draw vertex points
             polygon.forEach((point) => {
                 const canvasPt = normalizedToCanvas(point.x, point.y);
                 ctx.beginPath();
-                ctx.arc(canvasPt.x, canvasPt.y, 5, 0, Math.PI * 2);
+                ctx.arc(canvasPt.x, canvasPt.y, 5 * zoomFactor, 0, Math.PI * 2);
                 ctx.fillStyle = borderColor;
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2 * zoomFactor;
                 ctx.stroke();
             });
         });
@@ -427,31 +444,36 @@ const Polygon = ({
                 ctx.lineTo(pt.x, pt.y);
             }
 
+            const zoomFactor = zoomPanEnabled ? zoom : 1;
+            
             ctx.strokeStyle = borderColor;
-            ctx.lineWidth = lineWidth;
+            ctx.lineWidth = lineWidth * zoomFactor;
             ctx.stroke();
 
             // Draw vertex points
             currentPolygon.forEach((point, index) => {
                 const canvasPt = normalizedToCanvas(point.x, point.y);
                 ctx.beginPath();
-                ctx.arc(canvasPt.x, canvasPt.y, index === 0 ? 8 : 5, 0, Math.PI * 2);
+                ctx.arc(canvasPt.x, canvasPt.y, (index === 0 ? 8 : 5) * zoomFactor, 0, Math.PI * 2);
                 ctx.fillStyle = index === 0 ? '#ff6600' : borderColor; // First point highlighted
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2 * zoomFactor;
                 ctx.stroke();
             });
         }
 
         // Draw reticle if enabled
         if (showReticle) {
+            const zoomFactor = zoomPanEnabled ? zoom : 1;
             const centerPos = normalizedToCanvas(reticleX, reticleY);
-            const baseSize = 20 * reticleSize;
-            const gapSize = 6 * reticleSize;
-            const lineLength = 14 * reticleSize;
-            const dotRadius = 2 * reticleSize;
-            const lineWidth = 2 * reticleSize;
+            
+            // Scale reticle dimensions with zoom
+            const baseSize = 20 * reticleSize * zoomFactor;
+            const gapSize = 6 * reticleSize * zoomFactor;
+            const lineLength = 14 * reticleSize * zoomFactor;
+            const dotRadius = 2 * reticleSize * zoomFactor;
+            const lineWidth = 2 * reticleSize * zoomFactor;
 
             ctx.save();
             ctx.strokeStyle = reticleColor;
@@ -497,7 +519,8 @@ const Polygon = ({
             const staticPos = normalizedToCanvas(joystickStatic.x, joystickStatic.y);
             const dynamicPos = normalizedToCanvas(joystickDynamic.x, joystickDynamic.y);
             const zoomFactor = zoomPanEnabled ? zoom : 1;
-            const radius = (joystickSize / 2) / zoomFactor;
+            // Joystick size is constant in screen pixels
+            const radius = joystickSize / 2;
 
             ctx.save();
 
@@ -506,7 +529,8 @@ const Polygon = ({
             const dy = dynamicPos.y - staticPos.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             const referenceDim = getJoystickReferenceDimension();
-            const maxDist = (referenceDim * joystickLineMaxLength) / zoomFactor;
+            // Max distance is constant in screen pixels
+            const maxDist = referenceDim * joystickLineMaxLength;
             const distRatio = Math.min(1, dist / maxDist);
 
             // Interpolate line color
@@ -529,9 +553,9 @@ const Polygon = ({
 
             // Draw dotted line connecting centers
             ctx.beginPath();
-            ctx.setLineDash([4 / zoomFactor, 4 / zoomFactor]);
+            ctx.setLineDash([4, 4]);
             ctx.strokeStyle = lineColor;
-            ctx.lineWidth = joystickLineWidth / zoomFactor;
+            ctx.lineWidth = joystickLineWidth;
             ctx.moveTo(staticPos.x, staticPos.y);
             ctx.lineTo(dynamicPos.x, dynamicPos.y);
             ctx.stroke();
@@ -543,7 +567,7 @@ const Polygon = ({
             ctx.fillStyle = joystickColor;
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2 / zoomFactor;
+            ctx.lineWidth = 2;
             ctx.stroke();
 
             // Draw dynamic circle (top)
@@ -552,7 +576,7 @@ const Polygon = ({
             ctx.fillStyle = joystickColor;
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2 / zoomFactor;
+            ctx.lineWidth = 2;
             ctx.stroke();
 
             ctx.restore();
@@ -882,17 +906,19 @@ const Polygon = ({
 
             // Calculate max length in normalized coordinates based on reference dimension
             const referenceDim = getJoystickReferenceDimension();
-            // Adjust for zoom to keep optical size constant
-            const zoomFactor = zoomPanEnabled ? zoom : 1;
-            const maxLengthPx = (referenceDim * joystickLineMaxLength) / zoomFactor;
+            // We want max length to be constant in screen pixels
+            const maxLengthPx = referenceDim * joystickLineMaxLength;
 
             // Calculate distance from static point
             const dx = normCoords.x - joystickStatic.x;
             const dy = normCoords.y - joystickStatic.y;
 
             // Convert to pixel space for distance calculation
-            const dxPx = dx * containerSize.width;
-            const dyPx = dy * containerSize.height;
+            // dx is normalized image delta. Need to convert to screen pixels.
+            // screenDelta = imageDelta * zoom * containerSize
+            const zoomFactor = zoomPanEnabled ? zoom : 1;
+            const dxPx = dx * containerSize.width * zoomFactor;
+            const dyPx = dy * containerSize.height * zoomFactor;
             const distPx = Math.sqrt(dxPx * dxPx + dyPx * dyPx);
 
             let clampedCoords = normCoords;
@@ -909,9 +935,17 @@ const Polygon = ({
 
             // Notify callback with offset from center (normalized -1 to 1)
             if (onJoystickMove) {
-                const offsetX = (clampedCoords.x - joystickStatic.x) / (maxLengthPx / containerSize.width);
-                const offsetY = (clampedCoords.y - joystickStatic.y) / (maxLengthPx / containerSize.height);
-                const distRatio = distPx / maxLengthPx;
+                // offsetX should be fraction of maxLengthPx
+                // recalculate distPx for clamped coords
+                const dxPxClamped = (clampedCoords.x - joystickStatic.x) * containerSize.width * zoomFactor;
+                const dyPxClamped = (clampedCoords.y - joystickStatic.y) * containerSize.height * zoomFactor;
+                
+                const offsetX = dxPxClamped / maxLengthPx;
+                const offsetY = dyPxClamped / maxLengthPx;
+                
+                // Re-calculate distPx for ratio
+                const distPxClamped = Math.sqrt(dxPxClamped * dxPxClamped + dyPxClamped * dyPxClamped);
+                const distRatio = distPxClamped / maxLengthPx;
 
                 // Calculate the coords to send
                 let coordsToSend;
@@ -1221,7 +1255,10 @@ const Polygon = ({
                 style={{
                     width: '100%',
                     height: '100%',
-                    position: 'relative',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    overflow: 'hidden',
                     ...getContentTransformStyle()
                 }}
             >
@@ -1235,18 +1272,18 @@ const Polygon = ({
                         draggable={false}
                     />
                 )}
-                <canvas
-                    ref={canvasRef}
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        pointerEvents: 'none'
-                    }}
-                />
             </div>
+            <canvas
+                ref={canvasRef}
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none'
+                }}
+            />
         </div>
     );
 };

@@ -1297,4 +1297,16 @@ Props like joystickSize and joystickLineMaxLength should take into account relat
 The joystickSize and joystickLineMaxLength should optically be the same
 regardless of if the zoom and pan is used or not.
 
-There is an issue with
+There is an issue with the Polygon component and the canvas where the "dynamic features" 
+(reticle, joystick and polygons) are drawn. Whenever user zooms in to the Polygon
+the canvas and all of its "dynamic features" are zoomed in as well which means
+that with higher zoom they are getting more pixelated. This should not happen. 
+You are most likely drawing the features into the overlay canvas of the same size as the Polygon
+and then if zoom and pan is used you are zooming the canvas. That is not good. The overlay
+where the "dynamic features" are drawn should always be sharp. Proposed approach:
+Overlay canvas will not zoom and pan the same way as the background image, 
+but When user zooms and pans
+you should recalculate relative positions and sizes of the reticle and polygons
+so they optically zoom in and pan. On the other hand
+joystickSize and joystickLineMaxLength optically stay the same regardless of zoom and pan
+within the displayed Polygon area.
