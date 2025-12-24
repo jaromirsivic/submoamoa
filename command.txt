@@ -1310,3 +1310,8 @@ you should recalculate relative positions and sizes of the reticle and polygons
 so they optically zoom in and pan. On the other hand
 joystickSize and joystickLineMaxLength optically stay the same regardless of zoom and pan
 within the displayed Polygon area.
+
+Update the polygon component. Whenever user clicks into polygon and starts to use the joystick
+and moves mouse cursor above another component or leaves the polygon component while
+still holding left mouse button down the joystick disengages. The joystick should be
+released after user releases mouse button.

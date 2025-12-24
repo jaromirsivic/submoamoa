@@ -1105,6 +1105,31 @@ const Polygon = ({
     const handleMouseUp = () => handlePointerUp();
     const handleTouchEnd = () => handlePointerUp();
 
+    // Global listener setup for dragging/joystick
+    useEffect(() => {
+        const handleGlobalMove = (e) => {
+            if (isJoystickActive || draggingPoint !== null) {
+                handleMouseMove(e);
+            }
+        };
+
+        const handleGlobalUp = (e) => {
+            if (isJoystickActive || draggingPoint !== null) {
+                handleMouseUp(e);
+            }
+        };
+
+        if (isJoystickActive || draggingPoint !== null) {
+            window.addEventListener('mousemove', handleGlobalMove);
+            window.addEventListener('mouseup', handleGlobalUp);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleGlobalMove);
+            window.removeEventListener('mouseup', handleGlobalUp);
+        };
+    }, [isJoystickActive, draggingPoint, handleMouseMove, handleMouseUp]);
+
     // Handle double click (delete polygon)
     const handleDoubleClick = (e) => {
         if (mode !== 'designer') return;
@@ -1215,9 +1240,9 @@ const Polygon = ({
                 }
             }}
             onMouseLeave={(e) => {
-                // Don't stop panning on mouse leave - global listener handles it
-                // Only handle non-pan interactive mode events
-                if (!isPanning && isInteractive) {
+                // Don't stop panning or joystick/dragging on mouse leave - global listener handles it
+                // Only handle non-pan interactive mode events if NOT dragging
+                if (!isPanning && isInteractive && !isJoystickActive && draggingPoint === null) {
                     handleMouseUp(e);
                 }
             }}
