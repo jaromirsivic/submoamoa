@@ -42,6 +42,9 @@ const ManualControl = () => {
     const isMountedRef = useRef(true);
     // Ref to the Polygon component for stream termination
     const polygonRef = useRef(null);
+    
+    // Window dimensions for responsive joystick positioning
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
     /**
      * Fetch motor settings from backend.
@@ -175,6 +178,19 @@ const ManualControl = () => {
         };
     }, []);
 
+    // Track window resize for responsive joystick positioning
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+
+        window.addEventListener('resize', handleResize);
+        
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
     /**
      * Toggle fullscreen mode.
      */
@@ -305,14 +321,79 @@ const ManualControl = () => {
         transition: 'opacity 0.2s, background-color 0.2s'
     };
 
+    /**
+     * Calculate first joystick (Blue) position based on window width.
+     * 
+     * Logic:
+     * - Default: bottom-center, same line as fullscreen/setup buttons (bottom: 16px)
+     * - If fullscreen button would collide, move joystick left
+     * - If joystick would touch left edge, jump up and center horizontally
+     */
+    const getFirstJoystickPosition = useCallback(() => {
+        const joystickWidth = 200;
+        const joystickHeight = 60;
+        const buttonWidth = 48;
+        const buttonMargin = 16;
+        const buttonGap = 16;
+        const margin = 16;
+        
+        // Fullscreen button left edge position from left of screen
+        // Right: 80px means button right edge is 80px from right
+        // Fullscreen button: right edge at windowWidth - 80, left edge at windowWidth - 80 - 48
+        const fullscreenLeftEdge = windowWidth - 80 - buttonWidth;
+        
+        // Joystick centered: center at windowWidth/2, right edge at windowWidth/2 + joystickWidth/2
+        const joystickCenterX = windowWidth / 2;
+        const joystickRightEdge = joystickCenterX + joystickWidth / 2;
+        
+        // Default position: bottom-center, same line as buttons
+        const defaultPosition = {
+            bottom: `${buttonMargin}px`,
+            left: '50%',
+            transform: 'translateX(-50%)'
+        };
+        
+        // Check if there's enough space (joystick right edge + margin < fullscreen left edge)
+        if (joystickRightEdge + margin < fullscreenLeftEdge) {
+            // No collision, use default centered position
+            return defaultPosition;
+        }
+        
+        // Collision detected - calculate how much to retreat left
+        // Move joystick so its right edge is at fullscreenLeftEdge - margin
+        const requiredRightEdge = fullscreenLeftEdge - margin;
+        const newCenterX = requiredRightEdge - joystickWidth / 2;
+        const newLeftEdge = newCenterX - joystickWidth / 2;
+        
+        // Check if joystick would go off the left side
+        if (newLeftEdge <= margin) {
+            // Jump up and center horizontally
+            // Position at the same y as the original design (vertical middle area)
+            // Using bottom: 50% - half joystick height for vertical center-ish
+            return {
+                bottom: '80px',  // Original elevated position
+                left: '50%',
+                transform: 'translateX(-50%)'
+            };
+        }
+        
+        // Retreat left while staying at bottom
+        return {
+            bottom: `${buttonMargin}px`,
+            left: `${newCenterX}px`,
+            transform: 'translateX(-50%)'
+        };
+    }, [windowWidth]);
+
     // Joystick configurations based on motor position
-    // Motor 1 (index 0): Blue, horizontal, bottom-center
+    // Motor 1 (index 0): Blue, horizontal, bottom-center (responsive - handled by getFirstJoystickPosition)
     // Motor 2 (index 1): Purple, vertical, middle-right
     // Motor 3 (index 2): Yellow, horizontal, top-center
     // Motor 4 (index 3): Brown, vertical, middle-left
     const joystickConfigs = [
         {
-            position: { bottom: '80px', left: '50%', transform: 'translateX(-50%)' },
+            // Default fallback position (actual position computed by getFirstJoystickPosition)
+            position: { bottom: '16px', left: '50%', transform: 'translateX(-50%)' },
             orientation: 'horizontal',
             colors: { ruler: '#3b82f6', button: '#3b82f6', outline: '#2563eb' }
         },
@@ -387,13 +468,16 @@ const ManualControl = () => {
                 const config = joystickConfigs[idx];
                 const isHorizontal = config.orientation === 'horizontal';
                 
+                // Use dynamic position for first joystick (Blue), static for others
+                const position = idx === 0 ? getFirstJoystickPosition() : config.position;
+                
                 return (
                     <div
                         key={motor.index}
                         style={{
                             position: 'absolute',
                             zIndex: 5,
-                            ...config.position
+                            ...position
                         }}
                     >
                         <Joystick1D

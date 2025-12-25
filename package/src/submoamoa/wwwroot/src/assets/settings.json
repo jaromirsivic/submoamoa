@@ -215,8 +215,8 @@
             "name": "Blue Device",
             "type": "linear",
             "role": "general",
-            "forwardPin": 0,
-            "reversePin": 0,
+            "forwardPin": 3,
+            "reversePin": 5,
             "mcp3008ForwardPin": 0,
             "mcp3008ReversePin": 0,
             "dutyCycle": {
@@ -224,7 +224,7 @@
                 "maxRunningTimeSeconds": 0,
                 "minRestTimeSeconds": 0
             },
-            "inertia": 0.1,
+            "inertia": 0.5,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
