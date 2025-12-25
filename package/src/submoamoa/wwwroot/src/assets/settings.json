@@ -571,15 +571,15 @@
             },
             {
                 "index": 3,
-                "enabled": false
+                "enabled": true
             },
             {
                 "index": 4,
-                "enabled": false
+                "enabled": true
             },
             {
                 "index": 5,
-                "enabled": false
+                "enabled": true
             }
         ]
     },

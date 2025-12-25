@@ -13,6 +13,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
  * @param {number} rulerLineWidth - Width/thickness of ruler lines in pixels (default: 1)
  * @param {string} buttonColor - Color of the button background (default: '#4b5563')
  * @param {string} buttonOutline - Color of button outline (default: '#2563eb')
+ * @param {string} buttonGroovingColor - Color of the button groovings (default: '#f9fafb')
  * @param {string} socketColor - Color of the socket/rail behind the button (default: '#374151')
  * @param {number} valueOrigin - The rest position value where button snaps to (default: 0)
  * @param {number} value - Current value, rounded to 6 decimal places
@@ -35,6 +36,7 @@ const Joystick1D = ({
     rulerLineWidth = 1,
     buttonColor = '#4b5563',
     buttonOutline = '#2563eb',
+    buttonGroovingColor = '#f9fafb',
     socketColor = '#374151',
     valueOrigin = 0,
     value: controlledValue,
@@ -370,9 +372,10 @@ const Joystick1D = ({
                     // For horizontal orientation: vertical lines (height > width)
                     width: isVertical ? '70%' : 3,
                     height: isVertical ? 3 : '70%',
-                    backgroundColor: isCenter ? '#f9fafb' : isOuter ? '#6b7280' : '#9ca3af',
+                    //backgroundColor: isCenter ? '#f9fafb' : isOuter ? '#6b7280' : '#9ca3af',
+                    backgroundColor: buttonGroovingColor,
                     borderRadius: 1,
-                    opacity: isCenter ? 1 : 0.8
+                    opacity: isCenter ? 1 : isOuter ? 0.5 : 0.8
                 }}
             />
         );

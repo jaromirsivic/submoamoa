@@ -400,7 +400,7 @@ const ManualControl = () => {
         {
             position: { top: '50%', right: '16px', transform: 'translateY(-50%)' },
             orientation: 'vertical',
-            colors: { ruler: '#8b5cf6', button: '#8b5cf6', outline: '#7c3aed' }
+            colors: { ruler: '#7134ed', button: '#8b5cf6', outline: '#7c3aed' }
         },
         {
             position: { top: '16px', left: '50%', transform: 'translateX(-50%)' },
@@ -487,7 +487,7 @@ const ManualControl = () => {
                             rulerColor={config.colors.ruler}
                             buttonColor={config.colors.button}
                             buttonOutline={config.colors.outline}
-                            backgroundColor="rgba(0, 0, 0, 0.3)"
+                            backgroundColor="rgba(0, 0, 0, 0.2)"
                             rulerShowText={true}
                             rulerLineDistance={0.2}
                             valueOrigin={0}

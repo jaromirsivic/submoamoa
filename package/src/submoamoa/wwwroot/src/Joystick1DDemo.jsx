@@ -72,6 +72,8 @@ const Joystick1DDemo = () => {
                                 buttonColor="#ff0000"
                                 buttonOutline="#ff0000"
                                 rulerColor="#10b981"
+                                socketColor="#995555"
+                                rulerVisible={false}
                             />
                             <div style={{ 
                                 marginTop: '0.5rem', 
