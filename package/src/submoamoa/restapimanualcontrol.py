@@ -15,6 +15,8 @@ class MotorConfig(BaseModel):
     index: int
     enabled: bool
     name: str = ""
+    mode: str = "joystick"  # "joystick" or "slider"
+    color: str = "#888888"  # Motor color from settings
 
 
 class ManualControlMotorsResponse(BaseModel):
@@ -48,18 +50,23 @@ async def get_manual_control_motors():
         for config in motor_configs:
             motor_index = config.get("index", 0)
             enabled = config.get("enabled", True)
+            mode = config.get("mode", "joystick")
             
-            # Get motor name from motors array using index
+            # Get motor name and color from motors array using index
             motor_name = ""
+            motor_color = "#888888"
             if 0 <= motor_index < len(motors_list):
                 motor_name = motors_list[motor_index].get("name", f"Motor {motor_index}")
+                motor_color = motors_list[motor_index].get("color", "#888888")
             else:
                 motor_name = f"Motor {motor_index}"
             
             result.append({
                 "index": motor_index,
                 "enabled": enabled,
-                "name": motor_name
+                "name": motor_name,
+                "mode": mode,
+                "color": motor_color
             })
         
         return {"success": True, "motors": result}
@@ -85,16 +92,18 @@ async def save_manual_control_motors(*, request: SaveMotorVisibilityRequest):
         # Get current motors config or create empty
         current_motors = current_settings["manualControl"].get("motors", [])
         
-        # Update enabled status for each motor in the request
+        # Update enabled status and mode for each motor in the request
         for motor_update in request.motors:
             motor_index = motor_update.get("index")
             enabled = motor_update.get("enabled", True)
+            mode = motor_update.get("mode", "joystick")
             
             # Find and update existing motor config
             found = False
             for motor_config in current_motors:
                 if motor_config.get("index") == motor_index:
                     motor_config["enabled"] = enabled
+                    motor_config["mode"] = mode
                     found = True
                     break
             
@@ -102,7 +111,8 @@ async def save_manual_control_motors(*, request: SaveMotorVisibilityRequest):
             if not found:
                 current_motors.append({
                     "index": motor_index,
-                    "enabled": enabled
+                    "enabled": enabled,
+                    "mode": mode
                 })
         
         # Limit to 4 motors and save

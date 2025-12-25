@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Polygon from './components/Polygon';
 import ModalWindow from './components/ModalWindow';
 import Switch from './components/Switch';
+import ComboBox from './components/ComboBox';
+import StaticText from './components/StaticText';
 import HorizontalSeparator from './components/HorizontalSeparator';
 import Joystick1D from './components/Joystick1D';
 import settingsIcon from './assets/icons/settings.svg';
@@ -252,6 +254,15 @@ const ManualControl = () => {
     }, []);
 
     /**
+     * Handle motor mode change in modal.
+     */
+    const handleMotorModeChange = useCallback((motorIndex, newMode) => {
+        setTempMotors(prev => prev.map(m => 
+            m.index === motorIndex ? { ...m, mode: newMode } : m
+        ));
+    }, []);
+
+    /**
      * Save motor settings to backend.
      */
     const handleSaveMotors = useCallback(async () => {
@@ -264,7 +275,8 @@ const ManualControl = () => {
                 body: JSON.stringify({
                     motors: tempMotors.map(m => ({
                         index: m.index,
-                        enabled: m.enabled
+                        enabled: m.enabled,
+                        mode: m.mode || 'joystick'
                     }))
                 })
             });
@@ -468,8 +480,23 @@ const ManualControl = () => {
                 const config = joystickConfigs[idx];
                 const isHorizontal = config.orientation === 'horizontal';
                 
-                // Use dynamic position for first joystick (Blue), static for others
+                // Use dynamic position for first joystick, static for others
                 const position = idx === 0 ? getFirstJoystickPosition() : config.position;
+                
+                // Use motor color from settings, or fallback to config colors
+                const motorColor = motor.color || config.colors.ruler;
+                
+                // Derive outline color (slightly darker)
+                const deriveOutlineColor = (color) => {
+                    // Simple darkening: reduce RGB values by 20%
+                    if (color.startsWith('#') && color.length === 7) {
+                        const r = Math.max(0, Math.floor(parseInt(color.slice(1, 3), 16) * 0.8));
+                        const g = Math.max(0, Math.floor(parseInt(color.slice(3, 5), 16) * 0.8));
+                        const b = Math.max(0, Math.floor(parseInt(color.slice(5, 7), 16) * 0.8));
+                        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                    }
+                    return color;
+                };
                 
                 return (
                     <div
@@ -482,11 +509,12 @@ const ManualControl = () => {
                     >
                         <Joystick1D
                             orientation={config.orientation}
+                            mode={motor.mode || 'joystick'}
                             width={isHorizontal ? 200 : 60}
                             height={isHorizontal ? 60 : 200}
-                            rulerColor={config.colors.ruler}
-                            buttonColor={config.colors.button}
-                            buttonOutline={config.colors.outline}
+                            rulerColor={motorColor}
+                            buttonColor={motorColor}
+                            buttonOutline={deriveOutlineColor(motorColor)}
                             backgroundColor="rgba(0, 0, 0, 0.2)"
                             rulerShowText={true}
                             rulerLineDistance={0.2}
@@ -554,24 +582,46 @@ const ManualControl = () => {
                 okLabel="Save"
                 onOk={handleSaveMotors}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0.5rem' }}>
-                    <HorizontalSeparator label="Displayed Motors" />
-                    
-                    {tempMotors.map((motor, idx) => (
-                        <Switch
-                            key={motor.index}
-                            label={motor.name || `Motor ${idx + 1}`}
-                            value={motor.enabled}
-                            onChange={() => handleMotorToggle(motor.index)}
-                            labelWidth="160px"
-                        />
-                    ))}
-                    
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem' }}>
                     {tempMotors.length === 0 && (
                         <div style={{ color: '#6b7280', fontStyle: 'italic' }}>
                             No motors configured
                         </div>
                     )}
+                    
+                    {tempMotors.slice(0, 4).map((motor, idx) => (
+                        <div key={motor.index}>
+                            <HorizontalSeparator label="Motor / Device" />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <div style={{
+                                        width: '16px',
+                                        height: '16px',
+                                        borderRadius: '50%',
+                                        backgroundColor: motor.color || '#888888',
+                                        flexShrink: 0
+                                    }} />
+                                    <StaticText text={<><span style={{ fontWeight: 500 }}>Name:</span> {motor.name || `Motor ${idx + 1}`}</>} />
+                                </div>
+                                <Switch
+                                    label="Enabled"
+                                    value={motor.enabled}
+                                    onChange={() => handleMotorToggle(motor.index)}
+                                    labelWidth="80px"
+                                />
+                                <ComboBox
+                                    label="Mode"
+                                    items={[
+                                        { label: 'Joystick', value: 'joystick' },
+                                        { label: 'Slider', value: 'slider' }
+                                    ]}
+                                    value={motor.mode || 'joystick'}
+                                    onChange={(val) => handleMotorModeChange(motor.index, val)}
+                                    disabled={!motor.enabled}
+                                />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </ModalWindow>
         </div>

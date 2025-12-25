@@ -5,6 +5,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
  * The button snaps back to origin when released with smooth animation.
  * 
  * @param {string} orientation - 'vertical' or 'horizontal' (default: 'vertical')
+ * @param {string} mode - 'joystick' (snaps back to origin) or 'slider' (stays where released) (default: 'joystick')
  * @param {string} backgroundColor - Background color of the track area (default: 'transparent')
  * @param {string} rulerColor - Color of the ruler lines and text (default: '#3b82f6')
  * @param {boolean} rulerShowText - Whether to show text labels on ruler (default: true)
@@ -28,6 +29,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
  */
 const Joystick1D = ({
     orientation = 'vertical',
+    mode = 'joystick',
     backgroundColor = 'transparent',
     rulerColor = '#3b82f6',
     rulerShowText = true,
@@ -174,11 +176,19 @@ const Joystick1D = ({
         
         setIsDragging(false);
         
-        // Immediately set value to valueOrigin and trigger events
+        // In slider mode: button stays where user left it, no snap back
+        if (mode === 'slider') {
+            // Final onChange with current position, then onEnd
+            onChange?.({ value: currentValue });
+            onEnd?.();
+            return;
+        }
+        
+        // Joystick mode: snap back to valueOrigin
         const startValue = currentValue;
         const targetValue = valueOrigin;
         
-        // Immediately report the final value
+        // Immediately report the final value (valueOrigin)
         onChange?.({ value: targetValue });
         onEnd?.();
         
@@ -214,7 +224,7 @@ const Joystick1D = ({
         };
         
         animationRef.current = requestAnimationFrame(animate);
-    }, [isDragging, currentValue, valueOrigin, snapAnimationDuration, roundValue, onChange, onEnd]);
+    }, [isDragging, currentValue, valueOrigin, snapAnimationDuration, roundValue, onChange, onEnd, mode]);
     
     // Global event listeners for drag
     useEffect(() => {

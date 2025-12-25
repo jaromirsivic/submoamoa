@@ -453,5 +453,29 @@
             "remoteHost": "192.168.68.56",
             "remotePort": 8888
         }
+    },
+    "manualControl": {
+        "motors": [
+            {
+                "index": 0,
+                "enabled": true,
+                "mode": "joystick"
+            },
+            {
+                "index": 1,
+                "enabled": true,
+                "mode": "joystick"
+            },
+            {
+                "index": 2,
+                "enabled": false,
+                "mode": "joystick"
+            },
+            {
+                "index": 3,
+                "enabled": false,
+                "mode": "joystick"
+            }
+        ]
     }
 }
