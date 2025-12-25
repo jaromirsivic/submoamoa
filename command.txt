@@ -1389,3 +1389,17 @@ If the retreating Joystick1D touches left side of the web page
 (idealy on the same y coordinate as it is now) and be horizontally aligned to the middle
  to leave some room for the fullscreen button and for the save button.
  Positioning of other three Joystick1D should not be modified.
+
+There are the following issues with the Joystick1D:
+1. Add new props rulerLineWidth. Default value is 1.
+2. Add new props rulerVisible. Default value is true. If ruler is not visible then
+ruler text is not visible as well.
+3. Ruler text at the moment shifts ruler line to which it is assigned (if the Joystick1D orientation is vertical).
+That is not OK the text should be on the right side
+of the line if Joystick1D orientation is vertical or below the ruler
+if the orientation is horizontal. Ruler lines positioning should not be distorted by the text.
+4. Add new props socketColor which defines the color of the socket (gap in which
+the button moves) displayed behind the button.
+5. The props buttonColor does not work. It should change the color of the button behind groovings.
+Groovings should be white stripes with increasing alpha in the direction to the middle of the button
+like it is right now. Current style of groovings is good.

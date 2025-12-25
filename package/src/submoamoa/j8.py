@@ -49,8 +49,6 @@ class J8(list):
         with self._lock:
             self._initialized = False
             self._error_message = ""
-            for pin in self._pins:
-                del pin
             self._pins = []
             self._pin_factory = None
 

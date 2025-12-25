@@ -81,6 +81,9 @@ class Pin:
                 self.value = 0
             else:
                 self._pin_type = pin_type
+                self._pwm.value = 0
+                self._pwm.off()
+                # PWM must not be closed because it may return pin to the floating state
                 self._pwm.close()
                 self._pwm = None
                 # TODO implement
@@ -118,4 +121,7 @@ class Pin:
         """
         with self._lock:
             if self._pin_type == PinType.OUTPUT and not self._isDummyPin and self._pwm is not None:
+                self._pwm.value = 0
+                self._pwm.off()
+                # PWM must not be closed because it may return pin to the floating state
                 self._pwm.close()

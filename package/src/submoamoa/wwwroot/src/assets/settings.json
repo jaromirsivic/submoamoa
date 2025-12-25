@@ -215,8 +215,8 @@
             "name": "Blue Device",
             "type": "linear",
             "role": "general",
-            "forwardPin": 3,
-            "reversePin": 5,
+            "forwardPin": 8,
+            "reversePin": 10,
             "mcp3008ForwardPin": 0,
             "mcp3008ReversePin": 0,
             "dutyCycle": {

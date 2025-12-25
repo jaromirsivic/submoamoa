@@ -69,8 +69,8 @@ const Joystick1DDemo = () => {
                         <div style={{ textAlign: 'center' }}>
                             <Joystick1D
                                 orientation="vertical"
-                                buttonColor="#10b981"
-                                buttonOutline="#059669"
+                                buttonColor="#ff0000"
+                                buttonOutline="#ff0000"
                                 rulerColor="#10b981"
                             />
                             <div style={{ 

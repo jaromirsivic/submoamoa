@@ -8,9 +8,12 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
  * @param {string} backgroundColor - Background color of the track area (default: 'transparent')
  * @param {string} rulerColor - Color of the ruler lines and text (default: '#3b82f6')
  * @param {boolean} rulerShowText - Whether to show text labels on ruler (default: true)
+ * @param {boolean} rulerVisible - Whether to show ruler lines and text (default: true)
  * @param {number} rulerLineDistance - Distance between major ruler lines in value units (default: 0.2)
- * @param {string} buttonColor - Color of the button (default: '#3b82f6')
- * @param {string} buttonOutline - Color of button outline and grooves (default: '#3b82f6')
+ * @param {number} rulerLineWidth - Width/thickness of ruler lines in pixels (default: 1)
+ * @param {string} buttonColor - Color of the button background (default: '#4b5563')
+ * @param {string} buttonOutline - Color of button outline (default: '#2563eb')
+ * @param {string} socketColor - Color of the socket/rail behind the button (default: '#374151')
  * @param {number} valueOrigin - The rest position value where button snaps to (default: 0)
  * @param {number} value - Current value, rounded to 6 decimal places
  * @param {number} minValue - Minimum value (default: -1)
@@ -27,9 +30,12 @@ const Joystick1D = ({
     backgroundColor = 'transparent',
     rulerColor = '#3b82f6',
     rulerShowText = true,
+    rulerVisible = true,
     rulerLineDistance = 0.2,
-    buttonColor = '#3b82f6',
+    rulerLineWidth = 1,
+    buttonColor = '#4b5563',
     buttonOutline = '#2563eb',
+    socketColor = '#374151',
     valueOrigin = 0,
     value: controlledValue,
     minValue = -1,
@@ -299,10 +305,10 @@ const Joystick1D = ({
         })
     };
     
-    // Center rail style
+    // Center rail style (socket behind the button)
     const railStyle = {
         position: 'absolute',
-        backgroundColor: '#374151',
+        backgroundColor: socketColor,
         borderRadius: 4,
         ...(isVertical ? {
             left: '50%',
@@ -324,7 +330,7 @@ const Joystick1D = ({
         position: 'absolute',
         width: buttonWidth,
         height: buttonHeight,
-        backgroundColor: '#4b5563',
+        backgroundColor: buttonColor,
         border: `2px solid ${buttonOutline}`,
         borderRadius: 4,
         cursor: isDragging ? 'grabbing' : 'grab',
@@ -407,65 +413,68 @@ const Joystick1D = ({
             </div>
             
             {/* Ruler */}
-            <div style={rulerStyle}>
-                {rulerMarks.map((mark, idx) => (
-                    <div
-                        key={idx}
-                        style={{
-                            position: 'absolute',
-                            display: 'flex',
-                            alignItems: 'center',
-                            ...(isVertical ? {
-                                left: 0,
-                                right: 0,
-                                top: mark.position + (buttonHeight / 2),
-                                flexDirection: 'row',
-                                gap: 4,
-                            } : {
-                                top: 0,
-                                bottom: 0,
-                                left: mark.position + (buttonWidth / 2),
-                                flexDirection: 'column',
-                                gap: 4,
-                            })
-                        }}
-                    >
-                        {/* Tick mark */}
+            {rulerVisible && (
+                <div style={rulerStyle}>
+                    {rulerMarks.map((mark, idx) => (
                         <div
+                            key={idx}
                             style={{
-                                backgroundColor: rulerColor,
-                                opacity: mark.isMajor ? 1 : 0.5,
+                                position: 'absolute',
                                 ...(isVertical ? {
-                                    width: mark.isMajor ? 12 : 6,
-                                    height: 1,
+                                    left: 0,
+                                    top: mark.position + (buttonHeight / 2),
+                                    height: rulerLineWidth,
                                 } : {
-                                    width: 1,
-                                    height: mark.isMajor ? 12 : 6,
+                                    top: 0,
+                                    left: mark.position + (buttonWidth / 2),
+                                    width: rulerLineWidth,
                                 })
                             }}
-                        />
-                        {/* Value label */}
-                        {rulerShowText && mark.isMajor && (
-                            <span
+                        >
+                            {/* Tick mark */}
+                            <div
                                 style={{
-                                    fontSize: '0.65rem',
-                                    color: rulerColor,
-                                    fontFamily: 'monospace',
-                                    fontWeight: 500,
-                                    whiteSpace: 'nowrap',
+                                    backgroundColor: rulerColor,
+                                    opacity: mark.isMajor ? 1 : 0.5,
                                     ...(isVertical ? {
-                                        transform: 'translateY(-50%)',
+                                        width: mark.isMajor ? 12 : 6,
+                                        height: rulerLineWidth,
                                     } : {
-                                        transform: 'translateX(-50%)',
+                                        width: rulerLineWidth,
+                                        height: mark.isMajor ? 12 : 6,
                                     })
                                 }}
-                            >
-                                {mark.value.toFixed(1)}
-                            </span>
-                        )}
-                    </div>
-                ))}
-            </div>
+                            />
+                            {/* Value label - positioned to not affect line placement */}
+                            {rulerShowText && mark.isMajor && (
+                                <span
+                                    style={{
+                                        position: 'absolute',
+                                        fontSize: '0.65rem',
+                                        color: rulerColor,
+                                        fontFamily: 'monospace',
+                                        fontWeight: 500,
+                                        whiteSpace: 'nowrap',
+                                        ...(isVertical ? {
+                                            // Right of the line for vertical orientation
+                                            left: 14,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                        } : {
+                                            // Below the line for horizontal orientation
+                                            top: 14,
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                        })
+                                    }}
+                                >
+                                    {mark.value.toFixed(1)}
+                                </span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
