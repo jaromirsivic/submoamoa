@@ -836,6 +836,13 @@ const Motors = () => {
                                                 const pwmMultiplier = editingMotor.speedHistogram.pwmMultiplier;
 
                                                 try {
+                                                    // If switching directly from forward to reverse or vice versa,
+                                                    // stop the currently active pin first
+                                                    if (activeMotorPinRef.current !== null && activeMotorPinRef.current !== pinIndex) {
+                                                        await stopMotorAction(activeMotorPinRef.current);
+                                                        activeMotorPinRef.current = null;
+                                                    }
+
                                                     // Call API and wait for response
                                                     await startMotorAction(pinIndex, pwmMultiplier);
                                                     // Store active pin for cleanup

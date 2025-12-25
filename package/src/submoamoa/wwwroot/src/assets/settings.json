@@ -231,7 +231,7 @@
                 "maxRunningTimeSeconds": 0,
                 "minRestTimeSeconds": 0
             },
-            "inertia": 0.5,
+            "inertia": 0,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -272,7 +272,9 @@
                         }
                     ]
                 ]
-            }
+            },
+            "strokeLength": 0,
+            "pwmFrequency": 16
         },
         {
             "enabled": true,

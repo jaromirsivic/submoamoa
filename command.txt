@@ -1463,3 +1463,8 @@ settings.json -> manualControl.motors[INDEX].mode. Update rest api if necessary.
 
 3. Update Manual Control web page. Color of each joystick should be loaded from
 settings.json -> motors[INDEX].color
+
+Update Motors web page. When user clicks in the Histogram Quick Test on
+the Motor Action MultiSwitch (for example on Forward button) and then directly clicks
+on the Reverse button both pins are active. This should not happen. If user goes from forward directly to reverse
+or from reverse directly to forward the stop action should be trigerred automatically in between.
