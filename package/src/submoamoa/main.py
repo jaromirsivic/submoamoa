@@ -11,6 +11,7 @@ from . import restapimotors
 from . import restapicameras
 from . import restapisettings
 from . import restapihotzone
+from . import restapimanualcontrol
 
 async def onload():
     print("Server loaded")
@@ -55,6 +56,7 @@ app.include_router(restapisettings.router)
 app.include_router(restapimotors.router)
 app.include_router(restapihotzone.router)
 app.include_router(restapicameras.router)
+app.include_router(restapimanualcontrol.router)
 
 
 @app.exception_handler(404)

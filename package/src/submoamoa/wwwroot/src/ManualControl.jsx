@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Polygon from './components/Polygon';
 import ModalWindow from './components/ModalWindow';
 import Switch from './components/Switch';
 import HorizontalSeparator from './components/HorizontalSeparator';
+import Joystick1D from './components/Joystick1D';
 import settingsIcon from './assets/icons/settings.svg';
 import fullscreenIcon from './assets/icons/fullscreen.svg';
 import fullscreenExitIcon from './assets/icons/fullscreenExit.svg';
@@ -14,7 +15,7 @@ import fullscreenExitIcon from './assets/icons/fullscreenExit.svg';
  * - Full-screen Polygon component filling entire content area
  * - Live video feed from primary camera (image_cropped_resized)
  * - Zoom and pan support
- * - Joystick control overlay
+ * - Joystick control overlay (up to 4 joysticks based on enabled motors)
  * - Reticle display based on camera settings
  * - Setup button for settings access
  * - Fullscreen mode toggle
@@ -32,13 +33,33 @@ const ManualControl = () => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     
-    // Motor visibility settings
-    const [motorVisibility, setMotorVisibility] = useState({
-        blue: true,
-        purple: true,
-        yellow: true,
-        orange: true
-    });
+    // Motor settings from backend (max 4 motors)
+    const [motors, setMotors] = useState([]);
+    // Temporary motor state for modal (to allow cancel)
+    const [tempMotors, setTempMotors] = useState([]);
+    
+    // Ref to track if component is mounted (for cleanup)
+    const isMountedRef = useRef(true);
+    // Ref to the Polygon component for stream termination
+    const polygonRef = useRef(null);
+
+    /**
+     * Fetch motor settings from backend.
+     */
+    const fetchMotorSettings = useCallback(async () => {
+        try {
+            const response = await fetch('/api/manualcontrol/motors');
+            const data = await response.json();
+            
+            if (data.success && data.motors) {
+                // Limit to 4 motors
+                const limitedMotors = data.motors.slice(0, 4);
+                setMotors(limitedMotors);
+            }
+        } catch (error) {
+            console.error('Failed to fetch motor settings:', error);
+        }
+    }, []);
 
     /**
      * Fetch primary camera info and manual control settings.
@@ -72,21 +93,34 @@ const ManualControl = () => {
             }
             
             // Set the stream URL
-            setStreamUrl(`/api/cameras/stream-manual/${cameraIndex}`);
-            setIsLoading(false);
+            if (isMountedRef.current) {
+                setStreamUrl(`/api/cameras/stream-manual/${cameraIndex}`);
+                setIsLoading(false);
+            }
             
         } catch (error) {
             console.error('Failed to fetch camera settings:', error);
             // Use defaults on error
-            setStreamUrl('/api/cameras/stream-manual/0');
-            setIsLoading(false);
+            if (isMountedRef.current) {
+                setStreamUrl('/api/cameras/stream-manual/0');
+                setIsLoading(false);
+            }
         }
     }, []);
 
-    // Fetch camera settings on mount
+    // Fetch camera and motor settings on mount
     useEffect(() => {
+        isMountedRef.current = true;
         fetchCameraSettings();
-    }, [fetchCameraSettings]);
+        fetchMotorSettings();
+        
+        // Cleanup: terminate live feed when component unmounts
+        return () => {
+            isMountedRef.current = false;
+            // Clear stream URL to stop the feed
+            setStreamUrl(null);
+        };
+    }, [fetchCameraSettings, fetchMotorSettings]);
 
     // Listen for fullscreen changes (handles Escape key and other exit methods)
     useEffect(() => {
@@ -119,6 +153,25 @@ const ManualControl = () => {
             document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
             // Clean up class on unmount
             document.body.classList.remove('is-fullscreen');
+        };
+    }, []);
+
+    // Handle page visibility change to pause/resume stream
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                // Page is hidden, could pause stream here if needed
+                console.log('Manual Control: Page hidden');
+            } else {
+                // Page is visible again
+                console.log('Manual Control: Page visible');
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, []);
 
@@ -160,19 +213,60 @@ const ManualControl = () => {
      * Handle Setup button click - open modal settings.
      */
     const handleSetupClick = useCallback(() => {
+        // Create a copy of motors for temp editing
+        setTempMotors(motors.map(m => ({ ...m })));
         setIsModalOpen(true);
-    }, []);
+    }, [motors]);
 
+    /**
+     * Handle modal cancel - discard changes.
+     */
     const handleCloseModal = useCallback(() => {
         setIsModalOpen(false);
+        setTempMotors([]);
     }, []);
 
-    const toggleMotorVisibility = useCallback((motor) => {
-        setMotorVisibility(prev => ({
-            ...prev,
-            [motor]: !prev[motor]
-        }));
+    /**
+     * Handle motor switch toggle in modal.
+     */
+    const handleMotorToggle = useCallback((motorIndex) => {
+        setTempMotors(prev => prev.map(m => 
+            m.index === motorIndex ? { ...m, enabled: !m.enabled } : m
+        ));
     }, []);
+
+    /**
+     * Save motor settings to backend.
+     */
+    const handleSaveMotors = useCallback(async () => {
+        try {
+            const response = await fetch('/api/manualcontrol/motors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    motors: tempMotors.map(m => ({
+                        index: m.index,
+                        enabled: m.enabled
+                    }))
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update main state with saved values
+                setMotors(tempMotors);
+                setIsModalOpen(false);
+                setTempMotors([]);
+            } else {
+                console.error('Failed to save motor settings');
+            }
+        } catch (error) {
+            console.error('Error saving motor settings:', error);
+        }
+    }, [tempMotors]);
 
     // Handle joystick move events
     const handleJoystickMove = useCallback((coords) => {
@@ -211,6 +305,34 @@ const ManualControl = () => {
         transition: 'opacity 0.2s, background-color 0.2s'
     };
 
+    // Joystick configurations based on motor position
+    // Motor 1 (index 0): Blue, horizontal, bottom-center
+    // Motor 2 (index 1): Purple, vertical, middle-right
+    // Motor 3 (index 2): Yellow, horizontal, top-center
+    // Motor 4 (index 3): Brown, vertical, middle-left
+    const joystickConfigs = [
+        {
+            position: { bottom: '80px', left: '50%', transform: 'translateX(-50%)' },
+            orientation: 'horizontal',
+            colors: { ruler: '#3b82f6', button: '#3b82f6', outline: '#2563eb' }
+        },
+        {
+            position: { top: '50%', right: '16px', transform: 'translateY(-50%)' },
+            orientation: 'vertical',
+            colors: { ruler: '#8b5cf6', button: '#8b5cf6', outline: '#7c3aed' }
+        },
+        {
+            position: { top: '16px', left: '50%', transform: 'translateX(-50%)' },
+            orientation: 'horizontal',
+            colors: { ruler: '#eab308', button: '#eab308', outline: '#ca8a04' }
+        },
+        {
+            position: { top: '50%', left: '16px', transform: 'translateY(-50%)' },
+            orientation: 'vertical',
+            colors: { ruler: '#92400e', button: '#92400e', outline: '#78350f' }
+        }
+    ];
+
     if (isLoading) {
         return (
             <div style={{
@@ -237,6 +359,7 @@ const ManualControl = () => {
             }}
         >
             <Polygon
+                ref={polygonRef}
                 src={streamUrl}
                 stretchMode="fit"
                 background="#000000"
@@ -256,6 +379,44 @@ const ManualControl = () => {
                     height: '100%'
                 }}
             />
+
+            {/* Render Joystick1D components for enabled motors */}
+            {motors.map((motor, idx) => {
+                if (!motor.enabled || idx >= 4) return null;
+                
+                const config = joystickConfigs[idx];
+                const isHorizontal = config.orientation === 'horizontal';
+                
+                return (
+                    <div
+                        key={motor.index}
+                        style={{
+                            position: 'absolute',
+                            zIndex: 5,
+                            ...config.position
+                        }}
+                    >
+                        <Joystick1D
+                            orientation={config.orientation}
+                            width={isHorizontal ? 200 : 60}
+                            height={isHorizontal ? 60 : 200}
+                            rulerColor={config.colors.ruler}
+                            buttonColor={config.colors.button}
+                            buttonOutline={config.colors.outline}
+                            backgroundColor="rgba(0, 0, 0, 0.3)"
+                            rulerShowText={true}
+                            rulerLineDistance={0.2}
+                            valueOrigin={0}
+                            minValue={-1}
+                            maxValue={1}
+                            snapAnimationDuration={0.1}
+                            onStart={handleJoystickStart}
+                            onChange={handleJoystickMove}
+                            onEnd={handleJoystickEnd}
+                        />
+                    </div>
+                );
+            })}
 
             {/* Fullscreen button - left of Setup button */}
             <button
@@ -306,32 +467,27 @@ const ManualControl = () => {
                 isOpen={isModalOpen}
                 title="Manual Control Settings"
                 onCancel={handleCloseModal}
-                okLabel="Close"
-                onOk={handleCloseModal}
+                okLabel="Save"
+                onOk={handleSaveMotors}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0.5rem' }}>
                     <HorizontalSeparator label="Displayed Motors" />
                     
-                    <Switch
-                        label="MotorBlue"
-                        checked={motorVisibility.blue}
-                        onChange={() => toggleMotorVisibility('blue')}
-                    />
-                    <Switch
-                        label="MotorPurple"
-                        checked={motorVisibility.purple}
-                        onChange={() => toggleMotorVisibility('purple')}
-                    />
-                    <Switch
-                        label="MotorYellow"
-                        checked={motorVisibility.yellow}
-                        onChange={() => toggleMotorVisibility('yellow')}
-                    />
-                    <Switch
-                        label="MotorOrange"
-                        checked={motorVisibility.orange}
-                        onChange={() => toggleMotorVisibility('orange')}
-                    />
+                    {tempMotors.map((motor, idx) => (
+                        <Switch
+                            key={motor.index}
+                            label={motor.name || `Motor ${idx + 1}`}
+                            value={motor.enabled}
+                            onChange={() => handleMotorToggle(motor.index)}
+                            labelWidth="160px"
+                        />
+                    ))}
+                    
+                    {tempMotors.length === 0 && (
+                        <div style={{ color: '#6b7280', fontStyle: 'italic' }}>
+                            No motors configured
+                        </div>
+                    )}
                 </div>
             </ModalWindow>
         </div>

@@ -1325,41 +1325,55 @@ MotorYellow: Switch
 MotorOrange: Switch
 
 Update the Manual Control web page, Setup button, Modal window.
-There should be always at most 4 motor displayed in the "Displayed Motors" section.
+
+1.There should be always at most 4 motor displayed on the Modal window.
 The settings.json -> manualControl -> motors section should contain at most 4 items.
 If there are more than 4 then ignore them. Only the first four will be displayed in the
 Displayed Motors section.
-The names of motors and the values of the boolean switches displayed on the Modal window
+2. The names of motors and the values of the boolean switches displayed on the Modal window
 should be loaded from the backend.
 Values of the switches are saved in the settings.json -> manualControl -> motors -> enabled. The names
 of the motors should be gathered by settings.json -> manualControl -> motors -> index which
 is an index of the settings.json -> motors item (you should find the name of the motor there).
-The switches on the modal form should be optically aligned. If user presses the save button
+3. The switches on the modal form should be optically aligned. If user presses the save button
 on the modal window the state of the switches should be saved to 
 settings.json -> manualControl -> motors -> enabled.
 
-If the first displayed motor is enabled the Joystick1D should be displayed on
+4. If the first displayed motor is enabled the Joystick1D should be displayed on
 the Manual Control web page above the Polygon component.
 It should be vertically aligned to the bottom and horizontally
 aligned to the middle of the page. The orientation of the Joystick1D should be horizontal.
 The color theme of the Joystick1D should be blue.
 
-If the second displayed motor is enabled the Joystick1D should be displayed on
+5. If the second displayed motor is enabled the Joystick1D should be displayed on
 the Manual Control web page above the Polygon component..
 It should be vertically aligned to the middle and horizontally
 aligned to the right of the page. The orientation of the Joystick1D should be vertical.
 The color theme of the Joystick1D should be purple.
 
-If the third displayed motor is enabled the Joystick1D should be displayed on
+6. If the third displayed motor is enabled the Joystick1D should be displayed on
 the Manual Control web page above the Polygon component..
 It should be vertically aligned to the top and horizontally
 aligned to the middle of the page. The orientation of the Joystick1D should be horizontal.
 The color theme of the Joystick1D should be yellow.
 
-If the fourth displayed motor is enabled the Joystick1D should be displayed on
+7. If the fourth displayed motor is enabled the Joystick1D should be displayed on
 the Manual Control web page above the Polygon component.
 It should be vertically aligned to the middle and horizontally
 aligned to the left of the page. The orientation of the Joystick1D should be vertical.
 The color theme of the Joystick1D should be brown.
 
+8. Avoid following Errors:
+8.1 The switches on the Manual Control page in the Setup Modal window are not optically aligned.
+Take a look into the Cameras web page Modal Window to see how they are aligned there and
+use the same approach.
+8.2 User must be able to update the value of the switches.
+When he clicks on the switch (at the moment) nothing happens.
+8.3 Set the proper name/caption to the button "Save".
+8.4 When user clicks on the "Save" button. The web page should call rest api to save the status of the
+switches. Create restapimanualcontrol.py file and put the logic there. It may be used as well for
+the loading of the switches values including names of the mototrs.
+8.5 When user navigates out of the page or if he closes the page
+you should terminate processing of the live feed.
 
+Update the manual control web page.
