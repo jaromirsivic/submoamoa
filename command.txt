@@ -1403,3 +1403,63 @@ the button moves) displayed behind the button.
 5. The props buttonColor does not work. It should change the color of the button behind groovings.
 Groovings should be white stripes with increasing alpha in the direction to the middle of the button
 like it is right now. Current style of groovings is good.
+
+Update General Setup web page, settings.json and rest api to allow the application
+to load and save new properties. There will be a new panel on the General Setup
+web page called "Essentials" containing following components:
+- Latitude (degrees): Slider(minValue=-90, maxValue=90, step=1, decimalPlaces=1)
+- Longtitude (degrees): Slider(minValue=-180, maxValue=180, step=1, decimalPlaces=1)
+- Altitude (meters): Numeric input
+(min=0, max=15000, minSliderValue=0, maxSliderValue=4500,step=1, decimalPlaces=0)
+- Center point true bearing: Slider(minValue=0, maxValue=360, step=1, decimalPlaces=0)
+- Center point elevation: Slider(minValue=-90, maxValue=90, step=1, decimalPlaces=1)
+All components should be optically aligned. Take a look into the Cameras web page Modal window
+to see how to do optical alignment.
+
+Update Motors web page Modal Window. Following properties should be hidden
+on the modal window and as well on the panel:
+- Enabled
+- Type
+- Role
+Those properties should still be in the settings.json and in the rest api.
+Only on the GUI they will be hidden.
+
+Add following Motor properties to the Modal Window, to the Panel, to the settings.json
+and to the rest api to allow the application to load and save the properties:
+- Stroke length (cm): Slider(min=0, max=1000, minSlider=1, maxSlider=100, step=0.5, decimalPlaces=1).
+This input should be placed below "Inertia" slider (on the Modal Window and on the Panel)
+but only in case the role of the motor is "leftArm" or "rightArm", otherwise this slider
+should not be visible.
+- PWM frequency (kHz): Slider(min=0, max=16, step=1, decimalPlaces=0).
+This input should be placed above "Histogram" table in the
+Histogram section (on the Modal Window and on the Panel)
+- Forward Enable: ComboBox with a list of pins.
+This input should be placed below "Forward" Combobox in the Pins section.
+- Reverse Enable: ComboBox with a list of pins.
+This input should be placed below "Reverse" Combobox in the Pins section.
+
+1. After second thought add stroke length to all Modals and all Panels on the Motors page.
+2. Make sure the "Forward Speed Histogram" chart and "Reverse Speed Histogram" chart are properly aligned in the panel (have proper margin). Currently they are touching left side of the panel.They should have the same margin as a "Test Motor" button and the same width to fill the panel.
+3. The x axis of the "Forward Speed Histogram" chart and "Reverse Speed Histogram" chart should be renamed to "Speed %" and the value should be multiplied by 100.
+4. Instead of the svg image currently displayed in the header of the panel, there should be a circle of the same size as the image filled with solid color.
+The color for each motor is in the settings.json -> motors[INDEX].color. Update the rest api if there is a need to update it.
+
+1. Update Joystick1D component. Add new props "mode". Mode can be:
+- "joystick" - same behavior like now. When user releases joystick the snap animation kicks in
+- "slider" - similar behavior like joystick. The events (onChange, onEnd) are triggered
+the same way like in the "joystick" mode but the last onChange have as a value
+the position of the button (not 0) and the button does not snap back to zero position.
+It remains where user left it. User needs to click on the button and move it back manually.
+
+2. Update Manual Control web page. We need to redesign the Modal Window. The modal window
+should contain four sections for first four motors which are mentioned in settings.json -> manualControl.motors
+All of them are named "Motor / Device". In each
+section there will be following components:
+Name: PlainText(value=NAME_OF_THE_MOTOR) - gathered from settings.json -> motors[INDEX].name
+Enabled: Switch. Same behavior like it is on the modal at the moment.
+Mode: ComboBox(values=["joystick", "slider"]) - Sets up the joystick mode. This ComboBox is enabled
+only if the Enabled switch is on. Value of this combobox is stored in
+settings.json -> manualControl.motors[INDEX].mode. Update rest api if necessary.
+
+3. Update Manual Control web page. Color of each joystick should be loaded from
+settings.json -> motors[INDEX].color

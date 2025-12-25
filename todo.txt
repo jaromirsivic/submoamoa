@@ -10,4 +10,22 @@ Add new props to the motor:
     Reverse Enabled Pin
     Stroke Size
     Joystick Multiplier (linear, parabolic)
+    frequency
 New component Timer
+Camera rotation in chrome
+Numeric input, when user holds an arrow the counter should change
+Units in the general setup
+
+General Setup add
+    Units
+    Latitude
+    Longtitude
+    Altitude
+    True Bearing of Diamond Top most Point
+    Elevation of Diamond Top most Point
+    True Bearing of Diamond Left most Point
+    Elevation of Diamond Left most Point
+    True Bearing of Diamond Bottom most Point
+    Elevation of Diamond Bottom most Point
+    True Bearing of Diamond Right most Point
+    Elevation of Diamond Right most Point

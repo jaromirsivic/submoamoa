@@ -3,6 +3,7 @@
         {
             "enabled": true,
             "name": "Left Arm",
+            "color": "#ef4444",
             "type": "linear",
             "role": "leftArm",
             "forwardPin": 12,
@@ -103,11 +104,14 @@
                         }
                     ]
                 ]
-            }
+            },
+            "pwmFrequency": 4,
+            "strokeLength": 30
         },
         {
             "enabled": true,
             "name": "Right Arm",
+            "color": "#22c55e",
             "type": "linear",
             "role": "rightArm",
             "forwardPin": 33,
@@ -208,11 +212,14 @@
                         }
                     ]
                 ]
-            }
+            },
+            "strokeLength": 30,
+            "pwmFrequency": 4
         },
         {
             "enabled": true,
             "name": "Blue Device",
+            "color": "#3b82f6",
             "type": "linear",
             "role": "general",
             "forwardPin": 8,
@@ -270,6 +277,7 @@
         {
             "enabled": true,
             "name": "Purple Device",
+            "color": "#7134ed",
             "type": "linear",
             "role": "general",
             "forwardPin": 0,
@@ -327,6 +335,7 @@
         {
             "enabled": true,
             "name": "Yellow Device",
+            "color": "#eab308",
             "type": "linear",
             "role": "general",
             "forwardPin": 0,
@@ -384,6 +393,7 @@
         {
             "enabled": true,
             "name": "Brown Device",
+            "color": "#92400e",
             "type": "linear",
             "role": "general",
             "forwardPin": 0,
@@ -496,7 +506,7 @@
                 "height": 0,
                 "static_reticle_x": 0.5,
                 "static_reticle_y": 0.5,
-                "static_reticle_color": "#ff0000cc",
+                "static_reticle_color": "#22ff22cc",
                 "static_reticle_size": 1.0
             },
             "aiControl": {
@@ -567,19 +577,23 @@
         "motors": [
             {
                 "index": 2,
-                "enabled": true
+                "enabled": true,
+                "mode": "joystick" 
             },
             {
                 "index": 3,
-                "enabled": true
+                "enabled": false,
+                "mode": "joystick"
             },
             {
                 "index": 4,
-                "enabled": true
+                "enabled": false,
+                "mode": "joystick"
             },
             {
                 "index": 5,
-                "enabled": true
+                "enabled": false,
+                "mode": "joystick"
             }
         ]
     },

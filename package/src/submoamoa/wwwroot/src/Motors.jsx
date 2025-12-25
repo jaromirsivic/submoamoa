@@ -18,8 +18,6 @@ import Joystick1D from './components/Joystick1D';
 import { getMotorsSettings, saveMotorsSettings, startMotorAction, stopMotorAction, getSpeedHistogram, setMotorSpeed } from './lib/api';
 import masterData from './assets/masterdata.json';
 
-import linearIcon from './assets/icons/linear.svg';
-import stepperIcon from './assets/icons/stepperMotor.svg';
 import editIcon from './assets/icons/edit.svg';
 
 const Motors = () => {
@@ -518,12 +516,6 @@ const Motors = () => {
         return pin ? `${pin.index} - ${pin.name}` : pinIndex;
     };
 
-    const getMotorIcon = (type) => {
-        if (type === 'linear') return linearIcon;
-        if (type === 'stepper') return stepperIcon;
-        return null;
-    };
-
     const getForwardPinError = () => {
         if (!editingMotor) return false;
 
@@ -582,7 +574,13 @@ const Motors = () => {
                         }}
                         title={
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                {getMotorIcon(motor.type) && <img src={getMotorIcon(motor.type)} alt="" width="24" height="24" />}
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '50%',
+                                    backgroundColor: motor.color || '#888888',
+                                    flexShrink: 0
+                                }} />
                                 <span style={{ color: '#333' }}>{motor.name} {motor.enabled ? '' : '(Disabled)'}</span>
                             </div>
                         }
@@ -597,10 +595,8 @@ const Motors = () => {
 
                         <div style={{ opacity: motor.enabled ? 1 : 0.5 }}>
                             <ColumnLayout gap="0.5rem">
-                                <StaticText text={<>Enabled: <span style={{ fontWeight: 'bold' }}>{motor.enabled ? 'Yes' : 'No'}</span></>} />
-                                <StaticText text={<>Type: <span style={{ fontWeight: 'bold' }}>{motor.type}</span></>} />
-                                <StaticText text={<>Role: <span style={{ fontWeight: 'bold' }}>{motor.role}</span></>} />
                                 <StaticText text={<>Inertia: <span style={{ fontWeight: 'bold' }}>{motor.inertia}</span></>} />
+                                <StaticText text={<>Stroke Length: <span style={{ fontWeight: 'bold' }}>{motor.strokeLength ?? 0} cm</span></>} />
 
                                 <Button
                                     label="Test Motor"
@@ -611,7 +607,9 @@ const Motors = () => {
 
                                 <HorizontalSeparator label="Pins" fullWidth={true} bleed="1.5rem" />
                                 <StaticText text={<>Forward: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.forwardPin)}</span></>} />
+                                <StaticText text={<>Forward Enable: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.forwardEnablePin ?? 0)}</span></>} />
                                 <StaticText text={<>Reverse: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.reversePin)}</span></>} />
+                                <StaticText text={<>Reverse Enable: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.reverseEnablePin ?? 0)}</span></>} />
 
                                 <HorizontalSeparator label="Duty Cycle" fullWidth={true} bleed="1.5rem" />
                                 <StaticText text={<>Enabled: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.enabled ? 'Yes' : 'No'}</span></>} />
@@ -619,22 +617,23 @@ const Motors = () => {
                                 <StaticText text={<>Min Rest: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.minRestTimeSeconds}s</span></>} />
 
                                 <HorizontalSeparator label="Histogram" fullWidth={true} bleed="1.5rem" />
+                                <StaticText text={<>PWM Frequency: <span style={{ fontWeight: 'bold' }}>{motor.pwmFrequency ?? 0} kHz</span></>} />
                                 {(() => {
                                     const histogramData = speedHistogramData.find(h => h.motorName === motor.name);
                                     if (!histogramData || histogramData.error) {
                                         return <StaticText text={<span style={{ color: '#999' }}>{histogramData?.error || 'No histogram data available'}</span>} />;
                                     }
                                     return (
-                                        <div style={{ marginTop: '-10px', marginLeft: '-1.5rem', marginRight: '-1.5rem', width: 'calc(100% + 3rem)' }}>
+                                        <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
                                             <Chart2D
                                                 title="Forward Speed Histogram"
-                                                xLabel="Speed"
+                                                xLabel="Speed %"
                                                 yLabel="PWM Multiplier"
                                                 xMin={0}
-                                                xMax={1}
+                                                xMax={100}
                                                 yMin={0}
                                                 yMax={1}
-                                                width={310}
+                                                width="100%"
                                                 height={180}
                                                 gridSize={5}
                                                 showLegend={false}
@@ -645,19 +644,19 @@ const Motors = () => {
                                                         color: '#3b82f6',
                                                         lineWidth: 2,
                                                         lineStyle: 'solid',
-                                                        data: histogramData.forward
+                                                        data: histogramData.forward.map(point => ({ x: point.x * 100, y: point.y }))
                                                     }
                                                 ]}
                                             />
                                             <Chart2D
                                                 title="Reverse Speed Histogram"
-                                                xLabel="Speed"
+                                                xLabel="Speed %"
                                                 yLabel="PWM Multiplier"
                                                 xMin={0}
-                                                xMax={1}
+                                                xMax={100}
                                                 yMin={0}
                                                 yMax={1}
-                                                width={310}
+                                                width="100%"
                                                 height={180}
                                                 gridSize={5}
                                                 showLegend={false}
@@ -668,7 +667,7 @@ const Motors = () => {
                                                         color: '#ef4444',
                                                         lineWidth: 2,
                                                         lineStyle: 'solid',
-                                                        data: histogramData.reverse
+                                                        data: histogramData.reverse.map(point => ({ x: point.x * 100, y: point.y }))
                                                     }
                                                 ]}
                                             />
@@ -694,12 +693,6 @@ const Motors = () => {
                 >
                     {/* ... Existing Edit Modal Content ... */}
                     <ColumnLayout gap="0.5rem">
-                        <Switch
-                            label="Enabled"
-                            value={editingMotor.enabled}
-                            onChange={(val) => updateMotorField('enabled', val)}
-                        />
-
                         <Textbox
                             label="Name"
                             value={editingMotor.name}
@@ -714,26 +707,6 @@ const Motors = () => {
                             }}
                         />
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                            <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333' }}>Type</span>
-                            <MultiSwitch
-                                options={motorTypeOptions}
-                                value={editingMotor.type}
-                                onChange={(val) => updateMotorField('type', val)}
-                                disabled={true}
-                            />
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                            <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333' }}>Role</span>
-                            <MultiSwitch
-                                options={motorRoleOptions}
-                                value={editingMotor.role}
-                                onChange={(val) => updateMotorField('role', val)}
-                                disabled={true}
-                            />
-                        </div>
-
                         <Slider
                             label="Inertia"
                             value={editingMotor.inertia}
@@ -745,10 +718,23 @@ const Motors = () => {
                             decimalPlaces={2}
                         />
 
+                        <Slider
+                            label="Stroke Length (cm)"
+                            value={editingMotor.strokeLength ?? 0}
+                            onChange={(val) => updateMotorField('strokeLength', Math.round(val * 10) / 10)}
+                            min={0}
+                            max={1000}
+                            minSlider={1}
+                            maxSlider={100}
+                            step={0.5}
+                            allowManualInput={true}
+                            decimalPlaces={1}
+                        />
+
                         <HorizontalSeparator label="Pins" fullWidth={true} bleed="1rem" />
                         <ColumnLayout gap="0.5rem">
                             <ComboBox
-                                label="Forward Pin"
+                                label="Forward"
                                 items={pinOptions}
                                 value={editingMotor.forwardPin}
                                 onChange={(val) => updateMotorField('forwardPin', val)}
@@ -761,7 +747,13 @@ const Motors = () => {
                                 }}
                             />
                             <ComboBox
-                                label="Reverse Pin"
+                                label="Forward Enable"
+                                items={pinOptions}
+                                value={editingMotor.forwardEnablePin ?? 0}
+                                onChange={(val) => updateMotorField('forwardEnablePin', val)}
+                            />
+                            <ComboBox
+                                label="Reverse"
                                 items={pinOptions}
                                 value={editingMotor.reversePin}
                                 onChange={(val) => updateMotorField('reversePin', val)}
@@ -773,7 +765,12 @@ const Motors = () => {
                                     padding: getReversePinError() ? '0.25rem' : undefined
                                 }}
                             />
-
+                            <ComboBox
+                                label="Reverse Enable"
+                                items={pinOptions}
+                                value={editingMotor.reverseEnablePin ?? 0}
+                                onChange={(val) => updateMotorField('reverseEnablePin', val)}
+                            />
                         </ColumnLayout>
 
                         <HorizontalSeparator label="Duty Cycle" fullWidth={true} bleed="1rem" />
@@ -875,6 +872,16 @@ const Motors = () => {
                             </div>
 
                             <HorizontalSeparator label="Speed Histogram" fullWidth={true} bleed="1rem" />
+                            <Slider
+                                label="PWM Frequency (kHz)"
+                                value={editingMotor.pwmFrequency ?? 0}
+                                onChange={(val) => updateMotorField('pwmFrequency', Math.round(val))}
+                                min={0}
+                                max={16}
+                                step={1}
+                                allowManualInput={true}
+                                decimalPlaces={0}
+                            />
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <StaticText text="Histogram" />
                                 <Table

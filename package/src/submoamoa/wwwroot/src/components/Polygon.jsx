@@ -40,7 +40,7 @@ const Polygon = ({
     joystickLineMaxLength = 0.25, // 25% of smaller dimension
     joystickLineMaxLengthMultiplierMode = 'minWidthHeight', // 'minWidthHeight' | 'width' | 'height'
     joystickSnapAnimationDuration = 0.1, // seconds
-    joystickLineColor1 = '#5555ffff', // color when dynamic on static
+    joystickLineColor1 = '#555555ff', // color when dynamic on static
     joystickLineColor2 = '#ff0000ff', // color when at max distance
     joystickZeroRadius = 0.01, // dead zone radius (fraction of max length)
     joystickMoveInterval = 0, // interval in ms to throttle onJoystickMove calls (0 = no throttle)

@@ -8,8 +8,8 @@ const Chart2D = ({
     xMax = 100,
     yMin = 0,
     yMax = 100,
-    width = 600,
-    height = 400,
+    width: widthProp = 600,
+    height: heightProp = 400,
     backgroundColor = '#ffffff',
     gridColor = '#e0e0e0',
     gridSize = 10,
@@ -24,6 +24,16 @@ const Chart2D = ({
 }) => {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
+
+    // State to track measured container width for responsive sizing
+    const [measuredWidth, setMeasuredWidth] = useState(null);
+
+    // Determine if width is responsive (string like "100%")
+    const isResponsiveWidth = typeof widthProp === 'string';
+    
+    // Actual numeric width and height to use for rendering
+    const width = isResponsiveWidth ? (measuredWidth || 300) : widthProp;
+    const height = typeof heightProp === 'number' ? heightProp : 400;
     
     // View state for pan/zoom
     const [viewXMin, setViewXMin] = useState(xMin);
@@ -40,8 +50,33 @@ const Chart2D = ({
     const [hoveredPoint, setHoveredPoint] = useState(null);
 
     const padding = { top: 50, right: 30, bottom: 50, left: 60 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
+    const chartWidth = Math.max(width - padding.left - padding.right, 10);
+    const chartHeight = Math.max(height - padding.top - padding.bottom, 10);
+
+    // Measure container width for responsive sizing
+    useEffect(() => {
+        if (!isResponsiveWidth || !containerRef.current) return;
+
+        const measureWidth = () => {
+            if (containerRef.current) {
+                const containerWidth = containerRef.current.offsetWidth;
+                if (containerWidth > 0) {
+                    setMeasuredWidth(containerWidth);
+                }
+            }
+        };
+
+        // Initial measurement
+        measureWidth();
+
+        // Use ResizeObserver for responsive updates
+        const resizeObserver = new ResizeObserver(measureWidth);
+        resizeObserver.observe(containerRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [isResponsiveWidth]);
 
     // Unique ID for clip path to avoid conflicts when multiple charts on page
     const clipPathId = useMemo(() => `chart-area-${Math.random().toString(36).substr(2, 9)}`, []);
@@ -608,7 +643,8 @@ const Chart2D = ({
     }, [isPanning, handleMouseMove, handleMouseUp]);
 
     const containerStyle = {
-        display: 'inline-block',
+        display: isResponsiveWidth ? 'block' : 'inline-block',
+        width: isResponsiveWidth ? widthProp : undefined,
         userSelect: 'none',
         ...style
     };

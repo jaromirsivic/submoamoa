@@ -5,8 +5,11 @@
             "name": "Left Arm",
             "type": "linear",
             "role": "leftArm",
+            "color": "#3b82f6",
             "forwardPin": 12,
+            "forwardEnablePin": 0,
             "reversePin": 32,
+            "reverseEnablePin": 0,
             "mcp3008ForwardPin": 1,
             "mcp3008ReversePin": 2,
             "dutyCycle": {
@@ -15,6 +18,8 @@
                 "minRestTimeSeconds": 810
             },
             "inertia": 0.08,
+            "strokeLength": 50,
+            "pwmFrequency": 0,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -110,8 +115,11 @@
             "name": "Right Arm",
             "type": "linear",
             "role": "rightArm",
+            "color": "#ef4444",
             "forwardPin": 33,
+            "forwardEnablePin": 0,
             "reversePin": 35,
+            "reverseEnablePin": 0,
             "mcp3008ForwardPin": 3,
             "mcp3008ReversePin": 4,
             "dutyCycle": {
@@ -120,6 +128,8 @@
                 "minRestTimeSeconds": 810
             },
             "inertia": 0.1,
+            "strokeLength": 50,
+            "pwmFrequency": 0,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -215,8 +225,11 @@
             "name": "linearMotor3",
             "type": "linear",
             "role": "general",
+            "color": "#22c55e",
             "forwardPin": 11,
+            "forwardEnablePin": 0,
             "reversePin": 0,
+            "reverseEnablePin": 0,
             "mcp3008ForwardPin": 0,
             "mcp3008ReversePin": 0,
             "dutyCycle": {
@@ -225,6 +238,8 @@
                 "minRestTimeSeconds": 0
             },
             "inertia": 0.1,
+            "strokeLength": 50,
+            "pwmFrequency": 0,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -320,8 +335,11 @@
             "name": "linearMotor4",
             "type": "linear",
             "role": "general",
+            "color": "#f59e0b",
             "forwardPin": 16,
+            "forwardEnablePin": 0,
             "reversePin": 18,
+            "reverseEnablePin": 0,
             "mcp3008ForwardPin": 0,
             "mcp3008ReversePin": 0,
             "dutyCycle": {
@@ -330,6 +348,8 @@
                 "minRestTimeSeconds": 0
             },
             "inertia": 0.1,
+            "strokeLength": 50,
+            "pwmFrequency": 0,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
