@@ -274,7 +274,8 @@
                 ]
             },
             "strokeLength": 0,
-            "pwmFrequency": 16
+            "pwmFrequency": 4,
+            "forwardEnablePin": "0"
         },
         {
             "enabled": true,
@@ -602,7 +603,7 @@
     "general": {
         "controllerSetup": {
             "controller": "remote",
-            "remoteHost": "192.168.68.53",
+            "remoteHost": "192.168.68.52",
             "remotePort": 8888
         }
     }

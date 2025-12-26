@@ -284,7 +284,7 @@ const Motors = () => {
 
     const updateMotorField = (field, value) => {
         let newValue = value;
-        if (['forwardPin', 'reversePin', 'mcp3008ForwardPin', 'mcp3008ReversePin'].includes(field)) {
+        if (['forwardPin', 'reversePin', 'forwardEnablePin', 'reverseEnablePin', 'mcp3008ForwardPin', 'mcp3008ReversePin'].includes(field)) {
             newValue = parseInt(value, 10);
         }
 
@@ -341,31 +341,6 @@ const Motors = () => {
 
         if (duplicateMotor) {
             errors.push('A motor with this name already exists');
-        }
-
-        // Pin validation - Pin 0 (Dummy GPIO) is exempt from this check
-        if (editingMotor.forwardPin !== 0 && editingMotor.forwardPin === editingMotor.reversePin) {
-            errors.push('Forward Pin and Reverse Pin must be different');
-        }
-
-        // Check if Forward Pin is used by another motor (Pin 0 is exempt)
-        if (editingMotor.forwardPin !== 0) {
-            const forwardPinConflict = motors.find((m, index) =>
-                index !== editingMotorIndex && (m.forwardPin === editingMotor.forwardPin || m.reversePin === editingMotor.forwardPin)
-            );
-            if (forwardPinConflict) {
-                errors.push(`Forward Pin ${editingMotor.forwardPin} is already used by motor '${forwardPinConflict.name}'`);
-            }
-        }
-
-        // Check if Reverse Pin is used by another motor (Pin 0 is exempt)
-        if (editingMotor.reversePin !== 0) {
-            const reversePinConflict = motors.find((m, index) =>
-                index !== editingMotorIndex && (m.forwardPin === editingMotor.reversePin || m.reversePin === editingMotor.reversePin)
-            );
-            if (reversePinConflict) {
-                errors.push(`Reverse Pin ${editingMotor.reversePin} is already used by motor '${reversePinConflict.name}'`);
-            }
         }
 
         // Speed Histogram Validations
@@ -489,11 +464,95 @@ const Motors = () => {
         return errors;
     };
 
+    /**
+     * Returns validation warnings (non-blocking) for pin conflicts.
+     * Checks Forward, Reverse, Forward Enable, and Reverse Enable pins
+     * against all pins used by other motors AND within the same motor.
+     * Exception: Pin 0 (Dummy GPIO) can be used multiple times.
+     */
     const getValidationWarnings = () => {
         if (!editingMotor) return [];
         const warnings = [];
 
-        // No warnings needed - pin conflicts are now errors
+        const forwardPin = editingMotor.forwardPin;
+        const reversePin = editingMotor.reversePin;
+        const forwardEnablePin = editingMotor.forwardEnablePin ?? 0;
+        const reverseEnablePin = editingMotor.reverseEnablePin ?? 0;
+
+        /**
+         * Helper to find if a pin is used by any other motor.
+         * Returns the conflicting motor and which pin type it conflicts with.
+         */
+        const findOtherMotorConflict = (pinValue) => {
+            if (pinValue === 0) return null; // Pin 0 (Dummy GPIO) is exempt
+
+            for (let i = 0; i < motors.length; i++) {
+                if (i === editingMotorIndex) continue;
+                const m = motors[i];
+
+                if (m.forwardPin === pinValue) return { motor: m, pinType: 'Forward Pin' };
+                if (m.reversePin === pinValue) return { motor: m, pinType: 'Reverse Pin' };
+                if ((m.forwardEnablePin ?? 0) === pinValue) return { motor: m, pinType: 'Forward Enable Pin' };
+                if ((m.reverseEnablePin ?? 0) === pinValue) return { motor: m, pinType: 'Reverse Enable Pin' };
+            }
+            return null;
+        };
+
+        // Check Forward Pin conflicts
+        if (forwardPin !== 0) {
+            // Check conflict with other motors
+            const otherConflict = findOtherMotorConflict(forwardPin);
+            if (otherConflict) {
+                warnings.push(`Forward Pin ${forwardPin} is already used as ${otherConflict.pinType} by motor '${otherConflict.motor.name}'`);
+            }
+            // Check conflict within same motor
+            if (forwardPin === reversePin) {
+                warnings.push(`Forward Pin ${forwardPin} conflicts with Reverse Pin`);
+            }
+            if (forwardPin === forwardEnablePin) {
+                warnings.push(`Forward Pin ${forwardPin} conflicts with Forward Enable Pin`);
+            }
+            if (forwardPin === reverseEnablePin) {
+                warnings.push(`Forward Pin ${forwardPin} conflicts with Reverse Enable Pin`);
+            }
+        }
+
+        // Check Reverse Pin conflicts
+        if (reversePin !== 0) {
+            // Check conflict with other motors
+            const otherConflict = findOtherMotorConflict(reversePin);
+            if (otherConflict) {
+                warnings.push(`Reverse Pin ${reversePin} is already used as ${otherConflict.pinType} by motor '${otherConflict.motor.name}'`);
+            }
+            // Check conflict within same motor (skip Forward since already checked above)
+            if (reversePin === forwardEnablePin) {
+                warnings.push(`Reverse Pin ${reversePin} conflicts with Forward Enable Pin`);
+            }
+            if (reversePin === reverseEnablePin) {
+                warnings.push(`Reverse Pin ${reversePin} conflicts with Reverse Enable Pin`);
+            }
+        }
+
+        // Check Forward Enable Pin conflicts
+        if (forwardEnablePin !== 0) {
+            // Check conflict with other motors
+            const otherConflict = findOtherMotorConflict(forwardEnablePin);
+            if (otherConflict) {
+                warnings.push(`Forward Enable Pin ${forwardEnablePin} is already used as ${otherConflict.pinType} by motor '${otherConflict.motor.name}'`);
+            }
+            // Check conflict within same motor (skip already checked above)
+            if (forwardEnablePin === reverseEnablePin) {
+                warnings.push(`Forward Enable Pin ${forwardEnablePin} conflicts with Reverse Enable Pin`);
+            }
+        }
+
+        // Check Reverse Enable Pin conflicts with other motors only (same motor already checked above)
+        if (reverseEnablePin !== 0) {
+            const otherConflict = findOtherMotorConflict(reverseEnablePin);
+            if (otherConflict) {
+                warnings.push(`Reverse Enable Pin ${reverseEnablePin} is already used as ${otherConflict.pinType} by motor '${otherConflict.motor.name}'`);
+            }
+        }
 
         return warnings;
     };
@@ -516,38 +575,104 @@ const Motors = () => {
         return pin ? `${pin.index} - ${pin.name}` : pinIndex;
     };
 
-    const getForwardPinError = () => {
-        if (!editingMotor) return false;
+    /**
+     * Helper to check if a pin is used by any other motor.
+     * @param {number} pinValue - The pin index to check.
+     * @returns {boolean} True if the pin is used by another motor.
+     */
+    const isPinUsedByOtherMotor = (pinValue) => {
+        if (pinValue === 0) return false; // Pin 0 (Dummy GPIO) is exempt
 
-        // Pin 0 is exempt from all validation
-        if (editingMotor.forwardPin === 0) return false;
+        for (let i = 0; i < motors.length; i++) {
+            if (i === editingMotorIndex) continue;
+            const m = motors[i];
 
-        // Check if same as reverse pin
-        if (editingMotor.forwardPin === editingMotor.reversePin) return true;
-
-        // Check if used by another motor
-        const forwardPinConflict = motors.find((m, index) =>
-            index !== editingMotorIndex && (m.forwardPin === editingMotor.forwardPin || m.reversePin === editingMotor.forwardPin)
-        );
-
-        return !!forwardPinConflict;
+            if (m.forwardPin === pinValue) return true;
+            if (m.reversePin === pinValue) return true;
+            if ((m.forwardEnablePin ?? 0) === pinValue) return true;
+            if ((m.reverseEnablePin ?? 0) === pinValue) return true;
+        }
+        return false;
     };
 
-    const getReversePinError = () => {
+    /**
+     * Returns true if Forward Pin has a warning (conflict with any other pin).
+     * Checks: other motors AND same motor's other pins.
+     */
+    const getForwardPinWarning = () => {
         if (!editingMotor) return false;
+        const pin = editingMotor.forwardPin;
+        if (pin === 0) return false;
 
-        // Pin 0 is exempt from all validation
-        if (editingMotor.reversePin === 0) return false;
+        // Check conflict with other motors
+        if (isPinUsedByOtherMotor(pin)) return true;
 
-        // Check if same as forward pin
-        if (editingMotor.forwardPin === editingMotor.reversePin) return true;
+        // Check conflict within same motor
+        if (pin === editingMotor.reversePin) return true;
+        if (pin === (editingMotor.forwardEnablePin ?? 0)) return true;
+        if (pin === (editingMotor.reverseEnablePin ?? 0)) return true;
 
-        // Check if used by another motor
-        const reversePinConflict = motors.find((m, index) =>
-            index !== editingMotorIndex && (m.forwardPin === editingMotor.reversePin || m.reversePin === editingMotor.reversePin)
-        );
+        return false;
+    };
 
-        return !!reversePinConflict;
+    /**
+     * Returns true if Reverse Pin has a warning (conflict with any other pin).
+     * Checks: other motors AND same motor's other pins.
+     */
+    const getReversePinWarning = () => {
+        if (!editingMotor) return false;
+        const pin = editingMotor.reversePin;
+        if (pin === 0) return false;
+
+        // Check conflict with other motors
+        if (isPinUsedByOtherMotor(pin)) return true;
+
+        // Check conflict within same motor
+        if (pin === editingMotor.forwardPin) return true;
+        if (pin === (editingMotor.forwardEnablePin ?? 0)) return true;
+        if (pin === (editingMotor.reverseEnablePin ?? 0)) return true;
+
+        return false;
+    };
+
+    /**
+     * Returns true if Forward Enable Pin has a warning (conflict with any other pin).
+     * Checks: other motors AND same motor's other pins.
+     */
+    const getForwardEnablePinWarning = () => {
+        if (!editingMotor) return false;
+        const pin = editingMotor.forwardEnablePin ?? 0;
+        if (pin === 0) return false;
+
+        // Check conflict with other motors
+        if (isPinUsedByOtherMotor(pin)) return true;
+
+        // Check conflict within same motor
+        if (pin === editingMotor.forwardPin) return true;
+        if (pin === editingMotor.reversePin) return true;
+        if (pin === (editingMotor.reverseEnablePin ?? 0)) return true;
+
+        return false;
+    };
+
+    /**
+     * Returns true if Reverse Enable Pin has a warning (conflict with any other pin).
+     * Checks: other motors AND same motor's other pins.
+     */
+    const getReverseEnablePinWarning = () => {
+        if (!editingMotor) return false;
+        const pin = editingMotor.reverseEnablePin ?? 0;
+        if (pin === 0) return false;
+
+        // Check conflict with other motors
+        if (isPinUsedByOtherMotor(pin)) return true;
+
+        // Check conflict within same motor
+        if (pin === editingMotor.forwardPin) return true;
+        if (pin === editingMotor.reversePin) return true;
+        if (pin === (editingMotor.forwardEnablePin ?? 0)) return true;
+
+        return false;
     };
 
     // Show loading state
@@ -739,11 +864,11 @@ const Motors = () => {
                                 value={editingMotor.forwardPin}
                                 onChange={(val) => updateMotorField('forwardPin', val)}
                                 style={{
-                                    border: getForwardPinError() ? '2px solid #ef4444' : undefined,
-                                    boxShadow: getForwardPinError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : undefined,
+                                    border: getForwardPinWarning() ? '2px solid #f59e0b' : undefined,
+                                    boxShadow: getForwardPinWarning() ? '0 0 8px rgba(245, 158, 11, 0.6)' : undefined,
                                     borderRadius: '4px',
                                     transition: 'all 0.2s ease',
-                                    padding: getForwardPinError() ? '0.25rem' : undefined
+                                    padding: getForwardPinWarning() ? '0.25rem' : undefined
                                 }}
                             />
                             <ComboBox
@@ -751,6 +876,13 @@ const Motors = () => {
                                 items={pinOptions}
                                 value={editingMotor.forwardEnablePin ?? 0}
                                 onChange={(val) => updateMotorField('forwardEnablePin', val)}
+                                style={{
+                                    border: getForwardEnablePinWarning() ? '2px solid #f59e0b' : undefined,
+                                    boxShadow: getForwardEnablePinWarning() ? '0 0 8px rgba(245, 158, 11, 0.6)' : undefined,
+                                    borderRadius: '4px',
+                                    transition: 'all 0.2s ease',
+                                    padding: getForwardEnablePinWarning() ? '0.25rem' : undefined
+                                }}
                             />
                             <ComboBox
                                 label="Reverse"
@@ -758,11 +890,11 @@ const Motors = () => {
                                 value={editingMotor.reversePin}
                                 onChange={(val) => updateMotorField('reversePin', val)}
                                 style={{
-                                    border: getReversePinError() ? '2px solid #ef4444' : undefined,
-                                    boxShadow: getReversePinError() ? '0 0 8px rgba(239, 68, 68, 0.6)' : undefined,
+                                    border: getReversePinWarning() ? '2px solid #f59e0b' : undefined,
+                                    boxShadow: getReversePinWarning() ? '0 0 8px rgba(245, 158, 11, 0.6)' : undefined,
                                     borderRadius: '4px',
                                     transition: 'all 0.2s ease',
-                                    padding: getReversePinError() ? '0.25rem' : undefined
+                                    padding: getReversePinWarning() ? '0.25rem' : undefined
                                 }}
                             />
                             <ComboBox
@@ -770,6 +902,13 @@ const Motors = () => {
                                 items={pinOptions}
                                 value={editingMotor.reverseEnablePin ?? 0}
                                 onChange={(val) => updateMotorField('reverseEnablePin', val)}
+                                style={{
+                                    border: getReverseEnablePinWarning() ? '2px solid #f59e0b' : undefined,
+                                    boxShadow: getReverseEnablePinWarning() ? '0 0 8px rgba(245, 158, 11, 0.6)' : undefined,
+                                    borderRadius: '4px',
+                                    transition: 'all 0.2s ease',
+                                    padding: getReverseEnablePinWarning() ? '0.25rem' : undefined
+                                }}
                             />
                         </ColumnLayout>
 

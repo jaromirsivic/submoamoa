@@ -1468,3 +1468,46 @@ Update Motors web page. When user clicks in the Histogram Quick Test on
 the Motor Action MultiSwitch (for example on Forward button) and then directly clicks
 on the Reverse button both pins are active. This should not happen. If user goes from forward directly to reverse
 or from reverse directly to forward the stop action should be trigerred automatically in between.
+
+Update Motors web page. Update business validations on the Modal Window.
+Currently when a Forward or Reverse pin is selected the application performs
+a business validation checking if the pin is not used by other motor or by the same motor in oposit direction.
+This validation is "blocking" preventing user from saving such Modal window if there is a collision.
+1. The validation should be non-blocking.
+2. The validation should be extended. Pin "Forward Enable" and "Reverse Enable" should
+be included in the validation. If user selects a Forward Enable pin or Reverse Enable
+pin which is used anywhere else a warning button should appear.
+
+It is still not OK. I will give you examples:
+1. If I select Forward Pin = 8 and Reverse Pin = 8 - at the moment
+the ComboBoxes are highlighted triggering a blocking situation.
+The comboboxes should be highlighted but it should trigger non-blocking situation.
+2. If I select "Forward" pin the same as "Forawrd Enable" pin currently nothing happens.
+Both ComboBoxes shold be highlighted. It shold trigger non-blocking situation.
+3. If I select "Forward Enable" pin the same as "Reverse Enable" pin currently nothing happens.
+Both ComboBoxes shold be highlighted. It shold trigger non-blocking situation.
+
+Basically if user selects a pin in "Forward", "Forward Enable", "Reverse", 
+"Reverse Enable" which appears in any other ComboBox in any other motor
+or in the same motor the Warning button should be visible. The only exception
+is 0 Dummy GPIO pin. This pin can be selected multiple times within
+the same motor or acros multiple motors.
+
+It is still not OK.
+1. On the Modal window you need to check if "Forward" is not the same as
+"Forward Enable", "Reverse", "Reverse Enable" of the same motor. You as well need to check
+if "Forward" is not the same as "Forward", "Forward Enable", "Reverse", "Reverse Enable" of other motors.
+2. On the Modal window you need to check if "Forward Enable" is not the same as
+"Forward", "Reverse", "Reverse Enable" of the same motor. You as well need to check
+if "Forward Enable" is not the same as "Forward", "Forward Enable", "Reverse", "Reverse Enable" of other motors.
+3. On the Modal window you need to check if "Reverse" is not the same as
+"Forward", "Forward Enable", "Reverse Enable" of the same motor. You as well need to check
+if "Reverse" is not the same as "Forward", "Forward Enable", "Reverse", "Reverse Enable" of other motors.
+4. On the Modal window you need to check if "Reverse Enable" is not the same as
+"Forward", "Forward Enable", "Reverse" of the same motor. You as well need to check
+if "Reverse" is not the same as "Forward", "Forward Enable", "Reverse", "Reverse Enable" of other motors.
+
+If the check detects a violation of business validation (described above) it should be non-blocking.
+The only exception to the checks described above is 0 Dummy GPIO pin.
+This pin can be selected multiple times within
+the same motor or acros multiple motors.

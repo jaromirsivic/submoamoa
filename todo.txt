@@ -29,3 +29,13 @@ General Setup add
     Elevation of Diamond Bottom most Point
     True Bearing of Diamond Right most Point
     Elevation of Diamond Right most Point
+
+Camera rotation
+GPIO 0
+Motor business validations
+start with unknown raspberry pi device
+pwm frequency
+forward enable
+camera restart
+Buttons on the hot zone
+Horizontal Separator help feature
