@@ -1511,3 +1511,13 @@ If the check detects a violation of business validation (described above) it sho
 The only exception to the checks described above is 0 Dummy GPIO pin.
 This pin can be selected multiple times within
 the same motor or acros multiple motors.
+
+Create new invisible/renderless component called Timer. The Timer has the following props:
+	enabled - identifies if the timer is ticking and can trigger events or not
+	interval - the interval in seconds. Default value is 1
+The component has following props:
+	onStart - triggered when the enabled props is set to true
+	onInterval - triggered every time when interval elapses
+	onEnd - triggered every time when enabled props is set to false or when the component is enabled and 
+will be destroyed/deleted.
+Demonstrate the usage of the component in the Sandbox -> ComponentsDemo

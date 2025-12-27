@@ -106,7 +106,9 @@
                 ]
             },
             "pwmFrequency": 4,
-            "strokeLength": 30
+            "strokeLength": 30,
+            "forwardEnablePin": 16,
+            "reverseEnablePin": 18
         },
         {
             "enabled": true,
@@ -214,7 +216,9 @@
                 ]
             },
             "strokeLength": 30,
-            "pwmFrequency": 4
+            "pwmFrequency": 4,
+            "forwardEnablePin": 37,
+            "reverseEnablePin": 31
         },
         {
             "enabled": true,
@@ -275,7 +279,8 @@
             },
             "strokeLength": 0,
             "pwmFrequency": 4,
-            "forwardEnablePin": "0"
+            "forwardEnablePin": 0,
+            "reverseEnablePin": 0
         },
         {
             "enabled": true,
@@ -333,7 +338,10 @@
                         }
                     ]
                 ]
-            }
+            },
+            "forwardEnablePin": 0,
+            "reverseEnablePin": 0,
+            "pwmFrequency": 4
         },
         {
             "enabled": true,
@@ -391,7 +399,10 @@
                         }
                     ]
                 ]
-            }
+            },
+            "forwardEnablePin": 0,
+            "reverseEnablePin": 0,
+            "pwmFrequency": 4
         },
         {
             "enabled": true,
@@ -449,7 +460,10 @@
                         }
                     ]
                 ]
-            }
+            },
+            "forwardEnablePin": 0,
+            "reverseEnablePin": 0,
+            "pwmFrequency": 4
         }
     ],
     "camera": {

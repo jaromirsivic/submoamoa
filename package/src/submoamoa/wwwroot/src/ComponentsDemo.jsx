@@ -17,6 +17,7 @@ import ColumnLayout from './components/ColumnLayout';
 import RowLayout from './components/RowLayout';
 import ModalWindow from './components/ModalWindow';
 import ColorPicker from './components/ColorPicker';
+import Timer from './components/Timer';
 
 // Import assets
 import switchImg from './assets/switch.png';
@@ -71,6 +72,11 @@ const ComponentsDemo = () => {
     const [color4, setColor4] = useState('#8b5cf6');
     // State for joystick demo
     const [joystickOffset, setJoystickOffset] = useState({ x: 0, y: 0 });
+    // State for Timer demo
+    const [timerEnabled, setTimerEnabled] = useState(false);
+    const [timerInterval, setTimerInterval] = useState(1);
+    const [timerTicks, setTimerTicks] = useState(0);
+    const [timerLog, setTimerLog] = useState([]);
 
     const comboItems = [
         { label: 'Option 1', value: 'option1' },
@@ -713,6 +719,125 @@ const ComponentsDemo = () => {
                                 showAlpha={true}
                             />
                         </div>
+                    </ColumnLayout>
+                </Panel>
+
+                <Panel>
+                    <h2>Timer Component (Renderless)</h2>
+                    <ColumnLayout gap="1.5rem">
+                        <div>
+                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                                The Timer is an invisible/renderless component that triggers events based on time intervals.
+                                It fires <code>onStart</code> when enabled, <code>onInterval</code> on each tick, and <code>onEnd</code> when disabled or unmounted.
+                            </p>
+                        </div>
+
+                        <RowLayout gap="1rem" style={{ alignItems: 'center' }}>
+                            <Switch
+                                label="Timer Enabled"
+                                value={timerEnabled}
+                                onChange={setTimerEnabled}
+                            />
+                            <Slider
+                                label="Interval (seconds)"
+                                value={timerInterval}
+                                onChange={setTimerInterval}
+                                min={0}
+                                max={5}
+                                step={0.001}
+                                allowManualInput={true}
+                                decimalPlaces={3}
+                                style={{ flex: 1, maxWidth: '300px' }}
+                            />
+                            <Button
+                                label="Reset"
+                                onClick={() => {
+                                    setTimerTicks(0);
+                                    setTimerLog([]);
+                                }}
+                            />
+                        </RowLayout>
+
+                        <div style={{
+                            padding: '1rem',
+                            backgroundColor: timerEnabled ? '#dcfce7' : '#f1f5f9',
+                            borderRadius: '8px',
+                            border: timerEnabled ? '2px solid #22c55e' : '1px solid #e2e8f0',
+                            transition: 'all 0.3s ease'
+                        }}>
+                            <RowLayout gap="2rem">
+                                <div>
+                                    <StaticText text="Status" style={{ fontWeight: 'bold', marginBottom: '0.5rem' }} />
+                                    <StaticText
+                                        text={timerEnabled ? '🟢 Running' : '⚪ Stopped'}
+                                        style={{ fontSize: '1.25rem' }}
+                                    />
+                                </div>
+                                <div>
+                                    <StaticText text="Ticks" style={{ fontWeight: 'bold', marginBottom: '0.5rem' }} />
+                                    <StaticText
+                                        text={timerTicks.toString()}
+                                        style={{ fontSize: '1.5rem', fontFamily: 'monospace' }}
+                                    />
+                                </div>
+                                <div>
+                                    <StaticText text="Elapsed" style={{ fontWeight: 'bold', marginBottom: '0.5rem' }} />
+                                    <StaticText
+                                        text={`${(timerTicks * timerInterval).toFixed(1)}s`}
+                                        style={{ fontSize: '1.25rem', fontFamily: 'monospace' }}
+                                    />
+                                </div>
+                            </RowLayout>
+                        </div>
+
+                        <div>
+                            <StaticText text="Event Log" style={{ fontWeight: 'bold', marginBottom: '0.5rem' }} />
+                            <div style={{
+                                height: '150px',
+                                overflowY: 'auto',
+                                backgroundColor: '#1e293b',
+                                color: '#e2e8f0',
+                                padding: '0.75rem',
+                                borderRadius: '4px',
+                                fontFamily: 'monospace',
+                                fontSize: '0.85rem'
+                            }}>
+                                {timerLog.length === 0 ? (
+                                    <span style={{ color: '#64748b' }}>No events yet. Enable the timer to see events.</span>
+                                ) : (
+                                    timerLog.slice(-20).map((log, i) => (
+                                        <div key={i} style={{ marginBottom: '2px' }}>
+                                            <span style={{ color: '#94a3b8' }}>[{log.time}]</span>{' '}
+                                            <span style={{
+                                                color: log.type === 'start' ? '#4ade80' :
+                                                       log.type === 'end' ? '#f87171' : '#60a5fa'
+                                            }}>
+                                                {log.message}
+                                            </span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        {/* The Timer component itself - invisible */}
+                        <Timer
+                            enabled={timerEnabled}
+                            interval={timerInterval}
+                            onStart={() => {
+                                const time = new Date().toLocaleTimeString();
+                                setTimerLog(prev => [...prev, { time, type: 'start', message: 'onStart: Timer started' }]);
+                            }}
+                            onInterval={() => {
+                                setTimerTicks(prev => prev + 1);
+                                const time = new Date().toLocaleTimeString();
+                                setTimerLog(prev => [...prev, { time, type: 'interval', message: 'onInterval: Tick!' }]);
+                            }}
+                            onEnd={() => {
+                                const time = new Date().toLocaleTimeString();
+                                setTimerLog(prev => [...prev, { time, type: 'end', message: 'onEnd: Timer stopped' }]);
+                            }}
+                        />
                     </ColumnLayout>
                 </Panel>
 

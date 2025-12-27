@@ -51,9 +51,14 @@ class MotorsController:
                         try:
                             forward_pin_index = motor_config["forwardPin"]
                             reverse_pin_index = motor_config["reversePin"]
+                            forward_enable_pin_index = motor_config["forwardEnablePin"]
+                            reverse_enable_pin_index = motor_config["reverseEnablePin"]
+                            pwm_frequency = motor_config["pwmFrequency"]
                             
                             forward_pin = self._j8[forward_pin_index]
                             reverse_pin = self._j8[reverse_pin_index]
+                            forward_enable_pin = self._j8[forward_enable_pin_index]
+                            reverse_enable_pin = self._j8[reverse_enable_pin_index]
                             
                             # Configure pins
                             forward_pin.pin_type = PinType.OUTPUT
@@ -68,8 +73,11 @@ class MotorsController:
                             
                             motor = LinearMotor(
                                 forward_pin=forward_pin, 
-                                reverse_pin=reverse_pin, 
-                                speed_histogram=speed_hist, 
+                                forward_enable_pin=forward_enable_pin,
+                                reverse_pin=reverse_pin,
+                                reverse_enable_pin=reverse_enable_pin,
+                                speed_histogram=speed_hist,
+                                pwm_frequency=pwm_frequency,
                                 inertia=inertia
                             )
                             self._motors[motor_config.get('name')] = motor

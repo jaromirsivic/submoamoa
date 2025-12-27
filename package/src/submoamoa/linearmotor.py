@@ -1,14 +1,26 @@
 from time import time, sleep
 from .motor import Motor
-from .common import epsilon, pwm_frequency, motor_frame
+from .common import epsilon, motor_frame
 from .speedhistogram import SpeedHistogram
 from .pin import Pin
 
 class LinearMotor(Motor):
-    def __init__(self, *, forward_pin: Pin, reverse_pin: Pin, 
-                speed_histogram: SpeedHistogram, inertia: float):
+    def __init__(self, *, forward_pin: Pin, forward_enable_pin: Pin,
+                 reverse_pin: Pin, reverse_enable_pin: Pin,
+                 pwm_frequency: int,
+                 speed_histogram: SpeedHistogram, inertia: float):
+        # forward pin and forward enable pin
         self._forward_pin = forward_pin
+        self._forward_pin.pwm_frequency = pwm_frequency * 1000
+        self._forward_enable_pin = forward_enable_pin
+        self._forward_enable_pin.pwm_frequency = 0
+        self._forward_enable_pin.value = 1
+        # reverse pin and reverse enable pin
         self._reverse_pin = reverse_pin
+        self._reverse_pin.pwm_frequency = pwm_frequency * 1000
+        self._reverse_enable_pin = reverse_enable_pin
+        self._reverse_enable_pin.pwm_frequency = 0
+        self._reverse_enable_pin.value = 1
         # speed histogram describes relation between motor speed and pwm multiplier
         self._speed_histogram = speed_histogram
         # inertia is a time in seconds how long it takes to go from speed 0% to 100%

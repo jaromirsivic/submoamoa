@@ -5,14 +5,14 @@ import datetime
 import math
 from enum import Enum
 import threading
-from .common import epsilon, pwm_frequency
+from .common import epsilon
 
 class PinType(Enum):
     OUTPUT = 1
     INPUT = 2
 
 class Pin:
-    def __init__(self, *, index: int, name:str, pin_factory=None):
+    def __init__(self, *, index: int, name:str, pin_factory=None, pwm_frequency: int = 4000):
         """
         Initialize the pin
         """
@@ -22,7 +22,7 @@ class Pin:
         self._pin_type = None
         self._pin_factory = pin_factory
         self._isDummyPin = not(self._name.startswith("GPIO"))
-        self._frequency = pwm_frequency
+        self._pwm_frequency = pwm_frequency
         self._value = 0
         self._pwm = None
         self.reset()
@@ -34,7 +34,7 @@ class Pin:
         with self._lock:
             self._release_pwm()
             self._isDummyPin = not(self._name.startswith("GPIO"))
-            self._frequency = pwm_frequency
+            self._pwm_frequency = self._pwm_frequency
             self._value = 0
             self._pwm = None
             self._pin_type = None
@@ -77,7 +77,10 @@ class Pin:
                 return
             if pin_type == PinType.OUTPUT:
                 self._pin_type = pin_type
-                self._pwm = PWMOutputDevice(f"J8:{self._index}", initial_value=0,frequency=self._frequency, pin_factory=self._pin_factory)
+                self._pwm = PWMOutputDevice(f"J8:{self._index}",
+                                            initial_value=0,
+                                            frequency=self._pwm_frequency,
+                                            pin_factory=self._pin_factory)
                 self.value = 0
             else:
                 self._pin_type = pin_type
@@ -87,7 +90,26 @@ class Pin:
                 self._pwm.close()
                 self._pwm = None
                 # TODO implement
-        
+
+    @property
+    def pwm_frequency(self):
+        """
+        Get the pwm frequency of the pin
+        """
+        with self._lock:
+            return self._pwm_frequency
+    
+    @pwm_frequency.setter
+    def pwm_frequency(self, pwm_frequency):
+        """
+        Set the pwm frequency of the pin
+        """
+        if self._pwm_frequency == pwm_frequency:
+            return
+        with self._lock:
+            self._pwm_frequency = pwm_frequency
+            if self._pwm is not None:
+                self._pwm.frequency = pwm_frequency
 
     @property
     def value(self):
@@ -103,8 +125,15 @@ class Pin:
         Set the value of the pin
         """
         with self._lock:
+            # Dummy GPIO pin can be set to any value
+            if self._index == 0:
+                return
+            # Check if the pin type is output
             if self._pin_type != PinType.OUTPUT or self._isDummyPin:
                 raise Exception("Pin type is not output. You cannot set the value of an input pin.")
+            if self._pwm_frequency < epsilon:
+                value = round(value, 0)
+            # Set the value of the pin
             if value < epsilon:
                 value = 0
                 self._pwm.off()

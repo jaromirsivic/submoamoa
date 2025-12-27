@@ -30,9 +30,9 @@ General Setup add
     True Bearing of Diamond Right most Point
     Elevation of Diamond Right most Point
 
-Camera rotation
-GPIO 0
-Motor business validations
+Camera rotation x
+GPIO 0 x
+Motor business validations x
 start with unknown raspberry pi device
 pwm frequency
 forward enable
