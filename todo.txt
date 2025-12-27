@@ -34,8 +34,8 @@ Camera rotation x
 GPIO 0 x
 Motor business validations x
 start with unknown raspberry pi device
-pwm frequency
-forward enable
+pwm frequency x
+forward enable x
 camera restart
 Buttons on the hot zone
 Horizontal Separator help feature

@@ -1521,3 +1521,70 @@ The component has following props:
 	onEnd - triggered every time when enabled props is set to false or when the component is enabled and 
 will be destroyed/deleted.
 Demonstrate the usage of the component in the Sandbox -> ComponentsDemo
+
+Update the Manual Control web page. There should be a Timer component with interval 0.25 second which calls
+following function:
+Whenever time interval ticks the frontend sends a json request to the backend via rest api
+using "post" method "/api/manualcontrol/action". The request json should look like this:
+{
+	"fullscreen": false, //is user using fullscreen or not
+	"joystick"{
+		"x": 0.0, //x position of the Polygon joystick relative to the joysitck origin. If Polygon Joystick is not spawn then 0.0.
+		"y": 0.0, //y position of the Polygon joystick relative to the joystick origin. If Polygon Joystick is not spawn then 0.0.
+	}
+	//all motors displayed on the Modal window should be mentioned in the motors section
+	//typically there are 4 items
+	"motors":[
+		{
+			"index": 2, //index of the motor
+			"value": 0.0 //value of the Joystick1D, it does not matter if the joystick is visible or not
+		},
+		{
+			"index": 3, //index of the motor
+			"value": 0.0 //value of the Joystick1D, it does not matter if the joystick is visible or not
+		},
+		{
+			"index": 4, //index of the motor
+			"value": 0.0 //value of the Joystick1D, it does not matter if the joystick is visible or not
+		},
+		{
+			"index": 5, //index of the motor
+			"value": 0.0 //value of the Joystick1D, it does not matter if the joystick is visible or not
+		},
+	]
+}
+The backend will process the request. It will set up the speed of motors with index 0 and index 1
+using "move" method based on the "joystick" "x" and "y" position from the request. It will as well
+set up the speed of motors mentioned in the section "motors". and it will send response
+as a json in the following format:
+{
+	"success": true,
+	"motors":[
+		{
+			"index": 0, //motors 0 and 1 will be as well included in the response
+			"position": 0.0,
+			"speed": 0.0,
+			"duty": 0.0
+		},
+		{
+			"index": 1, //motors 0 and 1 will be as well included in the response
+			"position": 0.0,
+			"speed": 0.0,
+			"duty": 0.0
+		},
+		{
+			"index": 2, //motors 0 and 1 will be as well included in the response
+			"position": 0.0,
+			"speed": 0.0,
+			"duty": 0.0
+		}
+	]
+}
+The same method which is triggered during the Timer onInterval event is triggered as well
+when user changes the position of the joystick on the Polygon component.
+
+sendManualControlAction must be called synchronously meaning 
+the system should wait for the response or at least 5 seconds till the new request is sent.
+It does not matter if the latest sendManualControlAction was triggered by dragging joystick or by the timer
+all other sendManualControlActions are discarded meaning the function does not
+call backend and returns (latest known result) immediately.

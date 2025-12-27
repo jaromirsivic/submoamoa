@@ -730,19 +730,19 @@ const Motors = () => {
                                     style={{ marginTop: '0.5rem', width: '100%' }}
                                 />
 
-                                <HorizontalSeparator label="Pins" fullWidth={true} bleed="1.5rem" />
+                                <HorizontalSeparator label="Pins (BTS7960B)" fullWidth={true} bleed="1.5rem" />
                                 <StaticText text={<>Forward: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.forwardPin)}</span></>} />
                                 <StaticText text={<>Forward Enable: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.forwardEnablePin ?? 0)}</span></>} />
                                 <StaticText text={<>Reverse: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.reversePin)}</span></>} />
                                 <StaticText text={<>Reverse Enable: <span style={{ fontWeight: 'bold' }}>{getPinDisplayName(motor.reverseEnablePin ?? 0)}</span></>} />
-
+                                <StaticText text={<>PWM Frequency: <span style={{ fontWeight: 'bold' }}>{motor.pwmFrequency ?? 0} kHz</span></>} />
+                                
                                 <HorizontalSeparator label="Duty Cycle" fullWidth={true} bleed="1.5rem" />
                                 <StaticText text={<>Enabled: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.enabled ? 'Yes' : 'No'}</span></>} />
                                 <StaticText text={<>Max Run: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.maxRunningTimeSeconds}s</span></>} />
                                 <StaticText text={<>Min Rest: <span style={{ fontWeight: 'bold' }}>{motor.dutyCycle.minRestTimeSeconds}s</span></>} />
 
                                 <HorizontalSeparator label="Histogram" fullWidth={true} bleed="1.5rem" />
-                                <StaticText text={<>PWM Frequency: <span style={{ fontWeight: 'bold' }}>{motor.pwmFrequency ?? 0} kHz</span></>} />
                                 {(() => {
                                     const histogramData = speedHistogramData.find(h => h.motorName === motor.name);
                                     if (!histogramData || histogramData.error) {
@@ -856,7 +856,7 @@ const Motors = () => {
                             decimalPlaces={1}
                         />
 
-                        <HorizontalSeparator label="Pins" fullWidth={true} bleed="1rem" />
+                        <HorizontalSeparator label="Pins (BTS7960B)" fullWidth={true} bleed="1rem" />
                         <ColumnLayout gap="0.5rem">
                             <ComboBox
                                 label="Forward"
@@ -909,6 +909,16 @@ const Motors = () => {
                                     transition: 'all 0.2s ease',
                                     padding: getReverseEnablePinWarning() ? '0.25rem' : undefined
                                 }}
+                            />
+                            <Slider
+                                label="PWM Frequency (kHz)"
+                                value={editingMotor.pwmFrequency ?? 0}
+                                onChange={(val) => updateMotorField('pwmFrequency', Math.round(val))}
+                                min={0}
+                                max={16}
+                                step={1}
+                                allowManualInput={true}
+                                decimalPlaces={0}
                             />
                         </ColumnLayout>
 
@@ -1018,16 +1028,6 @@ const Motors = () => {
                             </div>
 
                             <HorizontalSeparator label="Speed Histogram" fullWidth={true} bleed="1rem" />
-                            <Slider
-                                label="PWM Frequency (kHz)"
-                                value={editingMotor.pwmFrequency ?? 0}
-                                onChange={(val) => updateMotorField('pwmFrequency', Math.round(val))}
-                                min={0}
-                                max={16}
-                                step={1}
-                                allowManualInput={true}
-                                decimalPlaces={0}
-                            />
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <StaticText text="Histogram" />
                                 <Table

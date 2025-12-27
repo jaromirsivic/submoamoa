@@ -6,6 +6,7 @@ import ComboBox from './components/ComboBox';
 import StaticText from './components/StaticText';
 import HorizontalSeparator from './components/HorizontalSeparator';
 import Joystick1D from './components/Joystick1D';
+import Timer from './components/Timer';
 import settingsIcon from './assets/icons/settings.svg';
 import fullscreenIcon from './assets/icons/fullscreen.svg';
 import fullscreenExitIcon from './assets/icons/fullscreenExit.svg';
@@ -47,6 +48,19 @@ const ManualControl = () => {
     
     // Window dimensions for responsive joystick positioning
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    
+    // Polygon joystick position (for motors 0 and 1)
+    const polygonJoystickRef = useRef({ x: 0, y: 0 });
+    
+    // Motor Joystick1D values (indexed by motor index)
+    const motorJoystickValuesRef = useRef({});
+    
+    // Timer enabled state - starts when component is loaded
+    const [timerEnabled, setTimerEnabled] = useState(false);
+    
+    // Request-in-flight tracking for sendManualControlAction
+    const requestInFlightRef = useRef(false);
+    const lastActionResultRef = useRef({ success: true, motors: [] });
 
     /**
      * Fetch motor settings from backend.
@@ -97,10 +111,11 @@ const ManualControl = () => {
                 }
             }
             
-            // Set the stream URL
+            // Set the stream URL and enable timer
             if (isMountedRef.current) {
                 setStreamUrl(`/api/cameras/stream-manual/${cameraIndex}`);
                 setIsLoading(false);
+                setTimerEnabled(true);
             }
             
         } catch (error) {
@@ -109,6 +124,7 @@ const ManualControl = () => {
             if (isMountedRef.current) {
                 setStreamUrl('/api/cameras/stream-manual/0');
                 setIsLoading(false);
+                setTimerEnabled(true);
             }
         }
     }, []);
@@ -119,9 +135,11 @@ const ManualControl = () => {
         fetchCameraSettings();
         fetchMotorSettings();
         
-        // Cleanup: terminate live feed when component unmounts
+        // Cleanup: terminate live feed and timer when component unmounts
         return () => {
             isMountedRef.current = false;
+            // Stop the timer
+            setTimerEnabled(false);
             // Clear stream URL to stop the feed
             setStreamUrl(null);
         };
@@ -296,22 +314,128 @@ const ManualControl = () => {
         }
     }, [tempMotors]);
 
-    // Handle joystick move events
-    const handleJoystickMove = useCallback((coords) => {
+    /**
+     * Send manual control action to backend.
+     * Called periodically by Timer and on joystick movement.
+     * 
+     * This function ensures only one request is in flight at a time.
+     * If a request is already pending, returns the last known result immediately.
+     * Includes a 5-second timeout for the request.
+     */
+    const sendManualControlAction = useCallback(async () => {
+        // If a request is already in flight, return last known result immediately
+        if (requestInFlightRef.current) {
+            return lastActionResultRef.current;
+        }
+        
+        try {
+            // Mark request as in flight
+            requestInFlightRef.current = true;
+            
+            // Build motors array from all motors displayed in modal
+            const motorsPayload = motors.slice(0, 4).map(motor => ({
+                index: motor.index,
+                value: motorJoystickValuesRef.current[motor.index] ?? 0.0
+            }));
+            
+            const payload = {
+                fullscreen: isFullscreen,
+                joystick: {
+                    x: polygonJoystickRef.current.x,
+                    y: polygonJoystickRef.current.y
+                },
+                motors: motorsPayload
+            };
+            
+            // Create abort controller for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            try {
+                const response = await fetch('/api/manualcontrol/action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    console.error('Manual control action failed:', data);
+                }
+                
+                // Store last known result
+                lastActionResultRef.current = data;
+                return data;
+                
+            } catch (fetchError) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    console.warn('Manual control action request timed out after 5 seconds');
+                } else {
+                    throw fetchError;
+                }
+                return lastActionResultRef.current;
+            }
+            
+        } catch (error) {
+            console.error('Error sending manual control action:', error);
+            return lastActionResultRef.current;
+        } finally {
+            // Mark request as complete
+            requestInFlightRef.current = false;
+        }
+    }, [motors, isFullscreen]);
+
+    // Handle Polygon joystick move events (controls motors 0 and 1)
+    const handlePolygonJoystickMove = useCallback((coords) => {
         // coords: { x: -1 to 1, y: -1 to 1 }
-        // TODO: Send joystick commands to motors controller
-        console.log('Joystick move:', coords);
+        polygonJoystickRef.current = { x: coords.x, y: coords.y };
+        // Send action immediately on joystick move
+        sendManualControlAction();
+    }, [sendManualControlAction]);
+
+    // Handle Polygon joystick start
+    const handlePolygonJoystickStart = useCallback(() => {
+        // Nothing specific needed
     }, []);
 
-    // Handle joystick start
-    const handleJoystickStart = useCallback(() => {
-        console.log('Joystick started');
-    }, []);
+    // Handle Polygon joystick end
+    const handlePolygonJoystickEnd = useCallback(() => {
+        // Reset polygon joystick position
+        polygonJoystickRef.current = { x: 0, y: 0 };
+        sendManualControlAction();
+    }, [sendManualControlAction]);
 
-    // Handle joystick end
-    const handleJoystickEnd = useCallback(() => {
-        console.log('Joystick ended');
-    }, []);
+    /**
+     * Create handler for Joystick1D onChange event.
+     * @param {number} motorIndex - The motor index this joystick controls.
+     */
+    const createMotorJoystickHandler = useCallback((motorIndex) => {
+        return (data) => {
+            // data.value contains the joystick value (-1 to 1)
+            motorJoystickValuesRef.current[motorIndex] = data.value ?? 0;
+            // Send action immediately on joystick move
+            sendManualControlAction();
+        };
+    }, [sendManualControlAction]);
+
+    /**
+     * Create handler for Joystick1D onEnd event.
+     * @param {number} motorIndex - The motor index this joystick controls.
+     */
+    const createMotorJoystickEndHandler = useCallback((motorIndex) => {
+        return () => {
+            // Reset motor joystick value when released (for joystick mode)
+            motorJoystickValuesRef.current[motorIndex] = 0;
+            sendManualControlAction();
+        };
+    }, [sendManualControlAction]);
 
     // Button style - 20% transparent (opacity 0.8), z-index below menu (48-50)
     // Background color matches menu button (#887700)
@@ -464,9 +588,9 @@ const ManualControl = () => {
                 reticleColor={reticleSettings.color}
                 reticleSize={reticleSettings.size}
                 joystickLineMaxLength={0.33}
-                onJoystickMove={handleJoystickMove}
-                onJoystickStart={handleJoystickStart}
-                onJoystickEnd={handleJoystickEnd}
+                onJoystickMove={handlePolygonJoystickMove}
+                onJoystickStart={handlePolygonJoystickStart}
+                onJoystickEnd={handlePolygonJoystickEnd}
                 style={{
                     width: '100%',
                     height: '100%'
@@ -522,9 +646,8 @@ const ManualControl = () => {
                             minValue={-1}
                             maxValue={1}
                             snapAnimationDuration={0.1}
-                            onStart={handleJoystickStart}
-                            onChange={handleJoystickMove}
-                            onEnd={handleJoystickEnd}
+                            onChange={createMotorJoystickHandler(motor.index)}
+                            onEnd={createMotorJoystickEndHandler(motor.index)}
                         />
                     </div>
                 );
@@ -624,6 +747,13 @@ const ManualControl = () => {
                     ))}
                 </div>
             </ModalWindow>
+
+            {/* Timer for periodic action updates (0.25 second interval) */}
+            <Timer
+                enabled={timerEnabled}
+                interval={0.1}
+                onInterval={sendManualControlAction}
+            />
         </div>
     );
 };

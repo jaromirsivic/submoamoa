@@ -15,7 +15,7 @@
                 "maxRunningTimeSeconds": 90,
                 "minRestTimeSeconds": 810
             },
-            "inertia": 0.1,
+            "inertia": 0.5,
             "histogram": [
                 {
                     "pwmMultiplier": 0,
@@ -599,17 +599,17 @@
             },
             {
                 "index": 3,
-                "enabled": false,
-                "mode": "joystick"
+                "enabled": true,
+                "mode": "slider"
             },
             {
                 "index": 4,
-                "enabled": false,
+                "enabled": true,
                 "mode": "joystick"
             },
             {
                 "index": 5,
-                "enabled": false,
+                "enabled": true,
                 "mode": "joystick"
             }
         ]
@@ -617,7 +617,7 @@
     "general": {
         "controllerSetup": {
             "controller": "remote",
-            "remoteHost": "192.168.68.52",
+            "remoteHost": "192.168.68.51",
             "remotePort": 8888
         }
     }

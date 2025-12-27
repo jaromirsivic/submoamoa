@@ -4,8 +4,9 @@ Handles loading and saving motor visibility settings for the Manual Control inte
 """
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from . import settingscontroller
+from .context import master_controller
 
 router = APIRouter()
 
@@ -28,6 +29,39 @@ class ManualControlMotorsResponse(BaseModel):
 class SaveMotorVisibilityRequest(BaseModel):
     """Request model for saving motor visibility settings."""
     motors: List[dict]
+
+
+class JoystickPosition(BaseModel):
+    """Joystick X/Y position from Polygon component."""
+    x: float = 0.0
+    y: float = 0.0
+
+
+class MotorAction(BaseModel):
+    """Motor action from Joystick1D component."""
+    index: int
+    value: float = 0.0
+
+
+class ManualControlActionRequest(BaseModel):
+    """Request model for manual control action."""
+    fullscreen: bool = False
+    joystick: JoystickPosition
+    motors: List[MotorAction]
+
+
+class MotorStatus(BaseModel):
+    """Motor status in response."""
+    index: int
+    position: float = 0.0
+    speed: float = 0.0
+    duty: float = 0.0
+
+
+class ManualControlActionResponse(BaseModel):
+    """Response model for manual control action."""
+    success: bool
+    motors: List[MotorStatus]
 
 
 @router.get("/api/manualcontrol/motors")
@@ -124,5 +158,81 @@ async def save_manual_control_motors(*, request: SaveMotorVisibilityRequest):
     
     except Exception as e:
         print(f"Error saving manual control motors: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/manualcontrol/action")
+async def manual_control_action(*, request: ManualControlActionRequest):
+    """
+    Process manual control action from frontend.
+    
+    This endpoint is called periodically (every 0.25s) and on joystick movement.
+    It sets motor speeds based on joystick positions and returns motor status.
+    
+    - Motors at index 0 and 1 are controlled by the Polygon joystick (x/y)
+    - Other motors are controlled by their individual Joystick1D values
+    """
+    try:
+        settings = await settingscontroller.get_settings()
+        motors_list = settings.get("motors", [])
+        motors_controller = master_controller.motors_controller
+        
+        # Build index-to-name mapping from settings
+        index_to_name = {}
+        for idx, motor_cfg in enumerate(motors_list):
+            motor_name = motor_cfg.get("name", f"Motor {idx}")
+            index_to_name[idx] = motor_name
+        
+        # Set speed for motors 0 and 1 based on Polygon joystick
+        # Motor 0 uses joystick.x, Motor 1 uses joystick.y
+        if 0 in index_to_name:
+            motor_name = index_to_name[0]
+            if motor_name in motors_controller.motors:
+                motors_controller.motors[motor_name].move(speed=request.joystick.x)
+        
+        if 1 in index_to_name:
+            motor_name = index_to_name[1]
+            if motor_name in motors_controller.motors:
+                motors_controller.motors[motor_name].move(speed=request.joystick.y)
+        
+        # Set speed for other motors based on their Joystick1D values
+        for motor_action in request.motors:
+            motor_index = motor_action.index
+            if motor_index in index_to_name:
+                motor_name = index_to_name[motor_index]
+                if motor_name in motors_controller.motors:
+                    motors_controller.motors[motor_name].move(speed=motor_action.value)
+        
+        # Collect motor status for response
+        # Include motors 0, 1 and all motors from the request
+        motor_indices_to_report = {0, 1}
+        for motor_action in request.motors:
+            motor_indices_to_report.add(motor_action.index)
+        
+        result_motors = []
+        for motor_index in sorted(motor_indices_to_report):
+            if motor_index in index_to_name:
+                motor_name = index_to_name[motor_index]
+                if motor_name in motors_controller.motors:
+                    motor = motors_controller.motors[motor_name]
+                    result_motors.append({
+                        "index": motor_index,
+                        "position": motor.position,
+                        "speed": motor.current_speed,
+                        "duty": 0.0  # TODO: compute actual duty cycle if needed
+                    })
+                else:
+                    # Motor exists in settings but not in controller (e.g., disabled)
+                    result_motors.append({
+                        "index": motor_index,
+                        "position": 0.0,
+                        "speed": 0.0,
+                        "duty": 0.0
+                    })
+        
+        return {"success": True, "motors": result_motors}
+    
+    except Exception as e:
+        print(f"Error in manual control action: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
